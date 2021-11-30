@@ -1,0 +1,6 @@
+"0","sum(hospital$response_time < 10) / nrow(hospital)
+"
+"1","[1]"
+"1"," 0.5923298"
+"1","
+"

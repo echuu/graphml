@@ -1,0 +1,561 @@
+
+
+
+## this file has a lot of files that we eventually want to move to C++ so we don't
+## have to rely on R implementation
+source("C:/Users/ericc/Documents/hybridml/examples/gwish/gwish_density.R")
+library(BDgraph)
+library(dplyr)
+# library(hybridml)
+
+
+### test code on diagonal scale matrix
+#### initialize graphs ---------------------------------------------------------
+### create parameters for a single G_5 -----------------------------------------
+set.seed(1)
+p = 5
+G = matrix(c(1,1,0,1,1,
+             1,1,1,0,0,
+             0,1,1,1,1,
+             1,0,1,1,1,
+             1,0,1,1,1), p, p)
+######## yabo's stuff ----------------------------------------------------------
+# set.seed(1)
+# p = 9; n = 100
+# G = matrix(0, p, p)
+# b = 3
+# G[1, p] = 1
+# for(i in 1:(p-1)){
+#   G[i, i+1] = 1
+# }
+#
+# G = G + t(G); diag(G) = 1
+# ------------------------------------------------------------------------------
+
+b = 300
+n = 10
+# V = n * diag(1, p)
+V = rgwish(1, G, b, 1/n * diag(p))
+gnorm(G, b, V, 1000)
+P = chol(solve(V)) # upper cholesky factor; D^(-1) = TT'  in Atay paper
+
+FREE_PARAMS_ALL = c(upper.tri(diag(1, p), diag = T) & G)
+edgeInd = G[upper.tri(G, diag = TRUE)] %>% as.logical
+
+## construct A matrix so that we can compute k_i
+A = (upper.tri(diag(1, p), diag = F) & G) + 0
+
+k_i  = colSums(A) # see step 2, p. 329 of Atay
+nu_i = rowSums(A) # see step 2, p. 329 of Atay
+b_i = nu_i + k_i + 1
+b_i
+
+# S = matrix(0, p, p)
+D = sum(edgeInd) # number of free parameters / dimension of parameter space
+
+index_mat = matrix(0, p, p)
+index_mat[upper.tri(index_mat, diag = T)][edgeInd] = 1:D
+index_mat[upper.tri(index_mat, diag = T)]
+t_ind = which(index_mat!=0,arr.ind = T)
+t_ind
+
+index_mat[lower.tri(index_mat)] = NA
+vbar = which(index_mat==0,arr.ind = T) # non-free elements
+n_nonfree = nrow(vbar)
+S = matrix(0, p, p)
+params = list(G = G, P = P, p = p, D = D, edgeInd = edgeInd,
+              b = b, nu_i = nu_i, b_i = b_i,
+              t_ind = t_ind, n_nonfree = n_nonfree, vbar = vbar,
+              FREE_PARAMS_ALL = FREE_PARAMS_ALL,
+              n_graphs = 1)
+
+
+
+# generate samples
+set.seed(2)
+J = 2000
+
+GG = initGeneralGraph(G, b, V)
+samps = rGW(J, GG)
+
+(test = array(0, dim = c(3, 3, 2)))
+test[,,1]
+
+
+samps = samplegw(J, G, b, 0, V, S, solve(P), FREE_PARAMS_ALL)
+u_samps = samps$Psi_free %>% data.frame
+# u_df = preprocess(u_samps, D, params)     # J x (D_u + 1)
+u_df = hybridml::gwish_preprocess(u_samps, D, params) # J x (D_u + 1)
+
+# grad_numer = function(u, params) {
+#   pracma::grad(psi, u, params = params)
+# }
+# hess_numer = function(u, params) {
+#   pracma::hessian(psi, u, params = params)
+# }
+
+# find u_star using newton's
+# gwish_globalMode_mod() in cpp_testing.R file
+Rcpp::sourceCpp("C:/Users/ericc/Documents/hybridml/examples/gwish/gwish.cpp")
+
+u_star = gwish_globalMode_mod(u_df, GG, GG,
+                              psi = psi_cpp_mat,
+                              grad = grad_gwish,
+                              hess = hess_gwish)
+
+# create_psi_mat_cpp(u, GG)
+
+
+u_star
+# compute approximation
+# hybml_gwish_cpp() is in cpp_testing.R file
+## the psi_cpp_mat, grad_gwish, and hess_gwish are meant to replace the
+## corresponding functions in graphml:: package
+out = hybml_gwish_cpp(u_df, params, psi = psi_cpp_mat, grad = grad_gwish,
+                      hess = hess_gwish, u_0 = u_star)
+
+out = hybml_gwish_cpp(u_df, params, psi = psi_cpp_mat, grad = graphml::grad_cpp_mat,
+                      hess = graphml::hess_cpp_mat, u_0 = u_star)
+out$logz
+gnorm(G, b, V, 100)
+h(u_df, params, D, u_star) # ideally this is faster than hybml_gwish_cpp
+
+
+getEdgeMat = function(Adj){
+  vAdj = apply(Adj, 2, sum)
+  Adj[lower.tri(Adj, diag = FALSE)] = 0
+  Edge = which(Adj==1, arr.ind = TRUE)
+
+  l = c(rep(2, nrow(Edge)), rep(1, length(which(vAdj==0))))
+  ind1 = c(Edge[,1], which(vAdj==0))
+  ind2 = c(Edge[,2], rep(0,length(which(vAdj==0))))
+  EdgeMat = cbind(l, ind1, ind2)
+  colnames(EdgeMat) = NULL
+  return(EdgeMat)
+}
+
+
+
+graphml::gnorm_c(G, b, V, 500)
+graphml::gnormJT(G, getEdgeMat(G), b, V, 500)
+gnorm(G, b, V, 500)
+
+
+Rcpp::sourceCpp("C:/Users/ericc/Documents/graphml/src/rgwishart.cpp")
+
+blah = function(J) {
+  for (j in 1:J) {
+    rgwish_c(G, chol(solve(GG$V)), GG$b, GG$p, 1e-8)
+  }
+}
+
+
+
+library(microbenchmark)
+microbenchmark(cpp = blah(),
+               r   = rgwish(J, GG$G, GG$b, GG$V),
+               times = 10)
+
+
+
+microbenchmark(r = hybml_gwish_cpp(u_df, params, psi = psi_cpp_mat, grad = grad_gwish,
+                                   hess = hess_gwish, u_0 = u_star)$logz,
+               cpp = h(u_df, params, D, u_star),
+               times = 10)
+
+
+
+# grad_gwish() <- dspi_ij <- dpsi         (updated version)
+# grad_cpp() <- dpsi_cpp <- dpsi_rsij     (old version)
+
+# hess_cpp() <- d2psi_ii, dpsi_rsij, d2 <- d2_rs         (old version)
+# hess_gwish() <- d2psi_ijkl <- d2psi(r, s, i, j, k, l)  (updated version)
+Rcpp::sourceCpp("C:/Users/ericc/Documents/hybridml/examples/gwish/gwish.cpp")
+
+u = u_df[15,1:D] %>% unlist %>% unname
+u_mat = create_psi_mat_cpp(u, params)
+
+graphml::grad_cpp_mat(u_mat, params)
+grad_cpp_mat(u_mat, params)
+
+graphml::hess_cpp_mat(u_mat, params)
+hess_gwish(u_mat, params)
+
+
+microbenchmark(grad_gwish(u_mat, params),
+               g(u_mat, params))
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+data.frame(grad_diag = grad_cpp(u, params),
+           grad_numer = pracma::grad(f = psi, u, params = params),
+           grad_general = grad_gwish(u, params),
+           t_ind - 1)
+
+library(microbenchmark)
+microbenchmark(grad_numer = pracma::grad(f = psi, u, params = params),
+               grad_general = grad_gwish(u, params),
+               times = 10)
+
+vbar - 1 # nonfree elements --> these are the ones that will have recursive calls
+## test first row gradient calculation
+rr = 0
+ss = 2
+ii = 0
+jj = 0
+
+dpsi(rr, ss, ii, jj, u_mat, params)
+dpsi_ij(1, 1, u_mat, params)
+
+## compare dpsi() output to dpsi_rsij() output
+vbar - 1
+rr = 1
+ss = 4
+ii = 1
+jj = 1
+dpsi(rr, ss, ii, jj, u_mat, params)
+dpsi_rsij(rr, ss, ii, jj, u_mat, G)
+
+data.frame(closed = grad_cpp(u, params),
+           numerical = pracma::grad(f = psi, u, params = params))
+
+### testing analytical vs. numerical hessian diagonal elements
+
+# compare individual hessian elements
+data.frame(numerical = diag(pracma::hessian(psi, u, params = params)),
+           closed_test = diag(hess_cpp_test(u, params)),
+           closed_general = diag(hess_gwish(u, params)), # this line crashes
+           t_ind)
+
+h_closed = hess_cpp_test(u, params)
+h_numer = pracma::hessian(psi, u, params = params)
+h_closed_update = hess_gwish(u, params)
+
+data.frame(
+closed = h_closed[upper.tri(h_closed)],
+numer = h_numer[upper.tri(h_numer)],
+closed_update = h_closed_update[upper.tri(h_closed_update)]
+)
+
+Rcpp::sourceCpp("C:/Users/ericc/Documents/hybridml/examples/gwish/gwish.cpp")
+
+vbar-1
+
+rr = 0
+ss = 1
+
+ii = 0   ## corresponds to the row of the hessian
+jj = 0   ## corresponds to the row of the hessian
+kk = 1   ## corresponds to the col of the hessian
+ll = 1   ## corresponds to the col of the hessian
+
+# check quantities:
+d2psi(0, 2, ii, jj, kk, ll, u_mat, params)
+d2psi(1, 3, ii, jj, kk, ll, u_mat, params)
+d2psi(1, 4, ii, jj, kk, ll, u_mat, params)
+
+
+## check these against the old quantities:
+d2_rs(0, 2, ii, jj, kk, ll, u_mat, params$G)
+d2_rs(1, 3, ii, jj, kk, ll, u_mat, params$G)
+d2_rs(1, 4, ii, jj, kk, ll, u_mat, params$G)
+
+
+## compute diagonal terms first manually
+
+d2psi_ii(rr, ss, ii, u_mat)
+d2psi(rr, ss, ii, jj, kk, ll, u_mat, params)
+
+
+h_closed = hess_cpp_test(u, params)
+
+
+
+# head(h_closed)[,1:5]
+h_numer = pracma::hessian(psi, u, params = params)
+h_closed_update = hess_gwish(u, params)
+head(h_numer)[,1:5]
+head(h_closed_update)[,1:5]
+
+
+all.equal(h_numer, h_closed_update)
+
+
+Rcpp::sourceCpp("C:/Users/ericc/Documents/hybridml/examples/gwish/gwish.cpp")
+d2psi(1, 4, kk, ll, ii, jj, u_mat, params)
+d2psi(1, 4, ii, jj, kk, ll, u_mat, params)
+
+d2psi(0, 2, kk, ll, ii, jj, u_mat, params)
+d2psi(1, 3, kk, ll, ii, jj, u_mat, params)
+d2psi(1, 4, kk, ll, ii, jj, u_mat, params)
+
+library(microbenchmark)
+microbenchmark(hess_numer = pracma::hessian(psi, u, params = params),
+               hess_general = hess_gwish(u, params),
+               times = 10)
+
+
+data.frame(# closed = diag(hess_cpp(u, params)),
+           numerical = diag(pracma::hessian(psi, u, params = params)),
+           closed_general = diag(hess_gwish(u, params)),
+           # closed_general = diag(grad_gwish(u, params)),
+           t_ind)
+
+
+
+
+h_closed = hess_cpp(u, params)
+h_numer = pracma::hessian(psi, u, params = params)
+h_closed_update = hess_cpp_test(u, params)
+
+all.equal(h_closed[upper.tri(h_closed)],
+          h_numer[upper.tri(h_numer)])
+
+all.equal(h_numer[upper.tri(h_closed)],
+          h_closed_update[upper.tri(h_numer)])
+
+all.equal(h_closed[upper.tri(h_closed)],
+          h_closed_update[upper.tri(h_numer)])
+
+gnorm(G, )
+
+
+
+
+
+### test code on non-diagonal scale matrix -------------------------------------
+
+set.seed(2021)
+p = 5; n = 300
+G = matrix(0, p, p)
+b = 3
+G[1, p] = 1
+for(i in 1:(p-1)){
+  G[i, i+1] = 1
+}
+
+G = G + t(G); diag(G) = 1
+Sigma = rgwish(1, G, b, diag(p))
+Y = matrix(rnorm(n*p,), n, p)
+Y = Y %*% t(chol(Sigma))
+gnorm(G, n+b, diag(p)+t(Y)%*%Y, 1000)
+
+
+###### -------------------------------------------------------------------------
+
+gwish_globalMode_mod = function(u_df, params, params_G5,
+                                psi = psi, grad = grad, hess = hess,
+                                tolerance = 1e-5, maxsteps = 200) {
+
+
+  # use the MAP as the starting point for the algorithm
+  MAP_LOC = which(u_df$psi_u == min(u_df$psi_u))
+  theta = u_df[MAP_LOC,1:params$D] %>% unname() %>% unlist()
+
+  numsteps = 0
+  tolcriterion = 100
+  step.size = 1
+
+
+  while(tolcriterion > tolerance && numsteps < maxsteps){
+    # print(numsteps)
+    # hess_obj = hess(theta, params_G5)
+    theta_mat = create_psi_mat_cpp(theta, params)
+    G = -hess(theta_mat, params_G5)
+    invG = solve(G)
+    # G = -hess(theta, params)
+    # invG = solve(G)
+
+    thetaNew = theta + step.size * invG %*% grad(theta_mat, params_G5)
+    thetanew_mat = create_psi_mat_cpp(thetaNew, params)
+
+    # if precision turns negative or if the posterior probability of
+    # thetaNew becomes smaller than the posterior probability of theta
+    if(-psi(thetanew_mat, params) < -psi(theta_mat, params)) {
+      cat('tolerance reached on log scale =', tolcriterion, '\n')
+      print(paste("converged -- ", numsteps, " iters", sep = ''))
+      return(theta)
+    }
+
+    tolcriterion = abs(psi(thetanew_mat, params)-psi(theta_mat, params))
+    theta = thetaNew
+    numsteps = numsteps + 1
+  }
+
+  if(numsteps == maxsteps)
+    warning('Maximum number of steps reached in Newton method.')
+
+  print(paste("converged -- ", numsteps, " iters", sep = ''))
+  return(theta)
+}
+
+
+
+hybml_gwish_cpp = function(u_df, params, psi, grad, hess, u_0 = NULL, D = ncol(u_df) - 1) {
+
+  options(scipen = 999)
+  options(dplyr.summarise.inform = FALSE)
+
+  ## fit the regression tree via rpart()
+  u_rpart = rpart::rpart(psi_u ~ ., u_df)
+
+  ## (3) process the fitted tree
+  # (3.1) obtain the (data-defined) support for each of the parameters
+  param_support = extractSupport(u_df, D) #
+
+  # (3.2) obtain the partition
+  u_partition = extractPartition(u_rpart, param_support)
+
+  #### hybrid extension begins here ------------------------------------------
+
+  ### (1) find global mean
+  # u_0 = colMeans(u_df[,1:D]) %>% unname() %>% unlist() # global mean
+
+  if (is.null(u_0)) {
+    MAP_LOC = which(u_df$psi_u == min(u_df$psi_u))
+    u_0 = u_df[MAP_LOC,1:D] %>% unname() %>% unlist()
+    # print(u_0)
+  }
+
+  ### (2) find point in each partition closest to global mean (for now)
+  # u_k for each partition
+  u_df_part = u_df %>% dplyr::mutate(leaf_id = u_rpart$where)
+
+  l1_cost = apply(u_df_part[,1:D], 1, l1_norm, u_0 = u_0)
+  u_df_part = u_df_part %>% dplyr::mutate(l1_cost = l1_cost)
+
+  # take min result, group_by() leaf_id
+  psi_df = u_df_part %>%
+    dplyr::group_by(leaf_id) %>% dplyr::filter(l1_cost == min(l1_cost)) %>%
+    data.frame
+
+  bounds = u_partition %>% dplyr::arrange(leaf_id) %>%
+    dplyr::select(-c("psi_hat", "leaf_id"))
+  psi_df = psi_df %>% dplyr::arrange(leaf_id)
+
+  K = nrow(bounds)
+  log_terms = numeric(K) # store terms so that we can use log-sum-exp()
+  G_k = numeric(K)       # store terms coming from gaussian integral
+
+  # lambda_k = apply(psi_df[,1:D], 1, lambda, params = params)
+  # k = 1
+  for (k in 1:K) {
+    u_k = unname(unlist(psi_df[k,1:D]))
+
+    u_k_mat = create_psi_mat_cpp(u_k, params)
+    # hess_obj = hess(u_k, params) # pass in the G5 params, NOT the G params
+    H_k = hess(u_k_mat, params)
+    # H_k_inv = solve(H_k)
+
+    # H_k = hess(u_k, params = params)
+    H_k_inv = suppressWarnings(chol2inv(chol(H_k)))
+
+    # lambda_k = pracma::grad(psi, u_k, params = params) # numerical
+    lambda_k = grad(u_k_mat, params)
+    b_k = H_k %*% u_k - lambda_k
+    m_k = H_k_inv %*% b_k
+
+    lb = bounds[k, seq(1, 2 * D, 2)] %>% unname %>% unlist
+    ub = bounds[k, seq(2, 2 * D, 2)] %>% unname %>% unlist
+
+    G_k[k] = epmgp::pmvn(lb, ub, m_k, H_k_inv, log = TRUE)
+    # G_k[k] = log(TruncatedNormal::pmvnorm(m_k, H_k_inv, lb, ub)[1])
+
+    log_terms[k] = D / 2 * log(2 * pi) - 0.5 * log_det(H_k) -
+      psi_df$psi_u[k] + sum(lambda_k * u_k) -
+      0.5 * t(u_k) %*% H_k %*% u_k +
+      0.5 * t(m_k) %*% H_k %*% m_k + G_k[k]
+
+    # print(0.5 * t(u_k) %*% H_k %*% u_k)
+  }
+
+  return(list(logz = log_sum_exp(log_terms),
+              bounds = bounds,
+              G_k = G_k))
+}
+
+
+
+h = function(u_df, params, D, u_0 = NULL) {
+  options(scipen = 999)
+  options(dplyr.summarise.inform = FALSE)
+
+  ## fit the regression tree via rpart()
+  u_rpart = rpart::rpart(psi_u ~ ., u_df)
+
+  ## (3) process the fitted tree
+  # (3.1) obtain the (data-defined) support for each of the parameters
+  param_support = extractSupport(u_df, D) #
+
+  # (3.2) obtain the partition
+  u_partition = extractPartition(u_rpart, param_support)
+
+  #### hybrid extension begins here ------------------------------------------
+
+  ### (1) find global mean
+  # u_0 = colMeans(u_df[,1:D]) %>% unname() %>% unlist() # global mean
+
+  if (is.null(u_0)) {
+    MAP_LOC = which(u_df$psi_u == min(u_df$psi_u))
+    u_0 = u_df[MAP_LOC,1:D] %>% unname() %>% unlist()
+    # print(u_0)
+  }
+
+  ### (2) find point in each partition closest to global mean (for now)
+  # u_k for each partition
+  u_df_part = u_df %>% dplyr::mutate(leaf_id = u_rpart$where)
+
+  l1_cost = apply(u_df_part[,1:D], 1, l1_norm, u_0 = u_0)
+  u_df_part = u_df_part %>% dplyr::mutate(l1_cost = l1_cost)
+
+  # take min result, group_by() leaf_id
+  psi_df = u_df_part %>%
+    dplyr::group_by(leaf_id) %>% dplyr::filter(l1_cost == min(l1_cost)) %>%
+    data.frame
+
+  bounds = u_partition %>% dplyr::arrange(leaf_id) %>%
+    dplyr::select(-c("psi_hat", "leaf_id"))
+  psi_df = psi_df %>% dplyr::arrange(leaf_id)
+
+  K = nrow(bounds)
+  approx_integral(K, as.matrix(psi_df), as.matrix(bounds), params)
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
