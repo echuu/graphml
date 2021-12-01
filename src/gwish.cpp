@@ -704,31 +704,42 @@ double approxZ(Rcpp::List& params,
 	arma::vec lb(D, arma::fill::zeros);
 	arma::vec ub(D, arma::fill::zeros);
 	arma::vec u_k(D, arma::fill::zeros);
+	arma::vec candidate_k(D, arma::fill::zeros);
 
+	int leaf_k;
+	double psi_k;
+	arma::mat psi_mat(D, D, arma::fill::zeros);
+	//arma::vec bounds_k;
 	for (u_int k = 0; k < K; k++) {
 
-		int leaf_k = leaf(k);
-
-		u_k = candidates[leaf_k];
+		leaf_k = leaf(k);
+		candidate_k = candidates[leaf_k];
+		u_k = candidate_k.
+			elem(arma::conv_to<arma::uvec>::from(arma::linspace(0, D-1, D)));
 		// Rcpp::Rcout<< u_k << std::endl;
-		arma::mat psi_mat = create_psi_mat_cpp(u_k, params);
-		double psi_k = psi_cpp_mat(psi_mat, params);
+		psi_mat = create_psi_mat_cpp(u_k, params);
+		// double psi_k = psi_cpp_mat(psi_mat, params);
+		psi_k = candidate_k(D);
 
 		H_k = hess_gwish(psi_mat, params); // 11/9: using general hessian
-		H_k_inv = inv(H_k);
+		// H_k_inv = inv(H_k);
+		H_k_inv = arma::inv_sympd(H_k);
 		lambda_k = grad_gwish(psi_mat, params); // 11/9: using general gradient
 		b_k = H_k * u_k - lambda_k;
 		m_k = H_k_inv * b_k;
 
+		lb = bounds[leaf_k].elem(arma::conv_to<arma::uvec>::from(
+			arma::linspace(0, 2 * D - 2, D)));
+		ub = bounds[leaf_k].elem(arma::conv_to<arma::uvec>::from(
+			arma::linspace(1, 2 * D - 1, D)));
+		/*
 		for (u_int d = 0; d < D; d++) {
-			lb(d) = bounds[leaf_k](2 * d);
-			ub(d) = bounds[leaf_k](2 * d + 1);
+			lb(d) = bounds[leaf_k](2 * d); ub(d) = bounds[leaf_k](2 * d + 1);
 		}
-
+		*/
 		double val = 0;
 		double sign;
 		log_det(val, sign, H_k);
-
 		G_k(k) = ep_logz(m_k, H_k_inv, lb, ub);
 		log_terms(k) = D / 2 * std::log(2 * M_PI) - 0.5 * val - psi_k +
 			arma::dot(lambda_k, u_k) -
@@ -767,8 +778,9 @@ arma::vec calcMode(arma::mat u_df, Rcpp::List& params,
 		 /* start newton's method loop */
 		 while ((tolCriterion > tol) && (numSteps < maxSteps)) {
 			 // thetaMat = create_psi_mat_cpp(theta, params);
-			 G = -hess_gwish(thetaMat, params);
-			 invG = inv(G);
+			 // G = -hess_gwish(thetaMat, params);
+			 // invG = inv(G);
+			 invG = - arma::inv_sympd(hess_gwish(thetaMat, params));
 			 thetaNew = theta + stepSize * invG * grad_gwish(thetaMat, params);
 			 thetaNewMat = create_psi_mat_cpp(thetaNew, params);
 			 psiNew = psi_cpp_mat(thetaNewMat, params);
@@ -1016,15 +1028,16 @@ arma::vec grad_cpp(arma::vec& u, Rcpp::List& params) {
 
 	arma::mat G       = params["G"]; // graph G represented as adjacency matrix
 	u_int p           = params["p"]; // dimension of the graph G
-	arma::vec edgeInd = params["edgeInd"];
+	// arma::vec edgeInd = params["edgeInd"];
 	u_int D           = params["D"]; // dimension of parameter space
+	arma::uvec free   = params["free_index"];
 	// TODO: implement create_psi_mat() function later; for now, we pass it in
 	// arma::mat psi_mat = vec2chol(u, p)
 
 	arma::mat psi_mat = create_psi_mat_cpp(u, params);
 
 	// initialize matrix that can store the gradient elements
-	arma::mat gg(D, D, arma::fill::zeros);
+	arma::mat gg(p, p, arma::fill::zeros);
 	// populate the gradient matrix entry by entry
 	for (u_int i = 0; i < p; i++) {
 		for (u_int j = i; j < p; j++) {
@@ -1035,10 +1048,10 @@ arma::vec grad_cpp(arma::vec& u, Rcpp::List& params) {
 	}
 	// convert the matrix back into a vector and return only the entries
 	// that have a corresponding edge in the graph
-	arma::vec grad_vec = chol2vec(gg, p);
-	arma::uvec ids = find(edgeInd);
-
-	return grad_vec.elem(ids);
+	// arma::vec grad_vec = chol2vec(gg, p);
+	// arma::uvec ids = find(edgeInd);
+	// return grad_vec.elem(ids);
+	return gg.elem(free);
 }
 
 
@@ -1048,15 +1061,16 @@ arma::vec grad_cpp_mat(arma::mat& psi_mat, Rcpp::List& params) {
 
   arma::mat G       = params["G"]; // graph G represented as adjacency matrix
   u_int p           = params["p"]; // dimension of the graph G
-  arma::vec edgeInd = params["edgeInd"];
+  // arma::vec edgeInd = params["edgeInd"];
   u_int D           = params["D"]; // dimension of parameter space
+  arma::uvec free   = params["free_index"];
   // TODO: implement create_psi_mat() function later; for now, we pass it in
   // arma::mat psi_mat = vec2chol(u, p)
 
   // arma::mat psi_mat = create_psi_mat_cpp(u, params);
 
   // initialize matrix that can store the gradient elements
-  arma::mat gg(D, D, arma::fill::zeros);
+  arma::mat gg(p, p, arma::fill::zeros);
   // populate the gradient matrix entry by entry
   for (u_int i = 0; i < p; i++) {
 	for (u_int j = i; j < p; j++) {
@@ -1067,10 +1081,12 @@ arma::vec grad_cpp_mat(arma::mat& psi_mat, Rcpp::List& params) {
   }
   // convert the matrix back into a vector and return only the entries
   // that have a corresponding edge in the graph
-  arma::vec grad_vec = chol2vec(gg, p);
-  arma::uvec ids = find(edgeInd);
+  // arma::vec grad_vec = chol2vec(gg, p);
+  // arma::uvec ids = find(edgeInd);
 
-  return grad_vec.elem(ids);
+  // Rcpp::Rcout << ids << std::endl;
+  // return grad_vec.elem(ids);
+  return gg.elem(free);
 }
 
 
@@ -1602,14 +1618,15 @@ arma::vec grad_gwish(arma::mat& psi_mat, Rcpp::List& params) {
 
 	arma::mat G       = params["G"]; // graph G represented as adjacency matrix
 	u_int p           = params["p"]; // dimension of the graph G
-	arma::vec edgeInd = params["edgeInd"];
+	// arma::vec edgeInd = params["edgeInd"];
+	arma::uvec free   = params["free_index"];
 	u_int D           = params["D"]; // dimension of parameter space
 	// TODO: implement create_psi_mat() function later; for now, we pass it in
 	// arma::mat psi_mat = vec2chol(u, p)
 	// arma::mat psi_mat = create_psi_mat_cpp(u, params);
 
 	// initialize matrix that can store the gradient elements
-	arma::mat gg(D, D, arma::fill::zeros);
+	arma::mat gg(p, p, arma::fill::zeros);
 	// populate the gradient matrix entry by entry
 	for (u_int i = 0; i < p; i++) {
 		for (u_int j = i; j < p; j++) {
@@ -1620,10 +1637,10 @@ arma::vec grad_gwish(arma::mat& psi_mat, Rcpp::List& params) {
 	}
 	// convert the matrix back into a vector and return only the entries
 	// that have a corresponding edge in the graph
-	arma::vec grad_vec = chol2vec(gg, p);
-	arma::uvec ids = find(edgeInd);
-
-	return grad_vec.elem(ids);
+	// arma::vec grad_vec = chol2vec(gg, p);
+	// arma::uvec ids = find(edgeInd);
+	// return grad_vec.elem(ids);
+	return gg.elem(free);
 } // end grad_gwish() function
 
 

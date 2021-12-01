@@ -38,6 +38,7 @@ u_df_names[GG$D + 1] = "psi_u"
 names(u_df_cpp) = u_df_names
 u_star_cpp = graphml::calcMode(as.matrix(u_df_cpp), GG)
 h(u_df_cpp, GG, GG$D, u_0 = u_star_cpp)
+cpp(u_df_cpp, samps, samps_psi, GG, u_star_cpp)
 BDgraph::gnorm(G, b, V, 1000)
 
 
@@ -71,10 +72,15 @@ bounds = u_partition %>% dplyr::arrange(leaf_id) %>%
 ## ---------------------------------------------------
 
 
-# candidates = findAllCandidatePoints(samps, unname(u_rpart$where),
-#                                     u_star_cpp, GG$D)
-#
-# boundMap = createPartitionMap(t(bounds), u_partition$leaf_id)
+samps_psi %>% dim
+candidates = findAllCandidatePoints(samps_psi, unname(u_rpart$where),
+                                    u_star_cpp, GG$D)
+
+boundMap = createPartitionMap(t(bounds), u_partition$leaf_id)
+
+approxWrapper(samps_psi, unname(u_rpart$where), u_star_cpp, GG$D,
+              t(bounds), u_partition$leaf_id, GG)
+
 
 cpp = function() {
   u_rpart = rpart::rpart(psi_u ~ ., u_df_cpp)
@@ -86,12 +92,9 @@ cpp = function() {
   bounds = u_partition %>% dplyr::arrange(leaf_id) %>%
     dplyr::select(-c("psi_hat", "leaf_id"))
 
-  approxWrapper(samps, unname(u_rpart$where), u_star_cpp, GG$D,
+  approxWrapper(samps_psi, unname(u_rpart$where), u_star_cpp, GG$D,
                 t(bounds), u_partition$leaf_id, GG)
 }
-
-approxWrapper(samps, unname(u_rpart$where), u_star_cpp, GG$D,
-              t(bounds), u_partition$leaf_id, GG)
 
 
 
@@ -133,21 +136,25 @@ r = function() {
   psi_df
 }
 
+microbenchmark::microbenchmark(
+  r = r(),
+  cpp = findAllCandidatePoints(samps_psi, unname(u_rpart$where),
+                               u_star_cpp, GG$D),
+  times = 10
+)
 
-u_df_part = u_df_cpp %>% dplyr::mutate(leaf_id = u_rpart$where)
-
-l1_cost = apply(u_df_part[,1:GG$D], 1, hybridml::l1_norm, u_0 = u_star)
-u_df_part = u_df_part %>% dplyr::mutate(l1_cost = l1_cost)
-
-# take min result, group_by() leaf_id
-psi_df = u_df_part %>%
-  dplyr::group_by(leaf_id) %>% dplyr::filter(l1_cost == min(l1_cost)) %>%
-  data.frame
 
 r1 = function() {
   bounds = u_partition %>% dplyr::arrange(leaf_id) %>%
     dplyr::select(-c("psi_hat", "leaf_id"))
 }
+
+microbenchmark::microbenchmark(
+  r = r1(),
+  cpp = createPartitionMap(t(bounds), u_partition$leaf_id),
+  times = 10
+)
+
 
 psi_df = psi_df %>% dplyr::arrange(leaf_id)
 
@@ -169,12 +176,7 @@ samps %>% head
 test_func %>% dim
 
 
-microbenchmark::microbenchmark(
-  r = r(),
-  cpp = findAllCandidatePoints(samps, unname(u_rpart$where),
-                               u_star_cpp, GG$D),
-  times = 10
-)
+
 
 microbenchmark::microbenchmark(
   r = r1(),

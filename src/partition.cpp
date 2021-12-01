@@ -42,9 +42,13 @@ arma::vec findCandidatePoint(arma::mat data, arma::vec uStar, u_int dim) {
 
     for (u_int j = 0; j < j_k; j++) {
         arma::vec u = data.col(j);
+        u = u.elem(arma::conv_to<arma::uvec>::from(arma::linspace(0, D-1, D)));
+        //Rcpp::Rcout<< arma::linspace(0, D-1) << std::endl;
+        // Rcpp::Rcout<< u << std::endl;
         l1Cost(j) = arma::norm(u - uStar, 1);
     }
-
+    // find index of the point that has the lowest l1-norm
+    // *** NOTE: the (D+1)-th element
     arma::vec u_k = data.col(l1Cost.index_min());
     return u_k;
 } // end findCandidatePoint() function
