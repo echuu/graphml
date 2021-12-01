@@ -2,6 +2,7 @@
 #include <RcppArmadillo.h>
 #include "graphml_types.h"
 #include "rgwishart.h"
+#include "partition.h"
 #include <Rcpp.h>
 #include <cmath>
 #define RCPP_ARMADILLO_RETURN_COLVEC_AS_VECTOR
@@ -10,6 +11,17 @@
 
 // [[Rcpp::depends(RcppArmadillo)]]
 #define EIGEN_PERMANENTLY_DISABLE_STUPID_WARNINGS
+
+
+double approxZ(Rcpp::List& params,
+	arma::vec leaf,
+	std::unordered_map<int, arma::vec> candidates,
+	std::unordered_map<int, arma::vec> bounds,
+	u_int K);
+
+double approxWrapper(arma::mat data, arma::vec locs, arma::vec uStar, u_int D,
+	arma::mat bounds, arma::vec leafId, Rcpp::List& params);
+
 
 
 /** utility functions **/
@@ -654,17 +666,77 @@ arma::mat evalPsi(arma::mat samps, Rcpp::List& params) {
 
 /* ---------------------  general wrapper function  ------------------------- */
 
-// [[Rcpp::export]]
-arma::mat approxZ(arma::mat& G, u_int b, arma::mat& V) {
 
-	Rcpp::List graphObj = init_graph(G, b, V);
-	//arma::mat G = graphObj["G"];
-	arma::mat Z = chol(inv(V));
-	//u_int b     = graphObj["b"];
-	u_int p     = graphObj["p"];
-	// arma::mat tmp(0, 2, 2);
-	arma::mat tmp = rgwish_c(G, Z, b, p, 1e-8);
-	return tmp;
+// [[Rcpp::export]]
+double approxWrapper(arma::mat data, arma::vec locs, arma::vec uStar, u_int D,
+	arma::mat bounds, arma::vec leafId, Rcpp::List& params) {
+
+	u_int K = leafId.n_elem;
+
+	std::unordered_map<int, arma::vec> candidates = findAllCandidatePoints(
+		data, locs, uStar, D
+	);
+	// Rcpp::Rcout << "found candidate points" << std::endl;
+
+	std::unordered_map<int, arma::vec> boundMap = createPartitionMap(
+		bounds, leafId
+	);
+	// Rcpp::Rcout << "created partition map" << std::endl;
+
+	return approxZ(params, leafId, candidates, boundMap, K);
+} // end approxWrapper() function
+
+
+double approxZ(Rcpp::List& params,
+	arma::vec leaf,
+	std::unordered_map<int, arma::vec> candidates,
+	std::unordered_map<int, arma::vec> bounds,
+	u_int K) {
+
+	u_int D = params["D"];    // dimension of parameter space
+	arma::vec log_terms(K, arma::fill::zeros);
+	arma::vec G_k(K, arma::fill::zeros);
+	arma::mat H_k(D, D, arma::fill::zeros);
+	arma::mat H_k_inv(D, D, arma::fill::zeros);
+	arma::vec lambda_k(D, arma::fill::zeros);
+	arma::vec b_k(D, arma::fill::zeros);
+	arma::vec m_k(D, arma::fill::zeros);
+	arma::vec lb(D, arma::fill::zeros);
+	arma::vec ub(D, arma::fill::zeros);
+	arma::vec u_k(D, arma::fill::zeros);
+
+	for (u_int k = 0; k < K; k++) {
+
+		int leaf_k = leaf(k);
+
+		u_k = candidates[leaf_k];
+		// Rcpp::Rcout<< u_k << std::endl;
+		arma::mat psi_mat = create_psi_mat_cpp(u_k, params);
+		double psi_k = psi_cpp_mat(psi_mat, params);
+
+		H_k = hess_gwish(psi_mat, params); // 11/9: using general hessian
+		H_k_inv = inv(H_k);
+		lambda_k = grad_gwish(psi_mat, params); // 11/9: using general gradient
+		b_k = H_k * u_k - lambda_k;
+		m_k = H_k_inv * b_k;
+
+		for (u_int d = 0; d < D; d++) {
+			lb(d) = bounds[leaf_k](2 * d);
+			ub(d) = bounds[leaf_k](2 * d + 1);
+		}
+
+		double val = 0;
+		double sign;
+		log_det(val, sign, H_k);
+
+		G_k(k) = ep_logz(m_k, H_k_inv, lb, ub);
+		log_terms(k) = D / 2 * std::log(2 * M_PI) - 0.5 * val - psi_k +
+			arma::dot(lambda_k, u_k) -
+			(0.5 * u_k.t() * H_k * u_k).eval()(0,0) +
+			(0.5 * m_k.t() * H_k * m_k).eval()(0,0) + G_k(k);
+	}
+
+	return lse(log_terms, K);
 } // end approxZ() function
 
 

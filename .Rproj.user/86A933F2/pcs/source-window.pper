@@ -2,24 +2,24 @@
     "sourceWindowGeometry": {
         "w6tz8szy31v5u": {
             "ordinal": 3,
-            "x": 2348,
-            "y": 44,
+            "x": 2332,
+            "y": 41,
             "width": 969,
             "height": 1342
         },
         "wnp6ajoxdmeai": {
             "ordinal": 5,
-            "x": 24,
-            "y": 314,
-            "width": 925,
-            "height": 1275
+            "x": -1095,
+            "y": 143,
+            "width": 906,
+            "height": 1163
         },
         "wc7440tgo31kb": {
             "ordinal": 9,
-            "x": -1032,
-            "y": 665,
-            "width": 909,
-            "height": 1019
+            "x": -980,
+            "y": 293,
+            "width": 942,
+            "height": 1282
         }
     }
 }

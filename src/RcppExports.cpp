@@ -207,16 +207,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// approxZ
-arma::mat approxZ(arma::mat& G, u_int b, arma::mat& V);
-RcppExport SEXP _graphml_approxZ(SEXP GSEXP, SEXP bSEXP, SEXP VSEXP) {
+// approxWrapper
+double approxWrapper(arma::mat data, arma::vec locs, arma::vec uStar, u_int D, arma::mat bounds, arma::vec leafId, Rcpp::List& params);
+RcppExport SEXP _graphml_approxWrapper(SEXP dataSEXP, SEXP locsSEXP, SEXP uStarSEXP, SEXP DSEXP, SEXP boundsSEXP, SEXP leafIdSEXP, SEXP paramsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat& >::type G(GSEXP);
-    Rcpp::traits::input_parameter< u_int >::type b(bSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type V(VSEXP);
-    rcpp_result_gen = Rcpp::wrap(approxZ(G, b, V));
+    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type locs(locsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type uStar(uStarSEXP);
+    Rcpp::traits::input_parameter< u_int >::type D(DSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type bounds(boundsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type leafId(leafIdSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
+    rcpp_result_gen = Rcpp::wrap(approxWrapper(data, locs, uStar, D, bounds, leafId, params));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -572,6 +576,57 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// support
+arma::mat support(arma::mat samps, u_int D);
+RcppExport SEXP _graphml_support(SEXP sampsSEXP, SEXP DSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type samps(sampsSEXP);
+    Rcpp::traits::input_parameter< u_int >::type D(DSEXP);
+    rcpp_result_gen = Rcpp::wrap(support(samps, D));
+    return rcpp_result_gen;
+END_RCPP
+}
+// findCandidatePoint
+arma::vec findCandidatePoint(arma::mat data, arma::vec uStar, u_int dim);
+RcppExport SEXP _graphml_findCandidatePoint(SEXP dataSEXP, SEXP uStarSEXP, SEXP dimSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type uStar(uStarSEXP);
+    Rcpp::traits::input_parameter< u_int >::type dim(dimSEXP);
+    rcpp_result_gen = Rcpp::wrap(findCandidatePoint(data, uStar, dim));
+    return rcpp_result_gen;
+END_RCPP
+}
+// findAllCandidatePoints
+std::unordered_map<int, arma::vec> findAllCandidatePoints(arma::mat data, arma::vec locs, arma::vec uStar, u_int D);
+RcppExport SEXP _graphml_findAllCandidatePoints(SEXP dataSEXP, SEXP locsSEXP, SEXP uStarSEXP, SEXP DSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type locs(locsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type uStar(uStarSEXP);
+    Rcpp::traits::input_parameter< u_int >::type D(DSEXP);
+    rcpp_result_gen = Rcpp::wrap(findAllCandidatePoints(data, locs, uStar, D));
+    return rcpp_result_gen;
+END_RCPP
+}
+// createPartitionMap
+std::unordered_map<int, arma::vec> createPartitionMap(arma::mat bounds, arma::vec leafId);
+RcppExport SEXP _graphml_createPartitionMap(SEXP boundsSEXP, SEXP leafIdSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type bounds(boundsSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type leafId(leafIdSEXP);
+    rcpp_result_gen = Rcpp::wrap(createPartitionMap(bounds, leafId));
+    return rcpp_result_gen;
+END_RCPP
+}
 // rcpparma_hello_world
 arma::mat rcpparma_hello_world();
 RcppExport SEXP _graphml_rcpparma_hello_world() {
@@ -672,7 +727,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_graphml_getNonFreeElem", (DL_FUNC) &_graphml_getNonFreeElem, 3},
     {"_graphml_init_graph", (DL_FUNC) &_graphml_init_graph, 3},
     {"_graphml_evalPsi", (DL_FUNC) &_graphml_evalPsi, 2},
-    {"_graphml_approxZ", (DL_FUNC) &_graphml_approxZ, 3},
+    {"_graphml_approxWrapper", (DL_FUNC) &_graphml_approxWrapper, 7},
     {"_graphml_calcMode", (DL_FUNC) &_graphml_calcMode, 5},
     {"_graphml_approx_integral", (DL_FUNC) &_graphml_approx_integral, 4},
     {"_graphml_chol2vec", (DL_FUNC) &_graphml_chol2vec, 2},
@@ -699,6 +754,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_graphml_d2psi", (DL_FUNC) &_graphml_d2psi, 8},
     {"_graphml_g", (DL_FUNC) &_graphml_g, 2},
     {"_graphml_gg", (DL_FUNC) &_graphml_gg, 4},
+    {"_graphml_support", (DL_FUNC) &_graphml_support, 2},
+    {"_graphml_findCandidatePoint", (DL_FUNC) &_graphml_findCandidatePoint, 3},
+    {"_graphml_findAllCandidatePoints", (DL_FUNC) &_graphml_findAllCandidatePoints, 4},
+    {"_graphml_createPartitionMap", (DL_FUNC) &_graphml_createPartitionMap, 2},
     {"_graphml_rcpparma_hello_world", (DL_FUNC) &_graphml_rcpparma_hello_world, 0},
     {"_graphml_rcpparma_outerproduct", (DL_FUNC) &_graphml_rcpparma_outerproduct, 1},
     {"_graphml_rcpparma_innerproduct", (DL_FUNC) &_graphml_rcpparma_innerproduct, 1},

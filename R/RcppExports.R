@@ -61,8 +61,8 @@ evalPsi <- function(samps, params) {
     .Call(`_graphml_evalPsi`, samps, params)
 }
 
-approxZ <- function(G, b, V) {
-    .Call(`_graphml_approxZ`, G, b, V)
+approxWrapper <- function(data, locs, uStar, D, bounds, leafId, params) {
+    .Call(`_graphml_approxWrapper`, data, locs, uStar, D, bounds, leafId, params)
 }
 
 calcMode <- function(u_df, params, tol = 1e-8, maxSteps = 10L, VERBOSE = FALSE) {
@@ -167,6 +167,22 @@ g <- function(psi, params) {
 
 gg <- function(i, j, psi, params) {
     .Call(`_graphml_gg`, i, j, psi, params)
+}
+
+support <- function(samps, D) {
+    .Call(`_graphml_support`, samps, D)
+}
+
+findCandidatePoint <- function(data, uStar, dim) {
+    .Call(`_graphml_findCandidatePoint`, data, uStar, dim)
+}
+
+findAllCandidatePoints <- function(data, locs, uStar, D) {
+    .Call(`_graphml_findAllCandidatePoints`, data, locs, uStar, D)
+}
+
+createPartitionMap <- function(bounds, leafId) {
+    .Call(`_graphml_createPartitionMap`, bounds, leafId)
 }
 
 rcpparma_hello_world <- function() {
