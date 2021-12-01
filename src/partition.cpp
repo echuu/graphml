@@ -30,7 +30,6 @@ arma::mat support(arma::mat samps, u_int D) {
 } // end support() function
 
 
-// [[Rcpp::export]]
 arma::vec findCandidatePoint(arma::mat data, arma::vec uStar, u_int dim) {
 
     u_int D = dim;

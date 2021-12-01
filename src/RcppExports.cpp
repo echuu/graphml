@@ -12,6 +12,20 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// ep_logz
+double ep_logz(arma::vec m, arma::mat K, arma::vec lb, arma::vec ub);
+RcppExport SEXP _graphml_ep_logz(SEXP mSEXP, SEXP KSEXP, SEXP lbSEXP, SEXP ubSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type m(mSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type K(KSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type lb(lbSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type ub(ubSEXP);
+    rcpp_result_gen = Rcpp::wrap(ep_logz(m, K, lb, ub));
+    return rcpp_result_gen;
+END_RCPP
+}
 // getJT
 Rcpp::List getJT(arma::umat EdgeMat);
 RcppExport SEXP _graphml_getJT(SEXP EdgeMatSEXP) {
@@ -91,45 +105,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type D(DSEXP);
     Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
     rcpp_result_gen = Rcpp::wrap(gnormJT(Adj, EdgeMat, b, D, iter));
-    return rcpp_result_gen;
-END_RCPP
-}
-// erfcx
-double erfcx(double x);
-RcppExport SEXP _graphml_erfcx(SEXP xSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< double >::type x(xSEXP);
-    rcpp_result_gen = Rcpp::wrap(erfcx(x));
-    return rcpp_result_gen;
-END_RCPP
-}
-// trunc_norm_moments
-Rcpp::List trunc_norm_moments(arma::vec lb_in, arma::vec ub_in, arma::vec mu_in, arma::vec sigma_in);
-RcppExport SEXP _graphml_trunc_norm_moments(SEXP lb_inSEXP, SEXP ub_inSEXP, SEXP mu_inSEXP, SEXP sigma_inSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type lb_in(lb_inSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type ub_in(ub_inSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type mu_in(mu_inSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type sigma_in(sigma_inSEXP);
-    rcpp_result_gen = Rcpp::wrap(trunc_norm_moments(lb_in, ub_in, mu_in, sigma_in));
-    return rcpp_result_gen;
-END_RCPP
-}
-// ep_logz
-double ep_logz(arma::vec m, arma::mat K, arma::vec lb, arma::vec ub);
-RcppExport SEXP _graphml_ep_logz(SEXP mSEXP, SEXP KSEXP, SEXP lbSEXP, SEXP ubSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type m(mSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type K(KSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type lb(lbSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type ub(ubSEXP);
-    rcpp_result_gen = Rcpp::wrap(ep_logz(m, K, lb, ub));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -253,18 +228,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// chol2vec
-arma::vec chol2vec(arma::mat& M, u_int D);
-RcppExport SEXP _graphml_chol2vec(SEXP MSEXP, SEXP DSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat& >::type M(MSEXP);
-    Rcpp::traits::input_parameter< u_int >::type D(DSEXP);
-    rcpp_result_gen = Rcpp::wrap(chol2vec(M, D));
-    return rcpp_result_gen;
-END_RCPP
-}
 // create_psi_mat_cpp
 arma::mat create_psi_mat_cpp(arma::vec u, Rcpp::List& params);
 RcppExport SEXP _graphml_create_psi_mat_cpp(SEXP uSEXP, SEXP paramsSEXP) {
@@ -301,157 +264,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// grad_cpp
-arma::vec grad_cpp(arma::vec& u, Rcpp::List& params);
-RcppExport SEXP _graphml_grad_cpp(SEXP uSEXP, SEXP paramsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec& >::type u(uSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(grad_cpp(u, params));
-    return rcpp_result_gen;
-END_RCPP
-}
-// grad_cpp_mat
-arma::vec grad_cpp_mat(arma::mat& psi_mat, Rcpp::List& params);
-RcppExport SEXP _graphml_grad_cpp_mat(SEXP psi_matSEXP, SEXP paramsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat& >::type psi_mat(psi_matSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(grad_cpp_mat(psi_mat, params));
-    return rcpp_result_gen;
-END_RCPP
-}
-// dpsi_cpp
-double dpsi_cpp(u_int i, u_int j, arma::mat& psi_mat, Rcpp::List& params);
-RcppExport SEXP _graphml_dpsi_cpp(SEXP iSEXP, SEXP jSEXP, SEXP psi_matSEXP, SEXP paramsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< u_int >::type i(iSEXP);
-    Rcpp::traits::input_parameter< u_int >::type j(jSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type psi_mat(psi_matSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(dpsi_cpp(i, j, psi_mat, params));
-    return rcpp_result_gen;
-END_RCPP
-}
-// dpsi_rsij
-double dpsi_rsij(u_int r, u_int s, u_int i, u_int j, arma::mat& psi_mat, arma::mat& G);
-RcppExport SEXP _graphml_dpsi_rsij(SEXP rSEXP, SEXP sSEXP, SEXP iSEXP, SEXP jSEXP, SEXP psi_matSEXP, SEXP GSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< u_int >::type r(rSEXP);
-    Rcpp::traits::input_parameter< u_int >::type s(sSEXP);
-    Rcpp::traits::input_parameter< u_int >::type i(iSEXP);
-    Rcpp::traits::input_parameter< u_int >::type j(jSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type psi_mat(psi_matSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type G(GSEXP);
-    rcpp_result_gen = Rcpp::wrap(dpsi_rsij(r, s, i, j, psi_mat, G));
-    return rcpp_result_gen;
-END_RCPP
-}
-// hess_cpp_test
-arma::mat hess_cpp_test(arma::vec& u, Rcpp::List& params);
-RcppExport SEXP _graphml_hess_cpp_test(SEXP uSEXP, SEXP paramsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec& >::type u(uSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(hess_cpp_test(u, params));
-    return rcpp_result_gen;
-END_RCPP
-}
-// d2psi_ii
-double d2psi_ii(u_int r, u_int s, u_int i, arma::mat& psi_mat);
-RcppExport SEXP _graphml_d2psi_ii(SEXP rSEXP, SEXP sSEXP, SEXP iSEXP, SEXP psi_matSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< u_int >::type r(rSEXP);
-    Rcpp::traits::input_parameter< u_int >::type s(sSEXP);
-    Rcpp::traits::input_parameter< u_int >::type i(iSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type psi_mat(psi_matSEXP);
-    rcpp_result_gen = Rcpp::wrap(d2psi_ii(r, s, i, psi_mat));
-    return rcpp_result_gen;
-END_RCPP
-}
-// hess_cpp
-arma::mat hess_cpp(arma::vec& u, Rcpp::List& params);
-RcppExport SEXP _graphml_hess_cpp(SEXP uSEXP, SEXP paramsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec& >::type u(uSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(hess_cpp(u, params));
-    return rcpp_result_gen;
-END_RCPP
-}
-// hess_cpp_mat
-arma::mat hess_cpp_mat(arma::mat& psi_mat, Rcpp::List& params);
-RcppExport SEXP _graphml_hess_cpp_mat(SEXP psi_matSEXP, SEXP paramsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat& >::type psi_mat(psi_matSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(hess_cpp_mat(psi_mat, params));
-    return rcpp_result_gen;
-END_RCPP
-}
-// d2
-double d2(u_int i, u_int j, u_int k, u_int l, arma::mat& psi_mat, Rcpp::List& params);
-RcppExport SEXP _graphml_d2(SEXP iSEXP, SEXP jSEXP, SEXP kSEXP, SEXP lSEXP, SEXP psi_matSEXP, SEXP paramsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< u_int >::type i(iSEXP);
-    Rcpp::traits::input_parameter< u_int >::type j(jSEXP);
-    Rcpp::traits::input_parameter< u_int >::type k(kSEXP);
-    Rcpp::traits::input_parameter< u_int >::type l(lSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type psi_mat(psi_matSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(d2(i, j, k, l, psi_mat, params));
-    return rcpp_result_gen;
-END_RCPP
-}
-// d2_rs
-double d2_rs(u_int r, u_int s, u_int i, u_int j, u_int k, u_int l, arma::mat& psi_mat, arma::mat& G);
-RcppExport SEXP _graphml_d2_rs(SEXP rSEXP, SEXP sSEXP, SEXP iSEXP, SEXP jSEXP, SEXP kSEXP, SEXP lSEXP, SEXP psi_matSEXP, SEXP GSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< u_int >::type r(rSEXP);
-    Rcpp::traits::input_parameter< u_int >::type s(sSEXP);
-    Rcpp::traits::input_parameter< u_int >::type i(iSEXP);
-    Rcpp::traits::input_parameter< u_int >::type j(jSEXP);
-    Rcpp::traits::input_parameter< u_int >::type k(kSEXP);
-    Rcpp::traits::input_parameter< u_int >::type l(lSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type psi_mat(psi_matSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type G(GSEXP);
-    rcpp_result_gen = Rcpp::wrap(d2_rs(r, s, i, j, k, l, psi_mat, G));
-    return rcpp_result_gen;
-END_RCPP
-}
-// xi
-double xi(u_int i, u_int j, arma::mat& L);
-RcppExport SEXP _graphml_xi(SEXP iSEXP, SEXP jSEXP, SEXP LSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< u_int >::type i(iSEXP);
-    Rcpp::traits::input_parameter< u_int >::type j(jSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type L(LSEXP);
-    rcpp_result_gen = Rcpp::wrap(xi(i, j, L));
-    return rcpp_result_gen;
-END_RCPP
-}
 // grad_gwish
 arma::vec grad_gwish(arma::mat& psi_mat, Rcpp::List& params);
 RcppExport SEXP _graphml_grad_gwish(SEXP psi_matSEXP, SEXP paramsSEXP) {
@@ -461,46 +273,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat& >::type psi_mat(psi_matSEXP);
     Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
     rcpp_result_gen = Rcpp::wrap(grad_gwish(psi_mat, params));
-    return rcpp_result_gen;
-END_RCPP
-}
-// dpsi_ij
-double dpsi_ij(u_int i, u_int j, arma::mat& psi_mat, Rcpp::List& params);
-RcppExport SEXP _graphml_dpsi_ij(SEXP iSEXP, SEXP jSEXP, SEXP psi_matSEXP, SEXP paramsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< u_int >::type i(iSEXP);
-    Rcpp::traits::input_parameter< u_int >::type j(jSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type psi_mat(psi_matSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(dpsi_ij(i, j, psi_mat, params));
-    return rcpp_result_gen;
-END_RCPP
-}
-// test
-int test();
-RcppExport SEXP _graphml_test() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(test());
-    return rcpp_result_gen;
-END_RCPP
-}
-// dpsi
-double dpsi(u_int r, u_int s, u_int i, u_int j, arma::mat& psi, Rcpp::List& params);
-RcppExport SEXP _graphml_dpsi(SEXP rSEXP, SEXP sSEXP, SEXP iSEXP, SEXP jSEXP, SEXP psiSEXP, SEXP paramsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< u_int >::type r(rSEXP);
-    Rcpp::traits::input_parameter< u_int >::type s(sSEXP);
-    Rcpp::traits::input_parameter< u_int >::type i(iSEXP);
-    Rcpp::traits::input_parameter< u_int >::type j(jSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type psi(psiSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(dpsi(r, s, i, j, psi, params));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -516,66 +288,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// d2psi_ijkl
-double d2psi_ijkl(u_int i, u_int j, u_int k, u_int l, arma::mat& psi, Rcpp::List& params);
-RcppExport SEXP _graphml_d2psi_ijkl(SEXP iSEXP, SEXP jSEXP, SEXP kSEXP, SEXP lSEXP, SEXP psiSEXP, SEXP paramsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< u_int >::type i(iSEXP);
-    Rcpp::traits::input_parameter< u_int >::type j(jSEXP);
-    Rcpp::traits::input_parameter< u_int >::type k(kSEXP);
-    Rcpp::traits::input_parameter< u_int >::type l(lSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type psi(psiSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(d2psi_ijkl(i, j, k, l, psi, params));
-    return rcpp_result_gen;
-END_RCPP
-}
-// d2psi
-double d2psi(u_int r, u_int s, u_int i, u_int j, u_int k, u_int l, arma::mat& psi, Rcpp::List& params);
-RcppExport SEXP _graphml_d2psi(SEXP rSEXP, SEXP sSEXP, SEXP iSEXP, SEXP jSEXP, SEXP kSEXP, SEXP lSEXP, SEXP psiSEXP, SEXP paramsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< u_int >::type r(rSEXP);
-    Rcpp::traits::input_parameter< u_int >::type s(sSEXP);
-    Rcpp::traits::input_parameter< u_int >::type i(iSEXP);
-    Rcpp::traits::input_parameter< u_int >::type j(jSEXP);
-    Rcpp::traits::input_parameter< u_int >::type k(kSEXP);
-    Rcpp::traits::input_parameter< u_int >::type l(lSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type psi(psiSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(d2psi(r, s, i, j, k, l, psi, params));
-    return rcpp_result_gen;
-END_RCPP
-}
-// g
-arma::vec g(arma::mat& psi, Rcpp::List& params);
-RcppExport SEXP _graphml_g(SEXP psiSEXP, SEXP paramsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat& >::type psi(psiSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(g(psi, params));
-    return rcpp_result_gen;
-END_RCPP
-}
-// gg
-double gg(u_int i, u_int j, arma::mat& psi, Rcpp::List& params);
-RcppExport SEXP _graphml_gg(SEXP iSEXP, SEXP jSEXP, SEXP psiSEXP, SEXP paramsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< u_int >::type i(iSEXP);
-    Rcpp::traits::input_parameter< u_int >::type j(jSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type psi(psiSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(gg(i, j, psi, params));
-    return rcpp_result_gen;
-END_RCPP
-}
 // support
 arma::mat support(arma::mat samps, u_int D);
 RcppExport SEXP _graphml_support(SEXP sampsSEXP, SEXP DSEXP) {
@@ -585,19 +297,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type samps(sampsSEXP);
     Rcpp::traits::input_parameter< u_int >::type D(DSEXP);
     rcpp_result_gen = Rcpp::wrap(support(samps, D));
-    return rcpp_result_gen;
-END_RCPP
-}
-// findCandidatePoint
-arma::vec findCandidatePoint(arma::mat data, arma::vec uStar, u_int dim);
-RcppExport SEXP _graphml_findCandidatePoint(SEXP dataSEXP, SEXP uStarSEXP, SEXP dimSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type uStar(uStarSEXP);
-    Rcpp::traits::input_parameter< u_int >::type dim(dimSEXP);
-    rcpp_result_gen = Rcpp::wrap(findCandidatePoint(data, uStar, dim));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -712,15 +411,13 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_graphml_ep_logz", (DL_FUNC) &_graphml_ep_logz, 4},
     {"_graphml_getJT", (DL_FUNC) &_graphml_getJT, 1},
     {"_graphml_log_exp_mc", (DL_FUNC) &_graphml_log_exp_mc, 7},
     {"_graphml_gnorm_c", (DL_FUNC) &_graphml_gnorm_c, 4},
     {"_graphml_log_multi_gamma", (DL_FUNC) &_graphml_log_multi_gamma, 2},
     {"_graphml_log_wishart_norm", (DL_FUNC) &_graphml_log_wishart_norm, 3},
     {"_graphml_gnormJT", (DL_FUNC) &_graphml_gnormJT, 5},
-    {"_graphml_erfcx", (DL_FUNC) &_graphml_erfcx, 1},
-    {"_graphml_trunc_norm_moments", (DL_FUNC) &_graphml_trunc_norm_moments, 4},
-    {"_graphml_ep_logz", (DL_FUNC) &_graphml_ep_logz, 4},
     {"_graphml_lse", (DL_FUNC) &_graphml_lse, 2},
     {"_graphml_matrix2vector", (DL_FUNC) &_graphml_matrix2vector, 2},
     {"_graphml_getFreeElem", (DL_FUNC) &_graphml_getFreeElem, 2},
@@ -730,32 +427,12 @@ static const R_CallMethodDef CallEntries[] = {
     {"_graphml_approxWrapper", (DL_FUNC) &_graphml_approxWrapper, 7},
     {"_graphml_calcMode", (DL_FUNC) &_graphml_calcMode, 5},
     {"_graphml_approx_integral", (DL_FUNC) &_graphml_approx_integral, 4},
-    {"_graphml_chol2vec", (DL_FUNC) &_graphml_chol2vec, 2},
     {"_graphml_create_psi_mat_cpp", (DL_FUNC) &_graphml_create_psi_mat_cpp, 2},
     {"_graphml_psi_cpp", (DL_FUNC) &_graphml_psi_cpp, 2},
     {"_graphml_psi_cpp_mat", (DL_FUNC) &_graphml_psi_cpp_mat, 2},
-    {"_graphml_grad_cpp", (DL_FUNC) &_graphml_grad_cpp, 2},
-    {"_graphml_grad_cpp_mat", (DL_FUNC) &_graphml_grad_cpp_mat, 2},
-    {"_graphml_dpsi_cpp", (DL_FUNC) &_graphml_dpsi_cpp, 4},
-    {"_graphml_dpsi_rsij", (DL_FUNC) &_graphml_dpsi_rsij, 6},
-    {"_graphml_hess_cpp_test", (DL_FUNC) &_graphml_hess_cpp_test, 2},
-    {"_graphml_d2psi_ii", (DL_FUNC) &_graphml_d2psi_ii, 4},
-    {"_graphml_hess_cpp", (DL_FUNC) &_graphml_hess_cpp, 2},
-    {"_graphml_hess_cpp_mat", (DL_FUNC) &_graphml_hess_cpp_mat, 2},
-    {"_graphml_d2", (DL_FUNC) &_graphml_d2, 6},
-    {"_graphml_d2_rs", (DL_FUNC) &_graphml_d2_rs, 8},
-    {"_graphml_xi", (DL_FUNC) &_graphml_xi, 3},
     {"_graphml_grad_gwish", (DL_FUNC) &_graphml_grad_gwish, 2},
-    {"_graphml_dpsi_ij", (DL_FUNC) &_graphml_dpsi_ij, 4},
-    {"_graphml_test", (DL_FUNC) &_graphml_test, 0},
-    {"_graphml_dpsi", (DL_FUNC) &_graphml_dpsi, 6},
     {"_graphml_hess_gwish", (DL_FUNC) &_graphml_hess_gwish, 2},
-    {"_graphml_d2psi_ijkl", (DL_FUNC) &_graphml_d2psi_ijkl, 6},
-    {"_graphml_d2psi", (DL_FUNC) &_graphml_d2psi, 8},
-    {"_graphml_g", (DL_FUNC) &_graphml_g, 2},
-    {"_graphml_gg", (DL_FUNC) &_graphml_gg, 4},
     {"_graphml_support", (DL_FUNC) &_graphml_support, 2},
-    {"_graphml_findCandidatePoint", (DL_FUNC) &_graphml_findCandidatePoint, 3},
     {"_graphml_findAllCandidatePoints", (DL_FUNC) &_graphml_findAllCandidatePoints, 4},
     {"_graphml_createPartitionMap", (DL_FUNC) &_graphml_createPartitionMap, 2},
     {"_graphml_rcpparma_hello_world", (DL_FUNC) &_graphml_rcpparma_hello_world, 0},

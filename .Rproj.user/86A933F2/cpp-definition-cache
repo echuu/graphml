@@ -1,5 +1,43 @@
 [
     {
+        "file": "C:/Users/ericc/Documents/graphml/src/epmgp.cpp",
+        "file_last_write": 1638393335.0,
+        "definitions": [
+            {
+                "usr": "c:@F@erfcx#d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "erfcx(double)",
+                "file": "C:/Users/ericc/Documents/graphml/src/epmgp.cpp",
+                "line": 6,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@trunc_norm_moments#$@N@arma@S@Col>#d#S0_#S0_#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "trunc_norm_moments(arma::vec, arma::vec, arma::vec, arma::vec)",
+                "file": "C:/Users/ericc/Documents/graphml/src/epmgp.cpp",
+                "line": 72,
+                "column": 12
+            },
+            {
+                "usr": "c:@F@ep_logz#$@N@arma@S@Col>#d#$@N@arma@S@Mat>#d#S0_#S0_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "ep_logz(arma::vec, arma::mat, arma::vec, arma::vec)",
+                "file": "C:/Users/ericc/Documents/graphml/src/epmgp.cpp",
+                "line": 318,
+                "column": 8
+            }
+        ]
+    },
+    {
+        "file": "C:/Users/ericc/Documents/graphml/src/epmgp.h",
+        "file_last_write": 1638393055.0,
+        "definitions": []
+    },
+    {
         "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
         "file_last_write": 1638045880.0,
         "definitions": [
@@ -328,42 +366,15 @@
     },
     {
         "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-        "file_last_write": 1638391592.0,
+        "file_last_write": 1638398292.0,
         "definitions": [
-            {
-                "usr": "c:@F@erfcx#d#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "erfcx(double)",
-                "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 78,
-                "column": 8
-            },
-            {
-                "usr": "c:@F@trunc_norm_moments#$@N@arma@S@Col>#d#S0_#S0_#S0_#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "trunc_norm_moments(arma::vec, arma::vec, arma::vec, arma::vec)",
-                "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 144,
-                "column": 12
-            },
-            {
-                "usr": "c:@F@ep_logz#$@N@arma@S@Col>#d#$@N@arma@S@Mat>#d#S0_#S0_#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "ep_logz(arma::vec, arma::mat, arma::vec, arma::vec)",
-                "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 390,
-                "column": 8
-            },
             {
                 "usr": "c:@F@lse#$@N@arma@S@Col>#d#I#",
                 "kind": 6,
                 "parent_name": "",
                 "name": "lse(arma::vec, int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 526,
+                "line": 55,
                 "column": 8
             },
             {
@@ -372,7 +383,7 @@
                 "parent_name": "",
                 "name": "matrix2vector(arma::mat, const bool)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 553,
+                "line": 82,
                 "column": 11
             },
             {
@@ -381,7 +392,7 @@
                 "parent_name": "",
                 "name": "getFreeElem(arma::mat, u_int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 563,
+                "line": 92,
                 "column": 11
             },
             {
@@ -390,7 +401,7 @@
                 "parent_name": "",
                 "name": "getNonFreeElem(arma::mat, u_int, u_int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 576,
+                "line": 105,
                 "column": 11
             },
             {
@@ -399,7 +410,7 @@
                 "parent_name": "",
                 "name": "init_graph(arma::mat &, u_int, arma::mat &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 599,
+                "line": 128,
                 "column": 12
             },
             {
@@ -408,7 +419,7 @@
                 "parent_name": "",
                 "name": "evalPsi(arma::mat, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 651,
+                "line": 180,
                 "column": 11
             },
             {
@@ -417,7 +428,7 @@
                 "parent_name": "",
                 "name": "approxWrapper(arma::mat, arma::vec, arma::vec, u_int, arma::mat, arma::vec, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 671,
+                "line": 199,
                 "column": 8
             },
             {
@@ -426,7 +437,7 @@
                 "parent_name": "",
                 "name": "approxZ(Rcpp::List &, arma::vec, int, int, u_int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 690,
+                "line": 218,
                 "column": 8
             },
             {
@@ -435,7 +446,7 @@
                 "parent_name": "",
                 "name": "calcMode(arma::mat, Rcpp::List &, double, u_int, bool)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 757,
+                "line": 285,
                 "column": 11
             },
             {
@@ -444,7 +455,7 @@
                 "parent_name": "",
                 "name": "approx_integral(u_int, arma::mat &, arma::mat &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 811,
+                "line": 339,
                 "column": 8
             },
             {
@@ -453,7 +464,7 @@
                 "parent_name": "",
                 "name": "chol2vec(arma::mat &, u_int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 889,
+                "line": 415,
                 "column": 11
             },
             {
@@ -462,7 +473,7 @@
                 "parent_name": "",
                 "name": "create_psi_mat_cpp(arma::vec, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 904,
+                "line": 430,
                 "column": 11
             },
             {
@@ -471,7 +482,7 @@
                 "parent_name": "",
                 "name": "psi_cpp(arma::vec &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 974,
+                "line": 499,
                 "column": 8
             },
             {
@@ -480,97 +491,7 @@
                 "parent_name": "",
                 "name": "psi_cpp_mat(arma::mat &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1001,
-                "column": 8
-            },
-            {
-                "usr": "c:@F@grad_cpp#&$@N@arma@S@Col>#d#&I#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "grad_cpp(arma::vec &, Rcpp::List &)",
-                "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1026,
-                "column": 11
-            },
-            {
-                "usr": "c:@F@grad_cpp_mat#&$@N@arma@S@Mat>#d#&I#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "grad_cpp_mat(arma::mat &, Rcpp::List &)",
-                "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1059,
-                "column": 11
-            },
-            {
-                "usr": "c:@F@dpsi_cpp#i#i#&$@N@arma@S@Mat>#d#&I#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "dpsi_cpp(u_int, u_int, arma::mat &, Rcpp::List &)",
-                "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1094,
-                "column": 8
-            },
-            {
-                "usr": "c:@F@dpsi_rsij#i#i#i#i#&$@N@arma@S@Mat>#d#S0_#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "dpsi_rsij(u_int, u_int, u_int, u_int, arma::mat &, arma::mat &)",
-                "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1156,
-                "column": 8
-            },
-            {
-                "usr": "c:@F@hess_cpp_test#&$@N@arma@S@Col>#d#&I#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "hess_cpp_test(arma::vec &, Rcpp::List &)",
-                "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1221,
-                "column": 11
-            },
-            {
-                "usr": "c:@F@d2psi_ii#i#i#i#&$@N@arma@S@Mat>#d#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "d2psi_ii(u_int, u_int, u_int, arma::mat &)",
-                "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1298,
-                "column": 8
-            },
-            {
-                "usr": "c:@F@hess_cpp#&$@N@arma@S@Col>#d#&I#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "hess_cpp(arma::vec &, Rcpp::List &)",
-                "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1318,
-                "column": 11
-            },
-            {
-                "usr": "c:@F@hess_cpp_mat#&$@N@arma@S@Mat>#d#&I#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "hess_cpp_mat(arma::mat &, Rcpp::List &)",
-                "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1385,
-                "column": 11
-            },
-            {
-                "usr": "c:@F@d2#i#i#i#i#&$@N@arma@S@Mat>#d#&I#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "d2(u_int, u_int, u_int, u_int, arma::mat &, Rcpp::List &)",
-                "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1453,
-                "column": 8
-            },
-            {
-                "usr": "c:@F@d2_rs#i#i#i#i#i#i#&$@N@arma@S@Mat>#d#S0_#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "d2_rs(u_int, u_int, u_int, u_int, u_int, u_int, arma::mat &, arma::mat &)",
-                "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1484,
+                "line": 526,
                 "column": 8
             },
             {
@@ -579,7 +500,7 @@
                 "parent_name": "",
                 "name": "xi(u_int, u_int, arma::mat &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1609,
+                "line": 550,
                 "column": 8
             },
             {
@@ -588,7 +509,7 @@
                 "parent_name": "",
                 "name": "grad_gwish(arma::mat &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1617,
+                "line": 557,
                 "column": 11
             },
             {
@@ -597,17 +518,8 @@
                 "parent_name": "",
                 "name": "dpsi_ij(u_int, u_int, arma::mat &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1649,
+                "line": 587,
                 "column": 8
-            },
-            {
-                "usr": "c:@F@test#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "test",
-                "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1697,
-                "column": 5
             },
             {
                 "usr": "c:@F@dpsi#i#i#i#i#&$@N@arma@S@Mat>#d#&I#",
@@ -615,7 +527,7 @@
                 "parent_name": "",
                 "name": "dpsi(u_int, u_int, u_int, u_int, arma::mat &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1709,
+                "line": 635,
                 "column": 8
             },
             {
@@ -624,7 +536,7 @@
                 "parent_name": "",
                 "name": "hess_gwish(arma::mat &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1812,
+                "line": 738,
                 "column": 11
             },
             {
@@ -633,7 +545,7 @@
                 "parent_name": "",
                 "name": "d2psi_ijkl(u_int, u_int, u_int, u_int, arma::mat &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1912,
+                "line": 837,
                 "column": 8
             },
             {
@@ -642,25 +554,7 @@
                 "parent_name": "",
                 "name": "d2psi(u_int, u_int, u_int, u_int, u_int, u_int, arma::mat &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 1933,
-                "column": 8
-            },
-            {
-                "usr": "c:@F@g#&$@N@arma@S@Mat>#d#&I#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "g(arma::mat &, Rcpp::List &)",
-                "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 2129,
-                "column": 11
-            },
-            {
-                "usr": "c:@F@gg#i#i#&$@N@arma@S@Mat>#d#&I#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "gg(u_int, u_int, arma::mat &, Rcpp::List &)",
-                "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 2150,
+                "line": 857,
                 "column": 8
             }
         ]
@@ -672,7 +566,7 @@
     },
     {
         "file": "C:/Users/ericc/Documents/graphml/src/partition.cpp",
-        "file_last_write": 1638384403.0,
+        "file_last_write": 1638398312.0,
         "definitions": [
             {
                 "usr": "c:@F@support#$@N@arma@S@Mat>#d#i#",
@@ -689,7 +583,7 @@
                 "parent_name": "",
                 "name": "findCandidatePoint(arma::mat, arma::vec, u_int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/partition.cpp",
-                "line": 34,
+                "line": 33,
                 "column": 11
             },
             {
@@ -698,7 +592,7 @@
                 "parent_name": "",
                 "name": "findAllCandidatePoints(arma::mat, arma::vec, arma::vec, u_int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/partition.cpp",
-                "line": 58,
+                "line": 57,
                 "column": 36
             },
             {
@@ -707,7 +601,7 @@
                 "parent_name": "",
                 "name": "createPartitionMap(arma::mat, arma::vec)",
                 "file": "C:/Users/ericc/Documents/graphml/src/partition.cpp",
-                "line": 85,
+                "line": 84,
                 "column": 36
             }
         ]
