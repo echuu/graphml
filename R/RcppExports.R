@@ -53,6 +53,10 @@ evalPsi <- function(samps, params) {
     .Call(`_graphml_evalPsi`, samps, params)
 }
 
+approx_v1 <- function(u_df, formula, uStar, data, params) {
+    .Call(`_graphml_approx_v1`, u_df, formula, uStar, data, params)
+}
+
 approxWrapper <- function(data, locs, uStar, D, bounds, leafId, params) {
     .Call(`_graphml_approxWrapper`, data, locs, uStar, D, bounds, leafId, params)
 }
@@ -123,5 +127,13 @@ rwish_c <- function(Ts, b, p) {
 
 rgwish_c <- function(G, Ts, b, p, threshold_c) {
     .Call(`_graphml_rgwish_c`, G, Ts, b, p, threshold_c)
+}
+
+fitTree <- function(x, formula) {
+    .Call(`_graphml_fitTree`, x, formula)
+}
+
+getPartition <- function(tree, supp) {
+    .Call(`_graphml_getPartition`, tree, supp)
 }
 

@@ -35,6 +35,8 @@ J = 2000
 
 samps = graphml::rgw(J, GG)
 samps_psi = graphml::evalPsi(samps, GG)
+
+### TODO: rpart requires a dataframe, so we need column names for this ---------
 u_df_cpp = data.frame(samps_psi)
 # u_df_cpp %>% head
 u_df_names = character(GG$D + 1)
@@ -43,24 +45,61 @@ for (d in 1:GG$D) {
 }
 u_df_names[GG$D + 1] = "psi_u"
 names(u_df_cpp) = u_df_names
+### end of R-dependent chunk ---------------------------------------------------
+
 u_star_cpp = graphml::calcMode(as.matrix(u_df_cpp), GG)
+
+## fit cart
+## get support
+## get partition
+## compute approximation using some wrapper function
+approx_v1(u_df_cpp, psi_u~.,
+          u_star_cpp,
+          samps_psi,
+          GG)
+
+microbenchmark::microbenchmark(r = r(),
+                               cpp = approx_v1(u_df_cpp, psi_u~.,
+                                               u_star_cpp,
+                                               samps_psi,
+                                               GG),
+                               times = 10)
 
 
 library(rpart) # this must be loaded before calling the cpp function
-Rcpp::sourceCpp("R/tools.cpp")
+r = function() {
+  tree = graphml::fitTree(u_df_cpp, psi_u ~.)            ## calls to tools.cpp
+  param_support = graphml::support(samps, GG$D)
+  part = extractPartitionSimple(tree, param_support)
 
-tree = rpart::rpart(psi_u ~ ., u_df_cpp)
-tree = fitTree(u_df_cpp, psi_u ~.)            ## calls to tools.cpp
-part = extractPartitionSimple(tree, param_support)
+  locs = part$locs
+  leaf_id = part$leaf_id
+  bounds = part$partition
+  approxWrapper(samps_psi, unname(tree$where), u_star_cpp, GG$D,
+                bounds, leaf_id, GG)
+}
+
+
+
+
+
+
+
+cpp(u_df_cpp, samps, samps_psi, GG, u_star_cpp)
+
+
+
+
 extractPartition(tree, param_support)
 
 tree = graphml::fitTree(psi_u ~., u_df_cpp)
+
 
 testpart = getPartition(tree,param_support)   ## calls to getPartition.cpp
 
 
 
-cpp(u_df_cpp, samps, samps_psi, GG, u_star_cpp)
+
 
 
 

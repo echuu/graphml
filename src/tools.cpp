@@ -10,28 +10,26 @@
 Rcpp::List fitTree(Rcpp::DataFrame x, Rcpp::Formula formula) {
 
     // Obtain environment containing function
-    Rcpp::Environment base("package:rpart"); 
+    Rcpp::Environment base("package:rpart");
     Rcpp::Environment stats("package:stats");
     // Make function callable from C++
-    Rcpp::Function cart = base["rpart"]; 
+    Rcpp::Function cart = base["rpart"];
     Rcpp::Function model_frame = stats["model.frame"];
     // Call the function and receive its list (confirm?) output
-    Rcpp::DataFrame x_mat = model_frame(Rcpp::_["formula"] = formula, 
+    Rcpp::DataFrame x_mat = model_frame(Rcpp::_["formula"] = formula,
                                         Rcpp::_["data"] = x);
 
     Rcpp::List tree = cart(x_mat);
-
-
 
     return tree;
 } // end fitTree() function
 
 // [[Rcpp::export]]
-std::unordered_map<int, arma::vec> getPartition(Rcpp::List tree, arma::mat supp) {
+Rcpp::List getPartition(Rcpp::List tree, arma::mat supp) {
 
     Rcpp::Environment tmp = Rcpp::Environment::global_env();
     Rcpp::Function f = tmp["extractPartitionSimple"];
-    
+
     Rcpp::List partList = f(tree, supp);
     arma::mat part = partList["partition"];
     // Rcpp::Rcout<< part << std::endl;
@@ -39,7 +37,7 @@ std::unordered_map<int, arma::vec> getPartition(Rcpp::List tree, arma::mat supp)
     int k = leafId.n_elem; // # of leaf nodes
 
     arma::vec locs = partList["locs"];
-    Rcpp::Rcout<< locs << std::endl;    
+    // Rcpp::Rcout<< locs << std::endl;
 
     std::unordered_map<int, arma::vec> partitionMap;
     for (int i = 0; i < k; i++) {
@@ -50,27 +48,15 @@ std::unordered_map<int, arma::vec> getPartition(Rcpp::List tree, arma::mat supp)
     }
 
     // Rcpp::Function unname = tmp["unname"];
-    // Rcpp::Rcout<< unname(tree["where"]) << std::endl;    
+    // Rcpp::Rcout<< unname(tree["where"]) << std::endl;
 
-    return partitionMap;
+    return Rcpp::List::create(Rcpp::Named("locs") = locs,
+						      Rcpp::Named("leafId") = leafId,
+						      Rcpp::Named("partitionMap") = partitionMap
+            );
     // store first column as leaf_id
     // store the remaining columns as the lb/ub of the partition sets
     // create the map that defines the boundary here
-    
+
     // return part;
 } // end getPartition() function
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

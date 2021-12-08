@@ -4,6 +4,6 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 Rcpp::List fitTree(Rcpp::DataFrame x, Rcpp::Formula formula);
-std::unordered_map<int, arma::vec> getPartition(Rcpp::List tree, arma::mat supp);
+Rcpp::List getPartition(Rcpp::List tree, arma::mat supp);
 
 #endif

@@ -171,7 +171,8 @@ extractPartitionSimple = function(u_tree, param_support = NULL) {
   # return(as.matrix(partition_out))
   partition_out = cbind(psi_hat_id$leaf_id, partition)
 
-  return(list(leaf_id = psi_hat_id$leaf_id, partition = t(partition)))
+  return(list(leaf_id = psi_hat_id$leaf_id, partition = t(partition),
+              locs = unname(u_tree$where)))
 
 }
 

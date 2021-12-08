@@ -195,35 +195,32 @@ arma::mat evalPsi(arma::mat samps, Rcpp::List& params) {
 
 
 /* ---------------------  general wrapper function  ------------------------- */
-
-
 // [[Rcpp::export]]
-double approx_v1(Rcpp::DataFrame u_df, Rcpp::Formula formula
-    arma::mat data, arma::mat samps, arma::vec uStar, u_int D,
-	Rcpp::List& params) {
+double approx_v1(Rcpp::DataFrame u_df, Rcpp::Formula formula,
+				 arma::vec uStar,
+				 arma::mat data,
+				 Rcpp::List& params) {
 
-	u_int K = leafId.n_elem;
+	u_int D = params["D"];
 
-    // fit tree
-    Rcpp::List tree = fitTree(u_df, formula);
+	// fit CART model
+	Rcpp::List tree = fitTree(u_df, formula);
+	// get the support
+	arma::mat supp = support(data, D);
 
-    // obtain partition from tree
-    Rcpp::Environment tmp = Rcpp::Environment::global_env();
+	// -------------------------------------------------------------------------
+	Rcpp::Environment tmp = Rcpp::Environment::global_env();
     Rcpp::Function f = tmp["extractPartitionSimple"];
-    
-    arma::mat supp = support(samps, D); 
+
     Rcpp::List partList = f(tree, supp);
     arma::mat part = partList["partition"];
-
-    // extract leafID 
+    // Rcpp::Rcout<< part << std::endl;
     arma::vec leafId = partList["leaf_id"];
     int k = leafId.n_elem; // # of leaf nodes
 
     arma::vec locs = partList["locs"];
-    Rcpp::Rcout<< locs << std::endl;    
+    // Rcpp::Rcout<< locs << std::endl;
 
-
-    // compute bounds
     std::unordered_map<int, arma::vec> partitionMap;
     for (int i = 0; i < k; i++) {
         // add the leaf node's corresponding rectangle into the map
@@ -231,14 +228,22 @@ double approx_v1(Rcpp::DataFrame u_df, Rcpp::Formula formula
         // arma::vec col_d = part[d];
         partitionMap[leaf_i] = part.col(i);
     }
+	// -------------------------------------------------------------------------
+
+	// get leaf_id, locations, partitionMap
+	// Rcpp::List partList = getPartition(tree, supp);
+	// arma::vec leafId = partList["leafId"]; // extract leaf id from partList
+	// arma::vec locs   = partList["locs"];   // extract locations from partList
 
 	std::unordered_map<int, arma::vec> candidates = findAllCandidatePoints(
 		data, locs, uStar, D
 	);
-	// Rcpp::Rcout << "found candidate points" << std::endl;
 
-	return approxZ(params, leafId, candidates, partitionMap, K);
-} // end approxWrapper() function
+	// std::unordered_map<int, arma::vec> boundMap = partitionMap;
+
+	 return approxZ(params, leafId, candidates, partitionMap, k);
+}
+
 
 
 

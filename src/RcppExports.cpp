@@ -182,6 +182,21 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// approx_v1
+double approx_v1(Rcpp::DataFrame u_df, Rcpp::Formula formula, arma::vec uStar, arma::mat data, Rcpp::List& params);
+RcppExport SEXP _graphml_approx_v1(SEXP u_dfSEXP, SEXP formulaSEXP, SEXP uStarSEXP, SEXP dataSEXP, SEXP paramsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type u_df(u_dfSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Formula >::type formula(formulaSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type uStar(uStarSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
+    rcpp_result_gen = Rcpp::wrap(approx_v1(u_df, formula, uStar, data, params));
+    return rcpp_result_gen;
+END_RCPP
+}
 // approxWrapper
 double approxWrapper(arma::mat data, arma::vec locs, arma::vec uStar, u_int D, arma::mat bounds, arma::vec leafId, Rcpp::List& params);
 RcppExport SEXP _graphml_approxWrapper(SEXP dataSEXP, SEXP locsSEXP, SEXP uStarSEXP, SEXP DSEXP, SEXP boundsSEXP, SEXP leafIdSEXP, SEXP paramsSEXP) {
@@ -409,6 +424,30 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// fitTree
+Rcpp::List fitTree(Rcpp::DataFrame x, Rcpp::Formula formula);
+RcppExport SEXP _graphml_fitTree(SEXP xSEXP, SEXP formulaSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::Formula >::type formula(formulaSEXP);
+    rcpp_result_gen = Rcpp::wrap(fitTree(x, formula));
+    return rcpp_result_gen;
+END_RCPP
+}
+// getPartition
+Rcpp::List getPartition(Rcpp::List tree, arma::mat supp);
+RcppExport SEXP _graphml_getPartition(SEXP treeSEXP, SEXP suppSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::List >::type tree(treeSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type supp(suppSEXP);
+    rcpp_result_gen = Rcpp::wrap(getPartition(tree, supp));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_graphml_ep_logz", (DL_FUNC) &_graphml_ep_logz, 4},
@@ -424,6 +463,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_graphml_getNonFreeElem", (DL_FUNC) &_graphml_getNonFreeElem, 3},
     {"_graphml_init_graph", (DL_FUNC) &_graphml_init_graph, 3},
     {"_graphml_evalPsi", (DL_FUNC) &_graphml_evalPsi, 2},
+    {"_graphml_approx_v1", (DL_FUNC) &_graphml_approx_v1, 5},
     {"_graphml_approxWrapper", (DL_FUNC) &_graphml_approxWrapper, 7},
     {"_graphml_calcMode", (DL_FUNC) &_graphml_calcMode, 5},
     {"_graphml_approx_integral", (DL_FUNC) &_graphml_approx_integral, 4},
@@ -442,6 +482,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_graphml_rgw", (DL_FUNC) &_graphml_rgw, 2},
     {"_graphml_rwish_c", (DL_FUNC) &_graphml_rwish_c, 3},
     {"_graphml_rgwish_c", (DL_FUNC) &_graphml_rgwish_c, 5},
+    {"_graphml_fitTree", (DL_FUNC) &_graphml_fitTree, 2},
+    {"_graphml_getPartition", (DL_FUNC) &_graphml_getPartition, 2},
     {NULL, NULL, 0}
 };
 
