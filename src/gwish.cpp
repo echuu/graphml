@@ -5,6 +5,7 @@
 #include "partition.h"
 #include "tools.h"
 #include "epmgp.h"
+#include "gwish.h"
 #include <Rcpp.h>
 #include <cmath>
 #define RCPP_ARMADILLO_RETURN_COLVEC_AS_VECTOR
@@ -17,39 +18,6 @@
 using namespace Rcpp;
 
 /** ------------------------------------------------------------------------ **/
-
-double approxZ(Rcpp::List& params,
-	arma::vec leaf,
-	std::unordered_map<int, arma::vec> candidates,
-	std::unordered_map<int, arma::vec> bounds,
-	u_int K);
-
-double approxWrapper(arma::mat data, arma::vec locs, arma::vec uStar, u_int D,
-	arma::mat bounds, arma::vec leafId, Rcpp::List& params);
-
-
-/** utility functions **/
-arma::vec chol2vec(arma::mat& M, u_int D);
-arma::mat create_psi_mat_cpp(arma::vec u, Rcpp::List& params);
-double xi(u_int i, u_int j, arma::mat& L);
-
-/** ------ objective function evaluation ------- **/
-double psi_cpp_mat(arma::mat& psi_mat, Rcpp::List& params);
-double psi_cpp(arma::vec& u, Rcpp::List& params);
-
-arma::vec calcMode(arma::mat u_df, Rcpp::List& params);
-
-/** ------ updated grad/hess functions for non-diagonal scale matrix ------- **/
-arma::vec grad_gwish(arma::mat& psi, Rcpp::List& params);
-double dpsi_ij(u_int i, u_int j, arma::mat& psi_mat, Rcpp::List& params);
-double dpsi(u_int r, u_int s, u_int i, u_int j,
-	arma::mat& psi, Rcpp::List& params);
-
-arma::mat hess_gwish(arma::mat& psi_mat, Rcpp::List& params);
-double d2psi_ijkl(u_int i, u_int j, u_int k, u_int l,
-	arma::mat& psi, Rcpp::List& params);
-double d2psi(u_int r, u_int s, u_int i, u_int j, u_int k, u_int l,
-	arma::mat& psi, Rcpp::List& params);
 
 
 /** ------------------------------------------------------------------------ **/
@@ -91,9 +59,8 @@ arma::vec matrix2vector(arma::mat m, const bool byrow=false){
 
 
 // [[Rcpp::export]]
-arma::mat getFreeElem(arma::mat G, u_int p) {
-	arma::mat F = G;
-
+arma::mat getFreeElem(arma::umat G, u_int p) {
+	arma::mat F = arma::conv_to<arma::mat>::from(G);
 	for (u_int r = 1; r < p; r++) {
 		for (u_int c = 0; c < r; c++) {
 			F(r, c) = 0;
@@ -104,9 +71,9 @@ arma::mat getFreeElem(arma::mat G, u_int p) {
 
 
 // [[Rcpp::export]]
-arma::mat getNonFreeElem(arma::mat G, u_int p, u_int n_nonfree) {
-	arma::mat F = G;
+arma::mat getNonFreeElem(arma::umat G, u_int p, u_int n_nonfree) {
 
+	arma::mat F = arma::conv_to<arma::mat>::from(G);
 	for (u_int r = 0; r < (p - 1); r++) {
 		for (u_int c = r + 1; c < p; c++) {
 			if (F(r, c) == 0) {
@@ -127,7 +94,7 @@ arma::mat getNonFreeElem(arma::mat G, u_int p, u_int n_nonfree) {
 
 
 // [[Rcpp::export]]
-Rcpp::List init_graph(arma::mat& G, u_int b, arma::mat& V) {
+Rcpp::List init_graph(arma::umat G, u_int b, arma::mat V) {
 	u_int p = G.n_rows;
 	arma::mat P = chol(inv(V));
 	arma::mat P_inv = arma::inv(P);
@@ -135,7 +102,9 @@ Rcpp::List init_graph(arma::mat& G, u_int b, arma::mat& V) {
 	arma::vec free = vectorise(F);            // indicator for free elements
 	arma::uvec free_ids = find(free); // extract indices of the free elements
 	arma::uvec upInd = trimatu_ind(size(G));
-	arma::vec edgeInd = G(upInd);             // indicator for upper diag free
+
+	// indicator for upper diag free
+	arma::vec edgeInd = arma::conv_to<arma::vec>::from(G(upInd));
 	// Rcpp::Rcout << upper_G << std::endl;
 
 	// construct A matrix to compute k_i
@@ -215,6 +184,9 @@ double approx_v1(Rcpp::DataFrame u_df,
 	// get the support
 	arma::mat supp = support(data, D);
 
+	/* extract partition from the rpart object -> see f() function call below;
+	   ideally, we have a separate C++ function that extracts the partition
+	   and turns it into the partitionMap object that we have below. */
 	// -------------------------------------------------------------------------
 	Rcpp::Environment tmp = Rcpp::Environment::global_env();
     Rcpp::Function f = tmp["extractPartitionSimple"];
@@ -233,6 +205,8 @@ double approx_v1(Rcpp::DataFrame u_df,
         partitionMap[leaf_i] = part.col(i);
     }
 	// -------------------------------------------------------------------------
+	/* */
+
 
 	std::unordered_map<int, arma::vec> candidates = findAllCandidatePoints(
 		data, locs, uStar, D
@@ -243,7 +217,7 @@ double approx_v1(Rcpp::DataFrame u_df,
 }
 
 // [[Rcpp::export]]
-double generalApprox(arma::mat& G, u_int b, arma::mat& V, u_int J) {
+double generalApprox(arma::umat G, u_int b, arma::mat V, u_int J) {
 
   // initialize graph object
   Rcpp::List obj = init_graph(G, b, V);

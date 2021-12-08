@@ -39,7 +39,7 @@
     },
     {
         "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-        "file_last_write": 1638045880.0,
+        "file_last_write": 1638999363.0,
         "definitions": [
             {
                 "usr": "c:@F@CheckPointer#*v#",
@@ -47,7 +47,7 @@
                 "parent_name": "",
                 "name": "CheckPointer(void *)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 29,
+                "line": 30,
                 "column": 6
             },
             {
@@ -56,7 +56,7 @@
                 "parent_name": "",
                 "name": "choose(int, int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 40,
+                "line": 41,
                 "column": 5
             },
             {
@@ -65,7 +65,7 @@
                 "parent_name": "",
                 "name": "numeric(const void *, const void *)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 52,
+                "line": 53,
                 "column": 5
             },
             {
@@ -74,7 +74,7 @@
                 "parent_name": "",
                 "name": "LPGraph",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 60,
+                "line": 61,
                 "column": 22
             },
             {
@@ -83,7 +83,7 @@
                 "parent_name": "",
                 "name": "Graph",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 62,
+                "line": 63,
                 "column": 7
             },
             {
@@ -92,7 +92,7 @@
                 "parent_name": "",
                 "name": "LPSectionGraph",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 142,
+                "line": 143,
                 "column": 29
             },
             {
@@ -101,7 +101,7 @@
                 "parent_name": "",
                 "name": "SectionGraph",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 144,
+                "line": 145,
                 "column": 7
             },
             {
@@ -110,7 +110,7 @@
                 "parent_name": "",
                 "name": "LPEliminationGraph",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 164,
+                "line": 165,
                 "column": 33
             },
             {
@@ -119,7 +119,7 @@
                 "parent_name": "",
                 "name": "EliminationGraph",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 166,
+                "line": 167,
                 "column": 7
             },
             {
@@ -128,7 +128,7 @@
                 "parent_name": "",
                 "name": "MakeFillInGraph(LPGraph)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 187,
+                "line": 188,
                 "column": 9
             },
             {
@@ -137,7 +137,7 @@
                 "parent_name": "Graph",
                 "name": "InitGraph(int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 398,
+                "line": 399,
                 "column": 13
             },
             {
@@ -146,7 +146,7 @@
                 "parent_name": "Graph",
                 "name": "ReadMss(arma::umat)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 459,
+                "line": 460,
                 "column": 12
             },
             {
@@ -155,7 +155,7 @@
                 "parent_name": "Graph",
                 "name": "InitGraphFromMss",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 487,
+                "line": 488,
                 "column": 13
             },
             {
@@ -164,7 +164,7 @@
                 "parent_name": "Graph",
                 "name": "GenerateCliques(int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 513,
+                "line": 514,
                 "column": 13
             },
             {
@@ -173,7 +173,7 @@
                 "parent_name": "Graph",
                 "name": "CheckCliques",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 620,
+                "line": 621,
                 "column": 12
             },
             {
@@ -182,7 +182,7 @@
                 "parent_name": "Graph",
                 "name": "IsClique(int *, int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 642,
+                "line": 643,
                 "column": 12
             },
             {
@@ -191,7 +191,7 @@
                 "parent_name": "Graph",
                 "name": "GenerateSeparators",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 660,
+                "line": 661,
                 "column": 13
             },
             {
@@ -200,7 +200,7 @@
                 "parent_name": "Graph",
                 "name": "AttachLabel(int, int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 690,
+                "line": 691,
                 "column": 13
             },
             {
@@ -209,7 +209,7 @@
                 "parent_name": "Graph",
                 "name": "GenerateLabels",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 709,
+                "line": 710,
                 "column": 13
             },
             {
@@ -218,7 +218,7 @@
                 "parent_name": "Graph",
                 "name": "GenerateAllCliques",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 744,
+                "line": 745,
                 "column": 12
             },
             {
@@ -227,7 +227,7 @@
                 "parent_name": "Graph",
                 "name": "SearchVertex",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 940,
+                "line": 941,
                 "column": 12
             },
             {
@@ -236,7 +236,7 @@
                 "parent_name": "Graph",
                 "name": "IsDecomposable",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 980,
+                "line": 981,
                 "column": 12
             },
             {
@@ -245,7 +245,7 @@
                 "parent_name": "Graph",
                 "name": "InitConnectedComponents",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 985,
+                "line": 986,
                 "column": 13
             },
             {
@@ -254,7 +254,7 @@
                 "parent_name": "Graph",
                 "name": "GetMPSubgraphs",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 1026,
+                "line": 1027,
                 "column": 13
             },
             {
@@ -263,7 +263,7 @@
                 "parent_name": "SectionGraph",
                 "name": "IsChain(int, int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 1217,
+                "line": 1218,
                 "column": 19
             },
             {
@@ -272,7 +272,7 @@
                 "parent_name": "EliminationGraph",
                 "name": "EliminateVertex(int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 1254,
+                "line": 1255,
                 "column": 24
             },
             {
@@ -281,7 +281,7 @@
                 "parent_name": "EliminationGraph",
                 "name": "SearchVertex",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 1288,
+                "line": 1289,
                 "column": 23
             },
             {
@@ -290,7 +290,7 @@
                 "parent_name": "",
                 "name": "getJT(arma::umat)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 1336,
+                "line": 1337,
                 "column": 12
             },
             {
@@ -299,7 +299,7 @@
                 "parent_name": "",
                 "name": "getJT_C(arma::umat, int &, int &, int &, int &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 1387,
+                "line": 1388,
                 "column": 6
             },
             {
@@ -308,7 +308,7 @@
                 "parent_name": "",
                 "name": "log_exp_mc(arma::umat, arma::uvec, unsigned int, arma::mat, unsigned int, unsigned int, unsigned int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 1431,
+                "line": 1432,
                 "column": 11
             },
             {
@@ -317,7 +317,7 @@
                 "parent_name": "",
                 "name": "gnorm_c(arma::umat, double, arma::mat, unsigned int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 1510,
+                "line": 1511,
                 "column": 8
             },
             {
@@ -326,7 +326,7 @@
                 "parent_name": "",
                 "name": "log_multi_gamma(int, double)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 1581,
+                "line": 1582,
                 "column": 8
             },
             {
@@ -335,7 +335,7 @@
                 "parent_name": "",
                 "name": "log_wishart_norm(int, double, arma::mat)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 1593,
+                "line": 1594,
                 "column": 8
             },
             {
@@ -344,7 +344,7 @@
                 "parent_name": "",
                 "name": "gnormJT(arma::umat, arma::umat, double, arma::mat, int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gnormJT.cpp",
-                "line": 1600,
+                "line": 1601,
                 "column": 8
             }
         ]
@@ -366,7 +366,7 @@
     },
     {
         "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-        "file_last_write": 1638944388.0,
+        "file_last_write": 1639001483.0,
         "definitions": [
             {
                 "usr": "c:@F@lse#$@N@arma@S@Col>#d#I#",
@@ -374,7 +374,7 @@
                 "parent_name": "",
                 "name": "lse(arma::vec, int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 57,
+                "line": 25,
                 "column": 8
             },
             {
@@ -383,34 +383,34 @@
                 "parent_name": "",
                 "name": "matrix2vector(arma::mat, const bool)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 84,
+                "line": 52,
                 "column": 11
             },
             {
-                "usr": "c:@F@getFreeElem#$@N@arma@S@Mat>#d#i#",
+                "usr": "c:@F@getFreeElem#$@N@arma@S@Mat>#i#i#",
                 "kind": 6,
                 "parent_name": "",
-                "name": "getFreeElem(arma::mat, u_int)",
+                "name": "getFreeElem(arma::umat, u_int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 94,
+                "line": 62,
                 "column": 11
             },
             {
-                "usr": "c:@F@getNonFreeElem#$@N@arma@S@Mat>#d#i#i#",
+                "usr": "c:@F@getNonFreeElem#$@N@arma@S@Mat>#i#i#i#",
                 "kind": 6,
                 "parent_name": "",
-                "name": "getNonFreeElem(arma::mat, u_int, u_int)",
+                "name": "getNonFreeElem(arma::umat, u_int, u_int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 107,
+                "line": 74,
                 "column": 11
             },
             {
-                "usr": "c:@F@init_graph#&$@N@arma@S@Mat>#d#i#S0_#",
+                "usr": "c:@F@init_graph#$@N@arma@S@Mat>#i#i#$@N@arma@S@Mat>#d#",
                 "kind": 6,
                 "parent_name": "",
-                "name": "init_graph(arma::mat &, u_int, arma::mat &)",
+                "name": "init_graph(arma::umat, u_int, arma::mat)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 130,
+                "line": 97,
                 "column": 12
             },
             {
@@ -419,7 +419,7 @@
                 "parent_name": "",
                 "name": "evalPsi(arma::mat, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 187,
+                "line": 156,
                 "column": 11
             },
             {
@@ -428,16 +428,16 @@
                 "parent_name": "",
                 "name": "approx_v1(Rcpp::DataFrame, arma::vec, arma::mat, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 206,
+                "line": 175,
                 "column": 8
             },
             {
-                "usr": "c:@F@generalApprox#&$@N@arma@S@Mat>#d#i#S0_#i#",
+                "usr": "c:@F@generalApprox#$@N@arma@S@Mat>#i#i#$@N@arma@S@Mat>#d#i#",
                 "kind": 6,
                 "parent_name": "",
-                "name": "generalApprox(arma::mat &, u_int, arma::mat &, u_int)",
+                "name": "generalApprox(arma::umat, u_int, arma::mat, u_int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 246,
+                "line": 220,
                 "column": 8
             },
             {
@@ -446,7 +446,7 @@
                 "parent_name": "",
                 "name": "approxWrapper(arma::mat, arma::vec, arma::vec, u_int, arma::mat, arma::vec, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 267,
+                "line": 241,
                 "column": 8
             },
             {
@@ -455,7 +455,7 @@
                 "parent_name": "",
                 "name": "approxZ(Rcpp::List &, arma::vec, int, int, u_int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 286,
+                "line": 260,
                 "column": 8
             },
             {
@@ -464,7 +464,7 @@
                 "parent_name": "",
                 "name": "calcMode(arma::mat, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 353,
+                "line": 327,
                 "column": 11
             },
             {
@@ -473,7 +473,7 @@
                 "parent_name": "",
                 "name": "approx_integral(u_int, arma::mat &, arma::mat &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 410,
+                "line": 384,
                 "column": 8
             },
             {
@@ -482,7 +482,7 @@
                 "parent_name": "",
                 "name": "chol2vec(arma::mat &, u_int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 486,
+                "line": 460,
                 "column": 11
             },
             {
@@ -491,7 +491,7 @@
                 "parent_name": "",
                 "name": "create_psi_mat_cpp(arma::vec, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 501,
+                "line": 475,
                 "column": 11
             },
             {
@@ -500,7 +500,7 @@
                 "parent_name": "",
                 "name": "psi_cpp(arma::vec &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 570,
+                "line": 544,
                 "column": 8
             },
             {
@@ -509,7 +509,7 @@
                 "parent_name": "",
                 "name": "psi_cpp_mat(arma::mat &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 597,
+                "line": 571,
                 "column": 8
             },
             {
@@ -518,7 +518,7 @@
                 "parent_name": "",
                 "name": "xi(u_int, u_int, arma::mat &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 621,
+                "line": 595,
                 "column": 8
             },
             {
@@ -527,7 +527,7 @@
                 "parent_name": "",
                 "name": "grad_gwish(arma::mat &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 628,
+                "line": 602,
                 "column": 11
             },
             {
@@ -536,7 +536,7 @@
                 "parent_name": "",
                 "name": "dpsi_ij(u_int, u_int, arma::mat &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 658,
+                "line": 632,
                 "column": 8
             },
             {
@@ -545,7 +545,7 @@
                 "parent_name": "",
                 "name": "dpsi(u_int, u_int, u_int, u_int, arma::mat &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 706,
+                "line": 680,
                 "column": 8
             },
             {
@@ -554,7 +554,7 @@
                 "parent_name": "",
                 "name": "hess_gwish(arma::mat &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 809,
+                "line": 783,
                 "column": 11
             },
             {
@@ -563,7 +563,7 @@
                 "parent_name": "",
                 "name": "d2psi_ijkl(u_int, u_int, u_int, u_int, arma::mat &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 908,
+                "line": 882,
                 "column": 8
             },
             {
@@ -572,14 +572,14 @@
                 "parent_name": "",
                 "name": "d2psi(u_int, u_int, u_int, u_int, u_int, u_int, arma::mat &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 928,
+                "line": 902,
                 "column": 8
             }
         ]
     },
     {
         "file": "C:/Users/ericc/Documents/graphml/src/gwish.h",
-        "file_last_write": 1630689047.0,
+        "file_last_write": 1638999478.0,
         "definitions": []
     },
     {
@@ -711,7 +711,7 @@
     },
     {
         "file": "C:/Users/ericc/Documents/graphml/src/tools.cpp",
-        "file_last_write": 1638940689.0,
+        "file_last_write": 1638996597.0,
         "definitions": [
             {
                 "usr": "c:@F@createDfName#i#",
@@ -737,7 +737,7 @@
                 "parent_name": "",
                 "name": "fitTree(Rcpp::DataFrame, Rcpp::Formula)",
                 "file": "C:/Users/ericc/Documents/graphml/src/tools.cpp",
-                "line": 33,
+                "line": 37,
                 "column": 12
             },
             {
@@ -746,7 +746,7 @@
                 "parent_name": "",
                 "name": "getPartition(Rcpp::List, arma::mat)",
                 "file": "C:/Users/ericc/Documents/graphml/src/tools.cpp",
-                "line": 51,
+                "line": 57,
                 "column": 12
             }
         ]

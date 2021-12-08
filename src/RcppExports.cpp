@@ -133,24 +133,24 @@ BEGIN_RCPP
 END_RCPP
 }
 // getFreeElem
-arma::mat getFreeElem(arma::mat G, u_int p);
+arma::mat getFreeElem(arma::umat G, u_int p);
 RcppExport SEXP _graphml_getFreeElem(SEXP GSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type G(GSEXP);
+    Rcpp::traits::input_parameter< arma::umat >::type G(GSEXP);
     Rcpp::traits::input_parameter< u_int >::type p(pSEXP);
     rcpp_result_gen = Rcpp::wrap(getFreeElem(G, p));
     return rcpp_result_gen;
 END_RCPP
 }
 // getNonFreeElem
-arma::mat getNonFreeElem(arma::mat G, u_int p, u_int n_nonfree);
+arma::mat getNonFreeElem(arma::umat G, u_int p, u_int n_nonfree);
 RcppExport SEXP _graphml_getNonFreeElem(SEXP GSEXP, SEXP pSEXP, SEXP n_nonfreeSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type G(GSEXP);
+    Rcpp::traits::input_parameter< arma::umat >::type G(GSEXP);
     Rcpp::traits::input_parameter< u_int >::type p(pSEXP);
     Rcpp::traits::input_parameter< u_int >::type n_nonfree(n_nonfreeSEXP);
     rcpp_result_gen = Rcpp::wrap(getNonFreeElem(G, p, n_nonfree));
@@ -158,14 +158,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // init_graph
-Rcpp::List init_graph(arma::mat& G, u_int b, arma::mat& V);
+Rcpp::List init_graph(arma::umat G, u_int b, arma::mat V);
 RcppExport SEXP _graphml_init_graph(SEXP GSEXP, SEXP bSEXP, SEXP VSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat& >::type G(GSEXP);
+    Rcpp::traits::input_parameter< arma::umat >::type G(GSEXP);
     Rcpp::traits::input_parameter< u_int >::type b(bSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type V(VSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type V(VSEXP);
     rcpp_result_gen = Rcpp::wrap(init_graph(G, b, V));
     return rcpp_result_gen;
 END_RCPP
@@ -197,14 +197,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // generalApprox
-double generalApprox(arma::mat& G, u_int b, arma::mat& V, u_int J);
+double generalApprox(arma::umat G, u_int b, arma::mat V, u_int J);
 RcppExport SEXP _graphml_generalApprox(SEXP GSEXP, SEXP bSEXP, SEXP VSEXP, SEXP JSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat& >::type G(GSEXP);
+    Rcpp::traits::input_parameter< arma::umat >::type G(GSEXP);
     Rcpp::traits::input_parameter< u_int >::type b(bSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type V(VSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type V(VSEXP);
     Rcpp::traits::input_parameter< u_int >::type J(JSEXP);
     rcpp_result_gen = Rcpp::wrap(generalApprox(G, b, V, J));
     return rcpp_result_gen;

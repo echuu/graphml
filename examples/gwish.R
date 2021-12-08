@@ -35,8 +35,33 @@ approx_v1(u_df_cpp,
           u_star_cpp,
           samps_psi,
           GG)
+
 set.seed(1)
 generalApprox(G, b, V, J)
+BDgraph::gnorm(G, b, V, J)
+graphml::gnorm_c(G, b, V, J)
+graphml::gnormJT(G, getEdgeMat(G), b, V, J)
+
+
+
+#### for donald: ---------------------------------------------------------------
+## these are in approx_v1() function already; ideally these are replaced by
+## pure C++ implementations rather than having to call back to R
+tree = graphml::fitTree(u_df_cpp, psi_u ~.)
+supp = support(samps, GG$D); ## already implemented
+partList = extractPartitionSimple(tree, supp)
+
+partList$leaf_id
+partList$locs # location of each of the samples *in the order u_df_cpp*
+partList$partition # partition sets *in the order of leaf_id*
+
+#### for donald: ---------------------------------------------------------------
+
+microbenchmark::microbenchmark(r = old(G, b, V, J),
+                               cpp = generalApprox(G, b, V, J),
+                               times = 10)
+
+
 
 
 ### TODO: rpart requires a dataframe, so we need column names for this --------
@@ -64,6 +89,18 @@ samps_psi %>% head
 
 library(rpart) # this must be loaded before calling the cpp function
 library(dplyr)
+
+old = function(G, b, V, J) {
+  GG = graphml::init_graph(G, b, V)
+  samps = graphml::rgw(J, GG)
+  u_samps = samps%>% data.frame
+  # u_samps %>% head
+  psi = graphml::psi_cpp
+  u_df = hybridml::preprocess(u_samps, GG$D, GG) # J x (D_u + 1)
+  u_star = graphml::calcMode(as.matrix(u_df), GG)
+  h(u_df, samps, GG, GG$D, u_0 = u_star)
+}
+
 r = function() {
   tree = graphml::fitTree(u_df_cpp, psi_u ~.)            ## calls to tools.cpp
   param_support = graphml::support(samps, GG$D)
@@ -89,10 +126,7 @@ cpp(u_df_cpp, samps, samps_psi, GG, u_star_cpp)
 
 extractPartition(tree, param_support)
 
-tree = graphml::fitTree(psi_u ~., u_df_cpp)
 
-
-testpart = getPartition(tree,param_support)   ## calls to getPartition.cpp
 
 
 
@@ -148,14 +182,7 @@ bounds = u_partition %>% dplyr::arrange(leaf_id) %>%
 
 
 ##### old implementation
-GG = graphml::init_graph(G, b, V)
-samps = rGW(J, GG)
-u_samps = samps$Psi_free %>% data.frame
-# u_samps %>% head
-psi = graphml::psi_cpp
-u_df = hybridml::preprocess(u_samps, GG$D, GG) # J x (D_u + 1)
-u_star = graphml::calcMode(as.matrix(u_df), GG)
-h(u_df, GG, GG$D, u_0 = u_star)
+
 
 BDgraph::gnorm(G, b, V, 1000)
 

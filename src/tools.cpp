@@ -28,7 +28,11 @@ Rcpp::DataFrame mat2df(arma::mat x, Rcpp::StringVector nameVec) {
     return x_df;
 } // end of mat2df() function
 
-
+/*
+    fitTree(): returns an tree object, makes call to rpart::rpart() --
+    this eventually will need to be ported to C++, waiting for Donald to finish
+    that implementation
+*/
 // [[Rcpp::export]]
 Rcpp::List fitTree(Rcpp::DataFrame x, Rcpp::Formula formula) {
 
@@ -47,6 +51,8 @@ Rcpp::List fitTree(Rcpp::DataFrame x, Rcpp::Formula formula) {
     return tree;
 } // end fitTree() function
 
+/* TODO: I dont' think we use this function anymore because I stuck it
+directly into the approx_v1() function -- */
 // [[Rcpp::export]]
 Rcpp::List getPartition(Rcpp::List tree, arma::mat supp) {
 
