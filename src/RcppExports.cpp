@@ -183,17 +183,30 @@ BEGIN_RCPP
 END_RCPP
 }
 // approx_v1
-double approx_v1(Rcpp::DataFrame u_df, Rcpp::Formula formula, arma::vec uStar, arma::mat data, Rcpp::List& params);
-RcppExport SEXP _graphml_approx_v1(SEXP u_dfSEXP, SEXP formulaSEXP, SEXP uStarSEXP, SEXP dataSEXP, SEXP paramsSEXP) {
+double approx_v1(Rcpp::DataFrame u_df, arma::vec uStar, arma::mat data, Rcpp::List& params);
+RcppExport SEXP _graphml_approx_v1(SEXP u_dfSEXP, SEXP uStarSEXP, SEXP dataSEXP, SEXP paramsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< Rcpp::DataFrame >::type u_df(u_dfSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Formula >::type formula(formulaSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type uStar(uStarSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
     Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(approx_v1(u_df, formula, uStar, data, params));
+    rcpp_result_gen = Rcpp::wrap(approx_v1(u_df, uStar, data, params));
+    return rcpp_result_gen;
+END_RCPP
+}
+// generalApprox
+double generalApprox(arma::mat& G, u_int b, arma::mat& V, u_int J);
+RcppExport SEXP _graphml_generalApprox(SEXP GSEXP, SEXP bSEXP, SEXP VSEXP, SEXP JSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type G(GSEXP);
+    Rcpp::traits::input_parameter< u_int >::type b(bSEXP);
+    Rcpp::traits::input_parameter< arma::mat& >::type V(VSEXP);
+    Rcpp::traits::input_parameter< u_int >::type J(JSEXP);
+    rcpp_result_gen = Rcpp::wrap(generalApprox(G, b, V, J));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -215,17 +228,14 @@ BEGIN_RCPP
 END_RCPP
 }
 // calcMode
-arma::vec calcMode(arma::mat u_df, Rcpp::List& params, double tol, u_int maxSteps, bool VERBOSE);
-RcppExport SEXP _graphml_calcMode(SEXP u_dfSEXP, SEXP paramsSEXP, SEXP tolSEXP, SEXP maxStepsSEXP, SEXP VERBOSESEXP) {
+arma::vec calcMode(arma::mat u_df, Rcpp::List& params);
+RcppExport SEXP _graphml_calcMode(SEXP u_dfSEXP, SEXP paramsSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< arma::mat >::type u_df(u_dfSEXP);
     Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
-    Rcpp::traits::input_parameter< double >::type tol(tolSEXP);
-    Rcpp::traits::input_parameter< u_int >::type maxSteps(maxStepsSEXP);
-    Rcpp::traits::input_parameter< bool >::type VERBOSE(VERBOSESEXP);
-    rcpp_result_gen = Rcpp::wrap(calcMode(u_df, params, tol, maxSteps, VERBOSE));
+    rcpp_result_gen = Rcpp::wrap(calcMode(u_df, params));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -424,6 +434,29 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// createDfName
+Rcpp::StringVector createDfName(unsigned int D);
+RcppExport SEXP _graphml_createDfName(SEXP DSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< unsigned int >::type D(DSEXP);
+    rcpp_result_gen = Rcpp::wrap(createDfName(D));
+    return rcpp_result_gen;
+END_RCPP
+}
+// mat2df
+Rcpp::DataFrame mat2df(arma::mat x, Rcpp::StringVector nameVec);
+RcppExport SEXP _graphml_mat2df(SEXP xSEXP, SEXP nameVecSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type x(xSEXP);
+    Rcpp::traits::input_parameter< Rcpp::StringVector >::type nameVec(nameVecSEXP);
+    rcpp_result_gen = Rcpp::wrap(mat2df(x, nameVec));
+    return rcpp_result_gen;
+END_RCPP
+}
 // fitTree
 Rcpp::List fitTree(Rcpp::DataFrame x, Rcpp::Formula formula);
 RcppExport SEXP _graphml_fitTree(SEXP xSEXP, SEXP formulaSEXP) {
@@ -463,9 +496,10 @@ static const R_CallMethodDef CallEntries[] = {
     {"_graphml_getNonFreeElem", (DL_FUNC) &_graphml_getNonFreeElem, 3},
     {"_graphml_init_graph", (DL_FUNC) &_graphml_init_graph, 3},
     {"_graphml_evalPsi", (DL_FUNC) &_graphml_evalPsi, 2},
-    {"_graphml_approx_v1", (DL_FUNC) &_graphml_approx_v1, 5},
+    {"_graphml_approx_v1", (DL_FUNC) &_graphml_approx_v1, 4},
+    {"_graphml_generalApprox", (DL_FUNC) &_graphml_generalApprox, 4},
     {"_graphml_approxWrapper", (DL_FUNC) &_graphml_approxWrapper, 7},
-    {"_graphml_calcMode", (DL_FUNC) &_graphml_calcMode, 5},
+    {"_graphml_calcMode", (DL_FUNC) &_graphml_calcMode, 2},
     {"_graphml_approx_integral", (DL_FUNC) &_graphml_approx_integral, 4},
     {"_graphml_create_psi_mat_cpp", (DL_FUNC) &_graphml_create_psi_mat_cpp, 2},
     {"_graphml_psi_cpp", (DL_FUNC) &_graphml_psi_cpp, 2},
@@ -482,6 +516,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_graphml_rgw", (DL_FUNC) &_graphml_rgw, 2},
     {"_graphml_rwish_c", (DL_FUNC) &_graphml_rwish_c, 3},
     {"_graphml_rgwish_c", (DL_FUNC) &_graphml_rgwish_c, 5},
+    {"_graphml_createDfName", (DL_FUNC) &_graphml_createDfName, 1},
+    {"_graphml_mat2df", (DL_FUNC) &_graphml_mat2df, 2},
     {"_graphml_fitTree", (DL_FUNC) &_graphml_fitTree, 2},
     {"_graphml_getPartition", (DL_FUNC) &_graphml_getPartition, 2},
     {NULL, NULL, 0}

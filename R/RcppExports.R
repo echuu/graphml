@@ -53,16 +53,20 @@ evalPsi <- function(samps, params) {
     .Call(`_graphml_evalPsi`, samps, params)
 }
 
-approx_v1 <- function(u_df, formula, uStar, data, params) {
-    .Call(`_graphml_approx_v1`, u_df, formula, uStar, data, params)
+approx_v1 <- function(u_df, uStar, data, params) {
+    .Call(`_graphml_approx_v1`, u_df, uStar, data, params)
+}
+
+generalApprox <- function(G, b, V, J) {
+    .Call(`_graphml_generalApprox`, G, b, V, J)
 }
 
 approxWrapper <- function(data, locs, uStar, D, bounds, leafId, params) {
     .Call(`_graphml_approxWrapper`, data, locs, uStar, D, bounds, leafId, params)
 }
 
-calcMode <- function(u_df, params, tol = 1e-8, maxSteps = 10L, VERBOSE = FALSE) {
-    .Call(`_graphml_calcMode`, u_df, params, tol, maxSteps, VERBOSE)
+calcMode <- function(u_df, params) {
+    .Call(`_graphml_calcMode`, u_df, params)
 }
 
 approx_integral <- function(K, psi_df, bounds, params) {
@@ -127,6 +131,14 @@ rwish_c <- function(Ts, b, p) {
 
 rgwish_c <- function(G, Ts, b, p, threshold_c) {
     .Call(`_graphml_rgwish_c`, G, Ts, b, p, threshold_c)
+}
+
+createDfName <- function(D) {
+    .Call(`_graphml_createDfName`, D)
+}
+
+mat2df <- function(x, nameVec) {
+    .Call(`_graphml_mat2df`, x, nameVec)
 }
 
 fitTree <- function(x, formula) {

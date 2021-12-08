@@ -2,14 +2,15 @@
 
 # source("C:/Users/ericc/Documents/hybridml/examples/gwish/gwish_density.R")
 # library(BDgraph)
-library(dplyr)
 
 ## import R helper functions that will eventually be ported to C++
 ## contains h(), cpp(), and functions that extract the partition in matrix form
 ## from the rpart objects
+#### THESE ALL NEED TO BE LOADED INTO THE GLOBAL ENVIRONMENT
 source("examples/helpers.R")
 library(graphml)
 library(rpart)
+library(dplyr)
 
 
 set.seed(1)
@@ -22,33 +23,23 @@ G = matrix(c(1,1,0,1,1,
 b = 300
 V = BDgraph::rgwish(1, G, b, diag(p))
 
-
-
-# GG = initGeneralGraph(G, b, V)
-# P = chol(solve(V))
-
-# library(BDgraph)
-
 ##### new implementation
 GG = graphml::init_graph(G, b, V)
+set.seed(1)
 J = 2000
-
 samps = graphml::rgw(J, GG)
 samps_psi = graphml::evalPsi(samps, GG)
+u_df_cpp = graphml::mat2df(samps_psi, GG$df_name)
+u_star_cpp = graphml::calcMode(samps_psi, GG)
+approx_v1(u_df_cpp,
+          u_star_cpp,
+          samps_psi,
+          GG)
+set.seed(1)
+generalApprox(G, b, V, J)
 
-### TODO: rpart requires a dataframe, so we need column names for this ---------
-u_df_cpp = data.frame(samps_psi)
-# u_df_cpp %>% head
-u_df_names = character(GG$D + 1)
-for (d in 1:GG$D) {
-  u_df_names[d] = paste("u", d, sep = '')
-}
-u_df_names[GG$D + 1] = "psi_u"
-names(u_df_cpp) = u_df_names
-### end of R-dependent chunk ---------------------------------------------------
 
-u_star_cpp = graphml::calcMode(as.matrix(u_df_cpp), GG)
-
+### TODO: rpart requires a dataframe, so we need column names for this --------
 ## fit cart
 ## get support
 ## get partition
@@ -65,8 +56,14 @@ microbenchmark::microbenchmark(r = r(),
                                                GG),
                                times = 10)
 
+test_mat = model.matrix(samps_psi)
+samps_psi %>% head
+
+
+
 
 library(rpart) # this must be loaded before calling the cpp function
+library(dplyr)
 r = function() {
   tree = graphml::fitTree(u_df_cpp, psi_u ~.)            ## calls to tools.cpp
   param_support = graphml::support(samps, GG$D)
@@ -78,7 +75,7 @@ r = function() {
   approxWrapper(samps_psi, unname(tree$where), u_star_cpp, GG$D,
                 bounds, leaf_id, GG)
 }
-
+r()
 
 
 

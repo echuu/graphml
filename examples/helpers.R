@@ -71,7 +71,20 @@ l1_norm = function(u, u_0) {
   sum(abs(u - u_0))
 }
 
+createDfName_R = function(param_dim) {
+  name_vec = character(param_dim + 1)
+  for (d in 1:param_dim) {
+    name_vec[d] = paste("u", d, sep = '')
+  }
+  name_vec[param_dim + 1] = "psi_u"
+  return(name_vec)
+}
 
+mat2df_R = function(u_mat, name_vec) {
+  df = data.frame(u_mat)
+  names(df) = name_vec
+  return(df)
+}
 
 #### extractPartition() --------------------------------------------------------
 extractPartitionSimple = function(u_tree, param_support = NULL) {

@@ -7,6 +7,29 @@
 
 
 // [[Rcpp::export]]
+Rcpp::StringVector createDfName(unsigned int D) {
+    Rcpp::Environment env = Rcpp::Environment::global_env();
+    Rcpp::Function createDfName_R = env["createDfName_R"];
+    Rcpp::StringVector nameVec = createDfName_R(D);
+    return nameVec;
+}
+
+
+// [[Rcpp::export]]
+Rcpp::DataFrame mat2df(arma::mat x, Rcpp::StringVector nameVec) {
+
+    // convert x (J x (D+1)) a matrix to
+    // x_df: with colnames: u1, u2, ... , uD, psi_u
+    Rcpp::Environment env = Rcpp::Environment::global_env();
+    Rcpp::Function mat2df_R = env["mat2df_R"];
+    // Rcpp::StringVector nameVec = params["u_df_names"];
+    Rcpp::DataFrame x_df = mat2df_R(x, nameVec);
+
+    return x_df;
+} // end of mat2df() function
+
+
+// [[Rcpp::export]]
 Rcpp::List fitTree(Rcpp::DataFrame x, Rcpp::Formula formula) {
 
     // Obtain environment containing function
@@ -51,8 +74,7 @@ Rcpp::List getPartition(Rcpp::List tree, arma::mat supp) {
     // Rcpp::Rcout<< unname(tree["where"]) << std::endl;
 
     return Rcpp::List::create(Rcpp::Named("locs") = locs,
-						      Rcpp::Named("leafId") = leafId,
-						      Rcpp::Named("partitionMap") = partitionMap
+						      Rcpp::Named("leafId") = leafId
             );
     // store first column as leaf_id
     // store the remaining columns as the lb/ub of the partition sets

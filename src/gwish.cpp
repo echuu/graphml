@@ -37,6 +37,7 @@ double xi(u_int i, u_int j, arma::mat& L);
 double psi_cpp_mat(arma::mat& psi_mat, Rcpp::List& params);
 double psi_cpp(arma::vec& u, Rcpp::List& params);
 
+arma::vec calcMode(arma::mat u_df, Rcpp::List& params);
 
 /** ------ updated grad/hess functions for non-diagonal scale matrix ------- **/
 arma::vec grad_gwish(arma::mat& psi, Rcpp::List& params);
@@ -160,6 +161,9 @@ Rcpp::List init_graph(arma::mat& G, u_int b, arma::mat& V) {
 	u_int n_nonfree = p * (p + 1) / 2 - D; // # of nonfree elements
 	arma::mat vbar = getNonFreeElem(G, p, n_nonfree);
 
+	Rcpp::Environment stats("package:stats");
+	Rcpp::Function asFormula = stats["as.formula"];
+
 	return List::create(Named("G") = G, Named("b") = b, Named("V") = V,
 						Named("p") = p, Named("P") = P, Named("D") = D,
 						Named("P_inv") = P_inv,
@@ -171,7 +175,9 @@ Rcpp::List init_graph(arma::mat& G, u_int b, arma::mat& V) {
 						Named("b_i") = b_i,
 						Named("t_ind") = t_ind,
 						Named("n_nonfree") = n_nonfree,
-						Named("vbar") = vbar
+						Named("vbar") = vbar,
+						Named("df_name") = createDfName(D), // in tools.cpp
+						Named("formula") = asFormula("psi_u ~.")
                       );
 } // end init_graph() function
 
@@ -195,14 +201,15 @@ arma::mat evalPsi(arma::mat samps, Rcpp::List& params) {
 
 
 /* ---------------------  general wrapper function  ------------------------- */
+
 // [[Rcpp::export]]
-double approx_v1(Rcpp::DataFrame u_df, Rcpp::Formula formula,
+double approx_v1(Rcpp::DataFrame u_df,
 				 arma::vec uStar,
 				 arma::mat data,
 				 Rcpp::List& params) {
 
 	u_int D = params["D"];
-
+	Rcpp::Formula formula = params["formula"];
 	// fit CART model
 	Rcpp::List tree = fitTree(u_df, formula);
 	// get the support
@@ -214,12 +221,9 @@ double approx_v1(Rcpp::DataFrame u_df, Rcpp::Formula formula,
 
     Rcpp::List partList = f(tree, supp);
     arma::mat part = partList["partition"];
-    // Rcpp::Rcout<< part << std::endl;
     arma::vec leafId = partList["leaf_id"];
     int k = leafId.n_elem; // # of leaf nodes
-
     arma::vec locs = partList["locs"];
-    // Rcpp::Rcout<< locs << std::endl;
 
     std::unordered_map<int, arma::vec> partitionMap;
     for (int i = 0; i < k; i++) {
@@ -230,22 +234,34 @@ double approx_v1(Rcpp::DataFrame u_df, Rcpp::Formula formula,
     }
 	// -------------------------------------------------------------------------
 
-	// get leaf_id, locations, partitionMap
-	// Rcpp::List partList = getPartition(tree, supp);
-	// arma::vec leafId = partList["leafId"]; // extract leaf id from partList
-	// arma::vec locs   = partList["locs"];   // extract locations from partList
-
 	std::unordered_map<int, arma::vec> candidates = findAllCandidatePoints(
 		data, locs, uStar, D
 	);
 
 	// std::unordered_map<int, arma::vec> boundMap = partitionMap;
-
 	 return approxZ(params, leafId, candidates, partitionMap, k);
 }
 
+// [[Rcpp::export]]
+double generalApprox(arma::mat& G, u_int b, arma::mat& V, u_int J) {
 
+  // initialize graph object
+  Rcpp::List obj = init_graph(G, b, V);
+  // generate J samples from gwishart
+  arma::mat samps = rgw(J, obj);
+  // evalute the samples using the negative log posterior (psi in last column)
+  arma::mat samps_psi = evalPsi(samps, obj);
+  // convert samps_psi -> u_df_cpp (dataframe format) so that we can use CART
+   Rcpp::DataFrame u_df = mat2df(samps_psi, obj["df_name"]); // in tools.cpp
+  // calculate global mode
+  arma::vec u_star = calcMode(samps_psi, obj);
 
+  // compute the final approximation
+  return approx_v1(u_df,
+                   u_star,
+                   samps_psi,
+                   obj);
+} // end generalApprox() function
 
 // [[Rcpp::export]]
 double approxWrapper(arma::mat data, arma::vec locs, arma::vec uStar, u_int D,
@@ -334,8 +350,11 @@ double approxZ(Rcpp::List& params,
 /* -------------------  newton's method implementation ---------------------- */
 
 // [[Rcpp::export]]
-arma::vec calcMode(arma::mat u_df, Rcpp::List& params,
-	 double tol = 1e-8, u_int  maxSteps = 10, bool VERBOSE = false) {
+arma::vec calcMode(arma::mat u_df, Rcpp::List& params) {
+
+		 double tol = 1e-8;
+		 u_int maxSteps = 10;
+		 bool VERBOSE = false;
 
 		 // use the MAP as starting point for algorithm
 		 u_int D = params["D"];
