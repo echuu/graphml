@@ -3,6 +3,7 @@
 #include "graphml_types.h"
 #include "rgwishart.h"
 #include "partition.h"
+#include "tools.h"
 #include "epmgp.h"
 #include <Rcpp.h>
 #include <cmath>
@@ -194,6 +195,52 @@ arma::mat evalPsi(arma::mat samps, Rcpp::List& params) {
 
 
 /* ---------------------  general wrapper function  ------------------------- */
+
+
+// [[Rcpp::export]]
+double approx_v1(Rcpp::DataFrame u_df, Rcpp::Formula formula
+    arma::mat data, arma::mat samps, arma::vec uStar, u_int D,
+	Rcpp::List& params) {
+
+	u_int K = leafId.n_elem;
+
+    // fit tree
+    Rcpp::List tree = fitTree(u_df, formula);
+
+    // obtain partition from tree
+    Rcpp::Environment tmp = Rcpp::Environment::global_env();
+    Rcpp::Function f = tmp["extractPartitionSimple"];
+    
+    arma::mat supp = support(samps, D); 
+    Rcpp::List partList = f(tree, supp);
+    arma::mat part = partList["partition"];
+
+    // extract leafID 
+    arma::vec leafId = partList["leaf_id"];
+    int k = leafId.n_elem; // # of leaf nodes
+
+    arma::vec locs = partList["locs"];
+    Rcpp::Rcout<< locs << std::endl;    
+
+
+    // compute bounds
+    std::unordered_map<int, arma::vec> partitionMap;
+    for (int i = 0; i < k; i++) {
+        // add the leaf node's corresponding rectangle into the map
+        int leaf_i = leafId(i);
+        // arma::vec col_d = part[d];
+        partitionMap[leaf_i] = part.col(i);
+    }
+
+	std::unordered_map<int, arma::vec> candidates = findAllCandidatePoints(
+		data, locs, uStar, D
+	);
+	// Rcpp::Rcout << "found candidate points" << std::endl;
+
+	return approxZ(params, leafId, candidates, partitionMap, K);
+} // end approxWrapper() function
+
+
 
 // [[Rcpp::export]]
 double approxWrapper(arma::mat data, arma::vec locs, arma::vec uStar, u_int D,

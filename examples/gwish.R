@@ -4,6 +4,13 @@
 # library(BDgraph)
 library(dplyr)
 
+## import R helper functions that will eventually be ported to C++
+## contains h(), cpp(), and functions that extract the partition in matrix form
+## from the rpart objects
+source("examples/helpers.R")
+library(graphml)
+library(rpart)
+
 
 set.seed(1)
 p = 5
@@ -37,9 +44,71 @@ for (d in 1:GG$D) {
 u_df_names[GG$D + 1] = "psi_u"
 names(u_df_cpp) = u_df_names
 u_star_cpp = graphml::calcMode(as.matrix(u_df_cpp), GG)
-h(u_df_cpp, GG, GG$D, u_0 = u_star_cpp)
+
+
+library(rpart) # this must be loaded before calling the cpp function
+Rcpp::sourceCpp("R/tools.cpp")
+
+tree = rpart::rpart(psi_u ~ ., u_df_cpp)
+tree = fitTree(u_df_cpp, psi_u ~.)            ## calls to tools.cpp
+part = extractPartitionSimple(tree, param_support)
+extractPartition(tree, param_support)
+
+tree = graphml::fitTree(psi_u ~., u_df_cpp)
+
+testpart = getPartition(tree,param_support)   ## calls to getPartition.cpp
+
+
+
 cpp(u_df_cpp, samps, samps_psi, GG, u_star_cpp)
+
+
+
+
+h(u_df_cpp, samps, GG, GG$D, u_0 = u_star_cpp)
 BDgraph::gnorm(G, b, V, 1000)
+
+
+microbenchmark::microbenchmark(
+  r = h(u_df_cpp, samps, GG, GG$D, u_0 = u_star_cpp),
+  cpp = cpp(u_df_cpp, samps, samps_psi, GG, u_star_cpp),
+  times = 10
+)
+
+
+
+###------
+param_support = graphml::support(samps, GG$D)
+
+
+
+
+
+test_const_arma(param_support)
+
+source("examples/helpers.R")
+library(dplyr)
+extractPartition(tree, param_support)
+
+
+
+
+
+bounds = tmpFunc(testpart)
+
+u_rpart = rpart::rpart(psi_u ~ ., u_df_cpp)
+param_support = graphml::support(samps, GG$D)
+
+## this part still needs to be implemented in C++
+u_partition = hybridml::extractPartition(u_rpart, param_support)
+
+bounds = u_partition %>% dplyr::arrange(leaf_id) %>%
+  dplyr::select(-c("psi_hat", "leaf_id"))
+
+
+
+
+
 
 
 ##### old implementation
@@ -60,14 +129,6 @@ u = unname(unlist(u_df[1, 1:GG$D]))
 
 ## testing the code that comes after constructing the regression tree
 
-u_rpart = rpart::rpart(psi_u ~ ., u_df_cpp)
-param_support = graphml::support(samps, GG$D)
-
-## this part still needs to be implemented in C++
-u_partition = hybridml::extractPartition(u_rpart, param_support)
-
-bounds = u_partition %>% dplyr::arrange(leaf_id) %>%
-  dplyr::select(-c("psi_hat", "leaf_id"))
 
 ## ---------------------------------------------------
 
