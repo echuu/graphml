@@ -1,4 +1,81 @@
 
+# // [[Rcpp::plugins(openmp)]]
+
+source("examples/helpers.R")
+library(graphml)
+library(rpart)
+library(dplyr)
+
+set.seed(1)
+p = 5
+G = matrix(c(1,1,0,1,1,
+             1,1,1,0,0,
+             0,1,1,1,1,
+             1,0,1,1,1,
+             1,0,1,1,1), p, p)
+b = 300
+V = BDgraph::rgwish(1, G, b, diag(p))
+
+##### new implementation
+GG = graphml::init_graph(G, b, V)
+set.seed(1)
+J = 2000
+samps = graphml::rgw(J, GG)
+samps_psi = graphml::evalPsi(samps, GG)
+u_df_cpp = graphml::mat2df(samps_psi, GG$df_name)
+u_star_cpp = graphml::calcMode(samps_psi, GG)
+approx_v1(u_df_cpp,
+          u_star_cpp,
+          samps_psi,
+          GG)
+
+set.seed(1)
+
+BDgraph::gnorm(G, b, V, J)
+graphml::gnorm_c(G, b, V, J)
+graphml::gnormJT(G, getEdgeMat(G), b, V, J)
+
+regular = function() {
+  set.seed(1)
+  graphml::generalApprox(G, b, V, J)
+}
+fast = function() {
+  set.seed(1)
+  graphml::hybJT(G, b, V, J)
+}
+
+microbenchmark::microbenchmark(regular = regular(),
+                               fast = fast(),
+                               times = 10)
+
+
+
+
+
+set.seed(1234)
+p = 60
+Adj = matrix(rbinom(p^2,1,0.15), p, p)
+Adj = Adj + t(Adj)
+diag(Adj) = 0
+Adj[Adj==1]=0
+Adj[Adj==2]=1
+diag(Adj) = 1
+EdgeMat = getEdgeMat(Adj)
+# JT = getJT(EdgeMat)
+b = 500
+Y = matrix(rnorm(p*500), nrow = 500, ncol = p)
+D = t(Y)%*%Y
+
+# BDgraph::gnorm(Adj, b, D, 1000)
+# gnorm_c(Adj, b, D, 1000)
+gnormJT(Adj, EdgeMat, b, D, 1000)
+
+
+
+Adj_backup = Adj
+Y_backup = Y
+gnormJT(Adj_backup, EdgeMat, b, D, 1000)
+
 
 # source("C:/Users/ericc/Documents/hybridml/examples/gwish/gwish_density.R")
 # library(BDgraph)
@@ -37,10 +114,15 @@ approx_v1(u_df_cpp,
           GG)
 
 set.seed(1)
-graphml::generalApprox(G, b, V, J)
+
 BDgraph::gnorm(G, b, V, J)
 graphml::gnorm_c(G, b, V, J)
 graphml::gnormJT(G, getEdgeMat(G), b, V, J)
+
+set.seed(1)
+graphml::generalApprox(G, b, V, J)
+set.seed(1)
+graphml::hybJT(G, b, V, J)
 
 old(G, b, V, J)
 
@@ -100,12 +182,10 @@ gnorm_c(Adj, b, D, 1000)
 gnormJT(Adj, EdgeMat, b, D, 1000)
 
 
-
-
-
-microbenchmark::microbenchmark(r = old(G, b, V, J),
-                               cpp = generalApprox(G, b, V, J),
-                               pll = hybJT(G, b, V, J),
+old(Adj, b, D, 1000)
+microbenchmark::microbenchmark(# r = old(G, b, V, J),
+                               cpp = gnorm_c(Adj, b, D, 1000),
+                               jt = gnormJT(Adj, EdgeMat, b, D, 1000),
                                times = 10)
 
 

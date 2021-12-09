@@ -83,6 +83,8 @@ arma::mat getNonFreeElem(arma::umat G, u_int p, u_int n_nonfree) {
 		}
 	}
 	arma::uvec ind_vbar = find(F < 0); // extract indices of the nonfree elements
+    // TODO: think about when n_nonfree == 0 --> what does this mean? what
+    // happens to the subsequent calculations;
 	arma::mat vbar(n_nonfree, 2, arma::fill::zeros);
 	for (u_int n = 0; n < n_nonfree; n++) {
 		vbar(n, 0) = ind_vbar(n) % p; // row of nonfree elmt
@@ -97,7 +99,7 @@ arma::mat getNonFreeElem(arma::umat G, u_int p, u_int n_nonfree) {
 // [[Rcpp::export]]
 Rcpp::List init_graph(arma::umat G, u_int b, arma::mat V) {
 
-    Rcpp::Rcout << G << std::endl;
+    // Rcpp::Rcout << G << std::endl;
 	u_int p = G.n_rows;
 	arma::mat P = chol(inv(V));
 	arma::mat P_inv = arma::inv(P);
@@ -108,7 +110,7 @@ Rcpp::List init_graph(arma::umat G, u_int b, arma::mat V) {
 
 	// indicator for upper diag free
 	arma::vec edgeInd = arma::conv_to<arma::vec>::from(G(upInd));
-	Rcpp::Rcout << "edge indicator" << std::endl;
+	// Rcpp::Rcout << "edge indicator" << std::endl;
 
 	// construct A matrix to compute k_i
 	arma::vec k_i  = arma::conv_to<arma::vec>::from(arma::sum(F, 0) - 1);
@@ -129,11 +131,11 @@ Rcpp::List init_graph(arma::umat G, u_int b, arma::mat V) {
 		 remove the following line
 	 */
 	t_ind = t_ind + 1;
-    Rcpp::Rcout << t_ind << std::endl;
+    // Rcpp::Rcout << t_ind << std::endl;
 
 	u_int n_nonfree = p * (p + 1) / 2 - D; // # of nonfree elements
 	arma::mat vbar = getNonFreeElem(G, p, n_nonfree);
-    Rcpp::Rcout << vbar << std::endl;
+    // Rcpp::Rcout << vbar << std::endl;
 
 	Rcpp::Environment stats("package:stats");
 	Rcpp::Function asFormula = stats["as.formula"];
@@ -176,7 +178,6 @@ arma::mat evalPsi(arma::mat samps, Rcpp::List& params) {
 
 /* -------------  start parallel approximation functions  ------------------- */
 
-// [[Rcpp::plugins(openmp)]]
 double approxZ_parallel(Rcpp::List& params, arma::vec leaf,
 	std::unordered_map<int, arma::vec> candidates,
 	std::unordered_map<int, arma::vec> bounds,
@@ -196,51 +197,77 @@ double approxZ_parallel(Rcpp::List& params, arma::vec leaf,
 	arma::vec u_k(D, arma::fill::zeros);
 	arma::vec candidate_k(D, arma::fill::zeros);
 
+    /* extract all the parameters needed from params */
+    u_int p           = params["p"];    // dimension of the graph G
+	u_int b           = params["b"];    // degrees of freedom
+	arma::vec nu_i    = params["nu_i"]; // see p. 329 of Atay (step 2)
+	arma::vec b_i     = params["b_i"];  // see p. 329 of Atay (step 2)
+	arma::mat P       = params["P"];    // upper cholesky factor of V_n
+	arma::mat G       = params["G"];    // graph G
+    arma::uvec ids    =  params["free_index"]; // this gets passed into grad() as 'free'
+
+    // for hessian
+    u_int n_nonfree   = params["n_nonfree"];  // # nonfree elements
+    arma::mat vbar    = params["vbar"];
+    arma::mat ind_mat = params["t_ind"];
+    // finish extraction -------------------------------------------------------
+
 	int leaf_k;
 	double psi_k;
 	arma::mat psi_mat(D, D, arma::fill::zeros);
-	//arma::vec bounds_k;
+
+	//arma::vec bounds_k; // not used anymore since we're using hashmap
+    /*
     #if defined(_OPENMP)
         #pragma omp parallel for num_threads(ncores)
     #endif
-    for(int k = 0; k < K; ++k) {
-        leaf_k = leaf(k);
-        candidate_k = candidates[leaf_k];
-        u_k = candidate_k.
-            elem(arma::conv_to<arma::uvec>::from(arma::linspace(0, D-1, D)));
-        // Rcpp::Rcout<< u_k << std::endl;
-        psi_mat = create_psi_mat_cpp(u_k, params);
-        // double psi_k = psi_cpp_mat(psi_mat, params);
-        psi_k = candidate_k(D);
+    */
 
-        H_k = hess_gwish(psi_mat, params); // 11/9: using general hessian
-        // H_k_inv = inv(H_k);
-        H_k_inv = arma::inv_sympd(H_k);
-        lambda_k = grad_gwish(psi_mat, params); // 11/9: using general gradient
-        b_k = H_k * u_k - lambda_k;
-        m_k = H_k_inv * b_k;
+    parallel_for(K, [&](int start, int end) {
 
-        lb = bounds[leaf_k].elem(arma::conv_to<arma::uvec>::from(
-            arma::linspace(0, 2 * D - 2, D)));
-        ub = bounds[leaf_k].elem(arma::conv_to<arma::uvec>::from(
-            arma::linspace(1, 2 * D - 1, D)));
-        /*
-        for (u_int d = 0; d < D; d++) {
-            lb(d) = bounds[leaf_k](2 * d); ub(d) = bounds[leaf_k](2 * d + 1);
-        }
-        */
-        double val = 0;
-        double sign;
-        log_det(val, sign, H_k);
-        G_k(k) = ep_logz(m_k, H_k_inv, lb, ub);
-        log_terms(k) = D / 2 * std::log(2 * M_PI) - 0.5 * val - psi_k +
-            arma::dot(lambda_k, u_k) -
-            (0.5 * u_k.t() * H_k * u_k).eval()(0,0) +
-            (0.5 * m_k.t() * H_k * m_k).eval()(0,0) + G_k(k);
-    } // end outer for()
+        for(int k = start; k < end; ++k) {
+            leaf_k = leaf(k);
+            candidate_k = candidates[leaf_k];
+            u_k = candidate_k.
+                elem(arma::conv_to<arma::uvec>::from(arma::linspace(0, D-1, D)));
+            // Rcpp::Rcout<< u_k << std::endl;
+            // psi_mat = create_psi_mat_cpp(u_k, params);
+            psi_mat = vec2mat(u_k, p, D, b, nu_i, b_i, P, G, ids);
+            // double psi_k = psi_cpp_mat(psi_mat, params);
+            psi_k = candidate_k(D);
+
+            H_k = hess_gwish_parallel(psi_mat, G, D, b, nu_i, P, ind_mat, vbar, n_nonfree);
+            // H_k_inv = inv(H_k);
+            H_k_inv = arma::inv_sympd(H_k);
+            // lambda_k = grad_gwish(psi_mat, params); // 11/9: using general gradient
+            lambda_k = grad_gwish_parallel(psi_mat, G, ids, p, D, b, nu_i, P);
+            b_k = H_k * u_k - lambda_k;
+            m_k = H_k_inv * b_k;
+
+            lb = bounds[leaf_k].elem(arma::conv_to<arma::uvec>::from(
+                arma::linspace(0, 2 * D - 2, D)));
+            ub = bounds[leaf_k].elem(arma::conv_to<arma::uvec>::from(
+                arma::linspace(1, 2 * D - 1, D)));
+            /*
+            for (u_int d = 0; d < D; d++) {
+                lb(d) = bounds[leaf_k](2 * d); ub(d) = bounds[leaf_k](2 * d + 1);
+            }
+            */
+            double val = 0;
+            double sign;
+            log_det(val, sign, H_k);
+            G_k(k) = ep_logz(m_k, H_k_inv, lb, ub);
+            log_terms(k) = D / 2 * std::log(2 * M_PI) - 0.5 * val - psi_k +
+                arma::dot(lambda_k, u_k) -
+                (0.5 * u_k.t() * H_k * u_k).eval()(0,0) +
+                (0.5 * m_k.t() * H_k * m_k).eval()(0,0) + G_k(k);
+        } // end outer for()
+
+    }); // end parallel_for()
 
 	return lse(log_terms, K);
 } // end approxZ_parallel() function
+
 
 // [[Rcpp::export]]
 double approx_parallel_call(Rcpp::DataFrame u_df, arma::vec uStar, arma::mat data, Rcpp::List& params) {
@@ -277,7 +304,7 @@ double approx_parallel_call(Rcpp::DataFrame u_df, arma::vec uStar, arma::mat dat
 	);
 
 	// std::unordered_map<int, arma::vec> boundMap = partitionMap;
-	 return approxZ_parallel(params, leafId, candidates, partitionMap, k, 4);
+	 return approxZ_parallel(params, leafId, candidates, partitionMap, k, 2);
 } // end hybJT() function
 
 
@@ -353,22 +380,22 @@ double approx_v1(Rcpp::DataFrame u_df,
 double generalApprox(arma::umat G, u_int b, arma::mat V, u_int J) {
 
     int p = G.n_rows;
-    Rcpp::Rcout << p << " x " << p << " graph" << std::endl;
+    // Rcpp::Rcout << p << " x " << p << " graph" << std::endl;
     // initialize graph object
     Rcpp::List obj = init_graph(G, b, V);
-    Rcpp::Rcout << "graph initialized" << std::endl;
+    // Rcpp::Rcout << "graph initialized" << std::endl;
     // generate J samples from gwishart
     arma::mat samps = rgw(J, obj);
-    Rcpp::Rcout << "obtained samples" << std::endl;
+    // Rcpp::Rcout << "obtained samples" << std::endl;
     // evalute the samples using the negative log posterior (psi in last column)
     arma::mat samps_psi = evalPsi(samps, obj);
-    Rcpp::Rcout << "evaluated samples" << std::endl;
+    // Rcpp::Rcout << "evaluated samples" << std::endl;
     // convert samps_psi -> u_df_cpp (dataframe format) so that we can use CART
     Rcpp::DataFrame u_df = mat2df(samps_psi, obj["df_name"]); // in tools.cpp
-    Rcpp::Rcout << "convert to dataframe" << std::endl;
+    // Rcpp::Rcout << "convert to dataframe" << std::endl;
     // calculate global mode
     arma::vec u_star = calcMode(samps_psi, obj);
-    Rcpp::Rcout << "computed mode" << std::endl;
+    // Rcpp::Rcout << "computed mode" << std::endl;
 
     // compute the final approximation
     return approx_v1(u_df,
@@ -731,12 +758,6 @@ double psi_cpp_mat(arma::mat& psi_mat, Rcpp::List& params) {
 }
 
 /**** update gradient, hessian to accommodate non-diagonal scale matrices *****/
-
-double xi(u_int i, u_int j, arma::mat& L) {
-	// L is UPPER TRIANGULAR cholesky factor of the INVERSE scale matrix, i.e,
-	// D^(-1) = L'L
-	return L(i, j) / L(j, j);
-}
 
 // [[Rcpp::export]]
 arma::vec grad_gwish(arma::mat& psi_mat, Rcpp::List& params) {

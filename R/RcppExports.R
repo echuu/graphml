@@ -101,6 +101,14 @@ hess_gwish <- function(psi_mat, params) {
     .Call(`_graphml_hess_gwish`, psi_mat, params)
 }
 
+grad_gwish_parallel <- function(psi_mat, G, free, p, D, b, nu_i, L) {
+    .Call(`_graphml_grad_gwish_parallel`, psi_mat, G, free, p, D, b, nu_i, L)
+}
+
+vec2mat <- function(u, p, D, b, nu_i, b_i, P, G, ids) {
+    .Call(`_graphml_vec2mat`, u, p, D, b, nu_i, b_i, P, G, ids)
+}
+
 support <- function(samps, D) {
     .Call(`_graphml_support`, samps, D)
 }

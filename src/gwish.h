@@ -22,7 +22,6 @@ double approxWrapper(arma::mat data, arma::vec locs, arma::vec uStar, u_int D,
 /** utility functions **/
 arma::vec chol2vec(arma::mat& M, u_int D);
 arma::mat create_psi_mat_cpp(arma::vec u, Rcpp::List& params);
-double xi(u_int i, u_int j, arma::mat& L);
 
 /** ------ objective function evaluation ------- **/
 double psi_cpp_mat(arma::mat& psi_mat, Rcpp::List& params);

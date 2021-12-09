@@ -341,6 +341,43 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// grad_gwish_parallel
+arma::vec grad_gwish_parallel(arma::mat psi_mat, arma::mat G, arma::uvec free, u_int p, u_int D, u_int b, arma::vec nu_i, arma::mat L);
+RcppExport SEXP _graphml_grad_gwish_parallel(SEXP psi_matSEXP, SEXP GSEXP, SEXP freeSEXP, SEXP pSEXP, SEXP DSEXP, SEXP bSEXP, SEXP nu_iSEXP, SEXP LSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type psi_mat(psi_matSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type G(GSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type free(freeSEXP);
+    Rcpp::traits::input_parameter< u_int >::type p(pSEXP);
+    Rcpp::traits::input_parameter< u_int >::type D(DSEXP);
+    Rcpp::traits::input_parameter< u_int >::type b(bSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type nu_i(nu_iSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type L(LSEXP);
+    rcpp_result_gen = Rcpp::wrap(grad_gwish_parallel(psi_mat, G, free, p, D, b, nu_i, L));
+    return rcpp_result_gen;
+END_RCPP
+}
+// vec2mat
+arma::mat vec2mat(arma::vec u, u_int p, u_int D, u_int b, arma::vec nu_i, arma::vec b_i, arma::mat P, arma::mat G, arma::uvec ids);
+RcppExport SEXP _graphml_vec2mat(SEXP uSEXP, SEXP pSEXP, SEXP DSEXP, SEXP bSEXP, SEXP nu_iSEXP, SEXP b_iSEXP, SEXP PSEXP, SEXP GSEXP, SEXP idsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type u(uSEXP);
+    Rcpp::traits::input_parameter< u_int >::type p(pSEXP);
+    Rcpp::traits::input_parameter< u_int >::type D(DSEXP);
+    Rcpp::traits::input_parameter< u_int >::type b(bSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type nu_i(nu_iSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type b_i(b_iSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type P(PSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type G(GSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type ids(idsSEXP);
+    rcpp_result_gen = Rcpp::wrap(vec2mat(u, p, D, b, nu_i, b_i, P, G, ids));
+    return rcpp_result_gen;
+END_RCPP
+}
 // support
 arma::mat support(arma::mat samps, u_int D);
 RcppExport SEXP _graphml_support(SEXP sampsSEXP, SEXP DSEXP) {
@@ -536,6 +573,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_graphml_psi_cpp_mat", (DL_FUNC) &_graphml_psi_cpp_mat, 2},
     {"_graphml_grad_gwish", (DL_FUNC) &_graphml_grad_gwish, 2},
     {"_graphml_hess_gwish", (DL_FUNC) &_graphml_hess_gwish, 2},
+    {"_graphml_grad_gwish_parallel", (DL_FUNC) &_graphml_grad_gwish_parallel, 8},
+    {"_graphml_vec2mat", (DL_FUNC) &_graphml_vec2mat, 9},
     {"_graphml_support", (DL_FUNC) &_graphml_support, 2},
     {"_graphml_findAllCandidatePoints", (DL_FUNC) &_graphml_findAllCandidatePoints, 4},
     {"_graphml_createPartitionMap", (DL_FUNC) &_graphml_createPartitionMap, 2},

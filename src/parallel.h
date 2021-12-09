@@ -1,7 +1,47 @@
+#include <RcppArmadillo.h>
 #include <algorithm>
 #include <thread>
 #include <functional>
 #include <vector>
+
+#define RCPP_ARMADILLO_RETURN_COLVEC_AS_VECTOR
+// [[Rcpp::depends(RcppArmadillo)]]
+#define EIGEN_PERMANENTLY_DISABLE_STUPID_WARNINGS
+
+arma::mat vec2mat(arma::vec u, u_int p, u_int D, u_int b,
+                  arma::vec nu_i, arma::vec b_i, arma::mat P, arma::mat G,
+                  arma::uvec ids);
+double xi(u_int i, u_int j, arma::mat& L);
+
+/* --------------------  gradient parallel functions  ----------------------- */
+arma::vec grad_gwish_parallel(arma::mat psi_mat, arma::mat G, arma::uvec free,
+                              u_int p, u_int D,
+                              u_int b, arma::vec nu_i,
+                              arma::mat L);
+
+double dpsi_ij_parallel(u_int i, u_int j, arma::mat psi_mat,
+                        arma::mat G, u_int p, u_int b, arma::vec nu_i, arma::mat L);
+
+double dpsi_parallel(u_int r, u_int s, u_int i, u_int j, arma::mat psi,
+                     arma::mat G, arma::mat L);
+
+/* --------------------  hessian  parallel functions  ----------------------- */
+
+arma::mat hess_gwish_parallel(arma::mat psi_mat, arma::mat G,
+                              u_int D, u_int b, arma::vec nu_i,
+                              arma::mat L, arma::mat ind_mat,
+                              arma::mat vbar, u_int n_nonfree);
+
+double d2psi_ijkl_parallel(u_int i, u_int j, u_int k, u_int l,
+                           arma::mat psi, arma::mat G, arma::mat L, arma::mat vbar,
+                           u_int n_nonfree);
+
+double d2psi_parallel(u_int r, u_int s, u_int i, u_int j, u_int k, u_int l,
+	                  arma::mat psi, arma::mat G, arma::mat L, arma::mat vbar,
+                      u_int n_nonfree);
+
+
+
 
 /// @param[in] nb_elements : size of your for loop
 /// @param[in] functor(start, end) :
