@@ -182,6 +182,34 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// approx_parallel_call
+double approx_parallel_call(Rcpp::DataFrame u_df, arma::vec uStar, arma::mat data, Rcpp::List& params);
+RcppExport SEXP _graphml_approx_parallel_call(SEXP u_dfSEXP, SEXP uStarSEXP, SEXP dataSEXP, SEXP paramsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type u_df(u_dfSEXP);
+    Rcpp::traits::input_parameter< arma::vec >::type uStar(uStarSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
+    Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
+    rcpp_result_gen = Rcpp::wrap(approx_parallel_call(u_df, uStar, data, params));
+    return rcpp_result_gen;
+END_RCPP
+}
+// hybJT
+double hybJT(arma::umat G, u_int b, arma::mat V, u_int J);
+RcppExport SEXP _graphml_hybJT(SEXP GSEXP, SEXP bSEXP, SEXP VSEXP, SEXP JSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::umat >::type G(GSEXP);
+    Rcpp::traits::input_parameter< u_int >::type b(bSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type V(VSEXP);
+    Rcpp::traits::input_parameter< u_int >::type J(JSEXP);
+    rcpp_result_gen = Rcpp::wrap(hybJT(G, b, V, J));
+    return rcpp_result_gen;
+END_RCPP
+}
 // approx_v1
 double approx_v1(Rcpp::DataFrame u_df, arma::vec uStar, arma::mat data, Rcpp::List& params);
 RcppExport SEXP _graphml_approx_v1(SEXP u_dfSEXP, SEXP uStarSEXP, SEXP dataSEXP, SEXP paramsSEXP) {
@@ -496,6 +524,8 @@ static const R_CallMethodDef CallEntries[] = {
     {"_graphml_getNonFreeElem", (DL_FUNC) &_graphml_getNonFreeElem, 3},
     {"_graphml_init_graph", (DL_FUNC) &_graphml_init_graph, 3},
     {"_graphml_evalPsi", (DL_FUNC) &_graphml_evalPsi, 2},
+    {"_graphml_approx_parallel_call", (DL_FUNC) &_graphml_approx_parallel_call, 4},
+    {"_graphml_hybJT", (DL_FUNC) &_graphml_hybJT, 4},
     {"_graphml_approx_v1", (DL_FUNC) &_graphml_approx_v1, 4},
     {"_graphml_generalApprox", (DL_FUNC) &_graphml_generalApprox, 4},
     {"_graphml_approxWrapper", (DL_FUNC) &_graphml_approxWrapper, 7},

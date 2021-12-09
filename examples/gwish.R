@@ -37,10 +37,81 @@ approx_v1(u_df_cpp,
           GG)
 
 set.seed(1)
-generalApprox(G, b, V, J)
+graphml::generalApprox(G, b, V, J)
 BDgraph::gnorm(G, b, V, J)
 graphml::gnorm_c(G, b, V, J)
 graphml::gnormJT(G, getEdgeMat(G), b, V, J)
+
+old(G, b, V, J)
+
+
+
+set.seed(2021)
+p = 40;
+G = matrix(0, p, p)
+G[1, p] = 1
+for(i in 1:(p-1)){
+  G[i, i+1] = 1
+}
+G = G + t(G); diag(G) = 1
+V = BDgraph::rgwish(1, G, b, diag(p))
+
+graphml::gnormJT(G, getEdgeMat(G), b, V, J)
+
+set.seed(1234)
+p = 40
+Adj = matrix(rbinom(p^2,1,0.15), p, p)
+Adj = Adj + t(Adj)
+diag(Adj) = 0
+Adj[Adj==1]=0
+Adj[Adj==2]=1
+diag(Adj) = 1
+EdgeMat = getEdgeMat(Adj)
+# JT = getJT(EdgeMat)
+b = 500
+Y = matrix(rnorm(p*500), nrow = 500, ncol = p)
+D = t(Y)%*%Y
+
+BDgraph::gnorm(Adj, b, D, 1000)
+# gnorm_c(Adj, b, D, 1000)
+gnormJT(Adj, EdgeMat, b, D, 1000)
+
+# -10030.94
+
+
+
+
+set.seed(1234)
+p = 60
+Adj = matrix(rbinom(p^2,1,0.15), p, p)
+Adj = Adj + t(Adj)
+diag(Adj) = 0
+Adj[Adj==1]=0
+Adj[Adj==2]=1
+diag(Adj) = 1
+EdgeMat = getEdgeMat(Adj)
+# JT = getJT(EdgeMat)
+b = 500
+Y = matrix(rnorm(p*500), nrow = 500, ncol = p)
+D = t(Y)%*%Y
+
+# BDgraph::gnorm(Adj, b, D, 1000)
+gnorm_c(Adj, b, D, 1000)
+gnormJT(Adj, EdgeMat, b, D, 1000)
+
+
+
+
+
+microbenchmark::microbenchmark(r = old(G, b, V, J),
+                               cpp = generalApprox(G, b, V, J),
+                               pll = hybJT(G, b, V, J),
+                               times = 10)
+
+
+
+
+
 
 
 
@@ -57,9 +128,6 @@ partList$partition # partition sets *in the order of leaf_id*
 
 #### for donald: ---------------------------------------------------------------
 
-microbenchmark::microbenchmark(r = old(G, b, V, J),
-                               cpp = generalApprox(G, b, V, J),
-                               times = 10)
 
 
 

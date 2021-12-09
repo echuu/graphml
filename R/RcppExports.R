@@ -53,6 +53,14 @@ evalPsi <- function(samps, params) {
     .Call(`_graphml_evalPsi`, samps, params)
 }
 
+approx_parallel_call <- function(u_df, uStar, data, params) {
+    .Call(`_graphml_approx_parallel_call`, u_df, uStar, data, params)
+}
+
+hybJT <- function(G, b, V, J) {
+    .Call(`_graphml_hybJT`, G, b, V, J)
+}
+
 approx_v1 <- function(u_df, uStar, data, params) {
     .Call(`_graphml_approx_v1`, u_df, uStar, data, params)
 }
