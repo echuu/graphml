@@ -15,25 +15,24 @@ G = matrix(c(1,1,0,1,1,
              1,0,1,1,1), p, p)
 b = 300
 V = BDgraph::rgwish(1, G, b, diag(p))
-
+J = 1000
 ##### new implementation
-GG = graphml::init_graph(G, b, V)
-set.seed(1)
-J = 2000
-samps = graphml::rgw(J, GG)
-samps_psi = graphml::evalPsi(samps, GG)
-u_df_cpp = graphml::mat2df(samps_psi, GG$df_name)
-u_star_cpp = graphml::calcMode(samps_psi, GG)
-approx_v1(u_df_cpp,
-          u_star_cpp,
-          samps_psi,
-          GG)
-
 set.seed(1)
 
 BDgraph::gnorm(G, b, V, J)
 graphml::gnorm_c(G, b, V, J)
 graphml::gnormJT(G, getEdgeMat(G), b, V, J)
+graphml::generalApprox(G, b, V, J)
+
+
+
+microbenchmark::microbenchmark(
+  jt  = graphml::gnormJT(G, getEdgeMat(G), b, V, J),
+  hyb = graphml::generalApprox(G, b, V, J),
+  times = 20
+)
+
+
 
 regular = function() {
   set.seed(1)
@@ -50,6 +49,19 @@ microbenchmark::microbenchmark(regular = regular(),
 
 
 
+
+
+GG = graphml::init_graph(G, b, V)
+set.seed(1)
+J = 2000
+samps = graphml::rgw(J, GG)
+samps_psi = graphml::evalPsi(samps, GG)
+u_df_cpp = graphml::mat2df(samps_psi, GG$df_name)
+u_star_cpp = graphml::calcMode(samps_psi, GG)
+approx_v1(u_df_cpp,
+          u_star_cpp,
+          samps_psi,
+          GG)
 
 
 set.seed(1234)

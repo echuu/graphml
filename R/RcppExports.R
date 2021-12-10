@@ -29,22 +29,6 @@ gnormJT <- function(Adj, EdgeMat, b, D, iter = 500L) {
     .Call(`_graphml_gnormJT`, Adj, EdgeMat, b, D, iter)
 }
 
-lse <- function(arr, count) {
-    .Call(`_graphml_lse`, arr, count)
-}
-
-matrix2vector <- function(m, byrow = FALSE) {
-    .Call(`_graphml_matrix2vector`, m, byrow)
-}
-
-getFreeElem <- function(G, p) {
-    .Call(`_graphml_getFreeElem`, G, p)
-}
-
-getNonFreeElem <- function(G, p, n_nonfree) {
-    .Call(`_graphml_getNonFreeElem`, G, p, n_nonfree)
-}
-
 init_graph <- function(G, b, V) {
     .Call(`_graphml_init_graph`, G, b, V)
 }
@@ -53,24 +37,12 @@ evalPsi <- function(samps, params) {
     .Call(`_graphml_evalPsi`, samps, params)
 }
 
-approx_parallel_call <- function(u_df, uStar, data, params) {
-    .Call(`_graphml_approx_parallel_call`, u_df, uStar, data, params)
-}
-
-hybJT <- function(G, b, V, J) {
-    .Call(`_graphml_hybJT`, G, b, V, J)
-}
-
 approx_v1 <- function(u_df, uStar, data, params) {
     .Call(`_graphml_approx_v1`, u_df, uStar, data, params)
 }
 
 generalApprox <- function(G, b, V, J) {
     .Call(`_graphml_generalApprox`, G, b, V, J)
-}
-
-approxWrapper <- function(data, locs, uStar, D, bounds, leafId, params) {
-    .Call(`_graphml_approxWrapper`, data, locs, uStar, D, bounds, leafId, params)
 }
 
 calcMode <- function(u_df, params) {
@@ -99,14 +71,6 @@ grad_gwish <- function(psi_mat, params) {
 
 hess_gwish <- function(psi_mat, params) {
     .Call(`_graphml_hess_gwish`, psi_mat, params)
-}
-
-grad_gwish_parallel <- function(psi_mat, G, free, p, D, b, nu_i, L) {
-    .Call(`_graphml_grad_gwish_parallel`, psi_mat, G, free, p, D, b, nu_i, L)
-}
-
-vec2mat <- function(u, p, D, b, nu_i, b_i, P, G, ids) {
-    .Call(`_graphml_vec2mat`, u, p, D, b, nu_i, b_i, P, G, ids)
 }
 
 support <- function(samps, D) {
@@ -163,5 +127,9 @@ fitTree <- function(x, formula) {
 
 getPartition <- function(tree, supp) {
     .Call(`_graphml_getPartition`, tree, supp)
+}
+
+lse <- function(arr, count) {
+    .Call(`_graphml_lse`, arr, count)
 }
 

@@ -1510,7 +1510,7 @@ arma::vec log_exp_mc(arma::umat G, arma::uvec nu, unsigned int b, arma::mat H,
 // [[Rcpp::export]]
 double gnorm_c(arma::umat Adj, double b, arma::mat D, unsigned int iter){
   unsigned int p = Adj.n_rows;
-  Rcpp::Rcout << p << " x " << p << " graph" << std::endl;
+  // Rcpp::Rcout << p << " x " << p << " graph" << std::endl;
   arma::umat A0 = Adj;
   // arma::umat Ip = arma::eye<arma::umat>(p,p);
   // A0 = A0 - Ip;
