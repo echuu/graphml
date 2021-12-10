@@ -33,48 +33,32 @@ init_graph <- function(G, b, V) {
     .Call(`_graphml_init_graph`, G, b, V)
 }
 
-evalPsi <- function(samps, params) {
-    .Call(`_graphml_evalPsi`, samps, params)
+generalApprox <- function(G, b, V, J) {
+    .Call(`_graphml_generalApprox`, G, b, V, J)
 }
 
 approx_v1 <- function(u_df, uStar, data, params) {
     .Call(`_graphml_approx_v1`, u_df, uStar, data, params)
 }
 
-generalApprox <- function(G, b, V, J) {
-    .Call(`_graphml_generalApprox`, G, b, V, J)
+approx_integral <- function(K, psi_df, bounds, params) {
+    .Call(`_graphml_approx_integral`, K, psi_df, bounds, params)
+}
+
+evalPsi <- function(samps, params) {
+    .Call(`_graphml_evalPsi`, samps, params)
 }
 
 calcMode <- function(u_df, params) {
     .Call(`_graphml_calcMode`, u_df, params)
 }
 
-approx_integral <- function(K, psi_df, bounds, params) {
-    .Call(`_graphml_approx_integral`, K, psi_df, bounds, params)
-}
-
-create_psi_mat_cpp <- function(u, params) {
-    .Call(`_graphml_create_psi_mat_cpp`, u, params)
-}
-
-psi_cpp <- function(u, params) {
-    .Call(`_graphml_psi_cpp`, u, params)
-}
-
-psi_cpp_mat <- function(psi_mat, params) {
-    .Call(`_graphml_psi_cpp_mat`, psi_mat, params)
-}
-
-grad_gwish <- function(psi_mat, params) {
-    .Call(`_graphml_grad_gwish`, psi_mat, params)
-}
-
-hess_gwish <- function(psi_mat, params) {
-    .Call(`_graphml_hess_gwish`, psi_mat, params)
-}
-
 support <- function(samps, D) {
     .Call(`_graphml_support`, samps, D)
+}
+
+fitTree <- function(x, formula) {
+    .Call(`_graphml_fitTree`, x, formula)
 }
 
 findAllCandidatePoints <- function(data, locs, uStar, D) {
@@ -83,6 +67,10 @@ findAllCandidatePoints <- function(data, locs, uStar, D) {
 
 createPartitionMap <- function(bounds, leafId) {
     .Call(`_graphml_createPartitionMap`, bounds, leafId)
+}
+
+getPartition <- function(tree, supp) {
+    .Call(`_graphml_getPartition`, tree, supp)
 }
 
 rcpparma_hello_world <- function() {
@@ -119,14 +107,6 @@ createDfName <- function(D) {
 
 mat2df <- function(x, nameVec) {
     .Call(`_graphml_mat2df`, x, nameVec)
-}
-
-fitTree <- function(x, formula) {
-    .Call(`_graphml_fitTree`, x, formula)
-}
-
-getPartition <- function(tree, supp) {
-    .Call(`_graphml_getPartition`, tree, supp)
 }
 
 lse <- function(arr, count) {

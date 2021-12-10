@@ -6,7 +6,14 @@
 // [[Rcpp::depends(RcppArmadillo)]]
 
 
+Rcpp::List init_graph(arma::umat G, u_int b, arma::mat V);
+
 double generalApprox(arma::umat G, u_int b, arma::mat V, u_int J);
+
+double approx_v1(Rcpp::DataFrame u_df,
+				 arma::vec uStar,
+				 arma::mat data,
+				 Rcpp::List& params);
 
 double approxZ(Rcpp::List& params,
 	arma::vec leaf,
@@ -14,15 +21,7 @@ double approxZ(Rcpp::List& params,
 	std::unordered_map<int, arma::vec> bounds,
 	u_int K);
 
-
-/** utility functions **/
-arma::mat create_psi_mat_cpp(arma::vec u, Rcpp::List& params);
-
-/** ------ objective function evaluation ------- **/
-double psi_cpp_mat(arma::mat& psi_mat, Rcpp::List& params);
-double psi_cpp(arma::vec& u, Rcpp::List& params);
-
-arma::vec calcMode(arma::mat u_df, Rcpp::List& params);
-
+double approx_integral(u_int K, arma::mat& psi_df, arma::mat& bounds,
+	Rcpp::List& params);
 
 #endif

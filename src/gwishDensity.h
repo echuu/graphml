@@ -9,8 +9,9 @@
 
 
 /** ---------------------  gwish density functions ------------------------- **/
-
-
+double psi_cpp(arma::vec& u, Rcpp::List& params);
+double psi_cpp_mat(arma::mat& psi_mat, Rcpp::List& params);
+arma::mat evalPsi(arma::mat samps, Rcpp::List& params);
 
 /** ---------------------  gradient functions ------------------------------ **/
 
@@ -29,9 +30,7 @@ double d2psi(u_int r, u_int s, u_int i, u_int j, u_int k, u_int l,
 
 
 /** -----------------  newton's method for root-finding  ------------------- **/
-
-
-
+arma::vec calcMode(arma::mat u_df, Rcpp::List& params);
 
 
 

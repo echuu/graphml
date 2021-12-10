@@ -58,6 +58,8 @@ h = function(u_df, samps, params, D, u_0 = NULL) {
     dplyr::group_by(leaf_id) %>% dplyr::filter(l1_cost == min(l1_cost)) %>%
     data.frame
 
+  # print(psi_df)
+
   bounds = u_partition %>% dplyr::arrange(leaf_id) %>%
     dplyr::select(-c("psi_hat", "leaf_id"))
   psi_df = psi_df %>% dplyr::arrange(leaf_id)

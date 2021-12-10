@@ -25,12 +25,52 @@ graphml::gnormJT(G, getEdgeMat(G), b, V, J)
 graphml::generalApprox(G, b, V, J)
 
 
-
 microbenchmark::microbenchmark(
   jt  = graphml::gnormJT(G, getEdgeMat(G), b, V, J),
   hyb = graphml::generalApprox(G, b, V, J),
   times = 20
 )
+
+
+#####################################################################
+
+source("examples/helpers.R")
+library(graphml)
+library(rpart)
+library(dplyr)
+
+
+set.seed(1)
+p = 5
+G = matrix(c(1,1,0,1,1,
+             1,1,1,0,0,
+             0,1,1,1,1,
+             1,0,1,1,1,
+             1,0,1,1,1), p, p)
+b = 300
+V = BDgraph::rgwish(1, G, b, diag(p))
+
+##### new implementation
+GG = graphml::init_graph(G, b, V)
+set.seed(1)
+J = 2000
+samps = graphml::rgw(J, GG)
+samps_psi = graphml::evalPsi(samps, GG)
+u_df_cpp = graphml::mat2df(samps_psi, GG$df_name)
+u_star_cpp = graphml::calcMode(samps_psi, GG)
+approx_v1(u_df_cpp,
+          u_star_cpp,
+          samps_psi,
+          GG)
+h(u_df_cpp, samps, GG, GG$D, u_0 = u_star_cpp)
+
+
+
+#####################################################################
+
+
+
+
 
 
 
@@ -96,35 +136,10 @@ gnormJT(Adj_backup, EdgeMat, b, D, 1000)
 ## contains h(), cpp(), and functions that extract the partition in matrix form
 ## from the rpart objects
 #### THESE ALL NEED TO BE LOADED INTO THE GLOBAL ENVIRONMENT
-source("examples/helpers.R")
-library(graphml)
-library(rpart)
-library(dplyr)
 
 
-set.seed(1)
-p = 5
-G = matrix(c(1,1,0,1,1,
-             1,1,1,0,0,
-             0,1,1,1,1,
-             1,0,1,1,1,
-             1,0,1,1,1), p, p)
-b = 300
-V = BDgraph::rgwish(1, G, b, diag(p))
 
-##### new implementation
-GG = graphml::init_graph(G, b, V)
-set.seed(1)
-J = 2000
-samps = graphml::rgw(J, GG)
-samps_psi = graphml::evalPsi(samps, GG)
-u_df_cpp = graphml::mat2df(samps_psi, GG$df_name)
-u_star_cpp = graphml::calcMode(samps_psi, GG)
-approx_v1(u_df_cpp,
-          u_star_cpp,
-          samps_psi,
-          GG)
-
+h(u_df_cpp, samps, GG, GG$D, u_0 = u_star_cpp)
 set.seed(1)
 
 BDgraph::gnorm(G, b, V, J)
@@ -295,7 +310,7 @@ extractPartition(tree, param_support)
 
 
 
-h(u_df_cpp, samps, GG, GG$D, u_0 = u_star_cpp)
+
 BDgraph::gnorm(G, b, V, 1000)
 
 
