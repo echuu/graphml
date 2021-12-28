@@ -24,4 +24,19 @@ double approxZ(Rcpp::List& params,
 double approx_integral(u_int K, arma::mat& psi_df, arma::mat& bounds,
 	Rcpp::List& params);
 
+
+double hyb(arma::umat G, u_int b, arma::mat V, u_int J);
+
+double approx_v2(arma::mat z,
+				 arma::vec uStar,
+				 arma::mat data,
+				 Rcpp::List& params);
+
+double approx_helper(Rcpp::List& params, 
+					 std::unordered_map<u_int, arma::vec> candidates, 
+					 std::unordered_map<u_int, arma::vec> bounds, 
+					 u_int nLeaves);
+
+
+
 #endif

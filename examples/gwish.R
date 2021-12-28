@@ -24,6 +24,9 @@ graphml::gnorm_c(G, b, V, J)
 graphml::gnormJT(G, getEdgeMat(G), b, V, J)
 graphml::generalApprox(G, b, V, J)
 
+## updated implementation of the tree fitting algorithm
+graphml::hyb(G, b, V, J)
+
 
 microbenchmark::microbenchmark(
   jt  = graphml::gnormJT(G, getEdgeMat(G), b, V, J),
@@ -104,24 +107,6 @@ approx_v1(u_df_cpp,
           GG)
 
 
-set.seed(1234)
-p = 60
-Adj = matrix(rbinom(p^2,1,0.15), p, p)
-Adj = Adj + t(Adj)
-diag(Adj) = 0
-Adj[Adj==1]=0
-Adj[Adj==2]=1
-diag(Adj) = 1
-EdgeMat = getEdgeMat(Adj)
-# JT = getJT(EdgeMat)
-b = 500
-Y = matrix(rnorm(p*500), nrow = 500, ncol = p)
-D = t(Y)%*%Y
-
-# BDgraph::gnorm(Adj, b, D, 1000)
-# gnorm_c(Adj, b, D, 1000)
-gnormJT(Adj, EdgeMat, b, D, 1000)
-
 
 
 Adj_backup = Adj
@@ -165,7 +150,8 @@ for(i in 1:(p-1)){
 G = G + t(G); diag(G) = 1
 V = BDgraph::rgwish(1, G, b, diag(p))
 
-graphml::gnormJT(G, getEdgeMat(G), b, V, J)
+graphml::gnormJT(G, getEdgeMat(G), b, V, 1000)
+
 
 set.seed(1234)
 p = 40

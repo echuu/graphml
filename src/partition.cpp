@@ -8,8 +8,6 @@
 
 /** ------------------------------------------------------------------------ **/
 
-
-// [[Rcpp::export]]
 arma::mat support(arma::mat samps, u_int D) {
 
     arma::mat s(D, 2, arma::fill::zeros);
@@ -26,7 +24,6 @@ arma::mat support(arma::mat samps, u_int D) {
     this eventually will need to be ported to C++, waiting for Donald to finish
     that implementation
 */
-// [[Rcpp::export]]
 Rcpp::List fitTree(Rcpp::DataFrame x, Rcpp::Formula formula) {
 
     // Obtain environment containing function
@@ -68,7 +65,6 @@ arma::vec findCandidatePoint(arma::mat data, arma::vec uStar, u_int dim) {
 } // end findCandidatePoint() function
 
 
-// [[Rcpp::export]]
 std::unordered_map<int, arma::vec> findAllCandidatePoints(arma::mat data,
     arma::vec locs, arma::vec uStar, u_int D) {
     /* locs should correspond to the each of the data points */
@@ -94,8 +90,54 @@ std::unordered_map<int, arma::vec> findAllCandidatePoints(arma::mat data,
     return candidate_map;
 } // end findAllCandidatePoints() function
 
+/* ------------------------------------------------------------------------- */
+// FUNCTIONS TO ACCOMMODATE THE C++ IMPLEMENTATION OF CART
+// CHANGES WILL REFLECT THE USE OF THE ROW INDICES WHEN PULLING THE ROWS FROM
+// THE ORIGINAL DATA, RATHER THAN THE LOCATION DATA THAT rpart() returned 
+// original implementation subsetted by checking equality of each of the 
+// locations and pulling it based on boolean indicators
 
-// [[Rcpp::export]]
+std::unordered_map<u_int, arma::vec> findOptPoints(arma::mat data,
+    std::unordered_map<u_int, arma::uvec> leafRowMap,
+    u_int numLeaves, arma::vec uStar, u_int D) {
+    arma::mat data_subset;
+    std::unordered_map<u_int, arma::vec> candidate_map;
+    for (u_int k = 0; k < numLeaves; k++) {
+        // extract the rows that correspond to the k-th leaf
+        arma::uvec leafRows = leafRowMap[k];
+        data_subset = data.rows(leafRows);
+        candidate_map[k] = findCandidatePoint(data_subset, uStar, D);
+    } 
+    /* locs should correspond to the each of the data points */
+    // arma::vec locsUnique = arma::unique(locs);
+    // int n = locsUnique.n_elem;
+    // arma::mat data_subset;
+    // arma::uvec locRows;
+    //arma::mat candidates(n, D, arma::fill::zeros); // store the candidate pts
+    // std::unordered_map<int, arma::vec> candidate_map;
+
+    // for (u_int i = 0; i < n; i++) {
+    //     int loc = locsUnique(i);
+    //     locRows = find(locs == loc);
+    //     // Rcpp::Rcout<< locRows << std::endl;
+    //     data_subset = data.rows(locRows);
+    //     // Rcpp::Rcout<< findCandidatePoint(data_subset, uStar, D) << std::endl;
+    //     // candidates.row(i) = findCandidatePoint(data_subset, uStar, D).t();
+    //     candidate_map[loc] = findCandidatePoint(data_subset, uStar, D);
+    // }
+    // candidate_map[2] = findCandidatePoint(data_subset, uStar, D);
+    // Rcpp::Rcout<< candidate_map[2] << std::endl;
+
+    return candidate_map;
+} // end findAllCandidatePoints() function
+
+
+/* ------------------------------------------------------------------------- */
+
+
+// note: this function has been moved directly into the approx_v1() function;
+// this converts the matrix of lower/upper bounds from cart into a 
+// hashmap that maps each leaf node to its corresponding intervals 
 std::unordered_map<int, arma::vec> createPartitionMap(arma::mat bounds,
     arma::vec leafId) {
 
@@ -113,9 +155,34 @@ std::unordered_map<int, arma::vec> createPartitionMap(arma::mat bounds,
 } // end createPartitionMap() function
 
 
+
+ arma::mat createDefaultPartition(arma::mat supp, u_int d, u_int k) {
+     /* 
+            data : matrix w/ response in first column, [y | X]
+            n :    # of data points
+            d :    dimension of features
+            k :    # of leaves
+     */
+    // arma::mat partition(k, 2 * d, arma::fill::zeros);
+    arma::mat partition(2 * d, k, arma::fill::zeros);
+    for (unsigned int i = 0; i < d; i++) {
+        double lb = supp(i, 0);
+        double ub = supp(i, 1);
+        for (unsigned int r = 0; r < k; r++) {
+            // partition(r, 2 * i) = lb;
+            // partition(r, 2 * i + 1) = ub;
+            partition(2 * i, r) = lb;
+            partition(2 * i + 1, r) = ub;
+        }
+    }
+    return partition;
+ } // end createDefaultPartition() function
+
+
+
+
 /* TODO: I dont' think we use this function anymore because I stuck it
 directly into the approx_v1() function -- */
-// [[Rcpp::export]]
 Rcpp::List getPartition(Rcpp::List tree, arma::mat supp) {
 
     Rcpp::Environment tmp = Rcpp::Environment::global_env();

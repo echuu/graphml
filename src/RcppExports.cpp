@@ -108,6 +108,28 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// timeTreeAndPartition
+arma::mat timeTreeAndPartition(arma::mat data);
+RcppExport SEXP _graphml_timeTreeAndPartition(SEXP dataSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
+    rcpp_result_gen = Rcpp::wrap(timeTreeAndPartition(data));
+    return rcpp_result_gen;
+END_RCPP
+}
+// timeTree
+double timeTree(arma::mat data);
+RcppExport SEXP _graphml_timeTree(SEXP dataSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
+    rcpp_result_gen = Rcpp::wrap(timeTree(data));
+    return rcpp_result_gen;
+END_RCPP
+}
 // init_graph
 Rcpp::List init_graph(arma::umat G, u_int b, arma::mat V);
 RcppExport SEXP _graphml_init_graph(SEXP GSEXP, SEXP bSEXP, SEXP VSEXP) {
@@ -149,17 +171,29 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// approx_integral
-double approx_integral(u_int K, arma::mat& psi_df, arma::mat& bounds, Rcpp::List& params);
-RcppExport SEXP _graphml_approx_integral(SEXP KSEXP, SEXP psi_dfSEXP, SEXP boundsSEXP, SEXP paramsSEXP) {
+// hyb
+double hyb(arma::umat G, u_int b, arma::mat V, u_int J);
+RcppExport SEXP _graphml_hyb(SEXP GSEXP, SEXP bSEXP, SEXP VSEXP, SEXP JSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< u_int >::type K(KSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type psi_df(psi_dfSEXP);
-    Rcpp::traits::input_parameter< arma::mat& >::type bounds(boundsSEXP);
+    Rcpp::traits::input_parameter< arma::umat >::type G(GSEXP);
+    Rcpp::traits::input_parameter< u_int >::type b(bSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type V(VSEXP);
+    Rcpp::traits::input_parameter< u_int >::type J(JSEXP);
+    rcpp_result_gen = Rcpp::wrap(hyb(G, b, V, J));
+    return rcpp_result_gen;
+END_RCPP
+}
+// psi_cpp
+double psi_cpp(arma::vec& u, Rcpp::List& params);
+RcppExport SEXP _graphml_psi_cpp(SEXP uSEXP, SEXP paramsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec& >::type u(uSEXP);
     Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(approx_integral(K, psi_df, bounds, params));
+    rcpp_result_gen = Rcpp::wrap(psi_cpp(u, params));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -184,68 +218,6 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::mat >::type u_df(u_dfSEXP);
     Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
     rcpp_result_gen = Rcpp::wrap(calcMode(u_df, params));
-    return rcpp_result_gen;
-END_RCPP
-}
-// support
-arma::mat support(arma::mat samps, u_int D);
-RcppExport SEXP _graphml_support(SEXP sampsSEXP, SEXP DSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type samps(sampsSEXP);
-    Rcpp::traits::input_parameter< u_int >::type D(DSEXP);
-    rcpp_result_gen = Rcpp::wrap(support(samps, D));
-    return rcpp_result_gen;
-END_RCPP
-}
-// fitTree
-Rcpp::List fitTree(Rcpp::DataFrame x, Rcpp::Formula formula);
-RcppExport SEXP _graphml_fitTree(SEXP xSEXP, SEXP formulaSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::DataFrame >::type x(xSEXP);
-    Rcpp::traits::input_parameter< Rcpp::Formula >::type formula(formulaSEXP);
-    rcpp_result_gen = Rcpp::wrap(fitTree(x, formula));
-    return rcpp_result_gen;
-END_RCPP
-}
-// findAllCandidatePoints
-std::unordered_map<int, arma::vec> findAllCandidatePoints(arma::mat data, arma::vec locs, arma::vec uStar, u_int D);
-RcppExport SEXP _graphml_findAllCandidatePoints(SEXP dataSEXP, SEXP locsSEXP, SEXP uStarSEXP, SEXP DSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type data(dataSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type locs(locsSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type uStar(uStarSEXP);
-    Rcpp::traits::input_parameter< u_int >::type D(DSEXP);
-    rcpp_result_gen = Rcpp::wrap(findAllCandidatePoints(data, locs, uStar, D));
-    return rcpp_result_gen;
-END_RCPP
-}
-// createPartitionMap
-std::unordered_map<int, arma::vec> createPartitionMap(arma::mat bounds, arma::vec leafId);
-RcppExport SEXP _graphml_createPartitionMap(SEXP boundsSEXP, SEXP leafIdSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type bounds(boundsSEXP);
-    Rcpp::traits::input_parameter< arma::vec >::type leafId(leafIdSEXP);
-    rcpp_result_gen = Rcpp::wrap(createPartitionMap(bounds, leafId));
-    return rcpp_result_gen;
-END_RCPP
-}
-// getPartition
-Rcpp::List getPartition(Rcpp::List tree, arma::mat supp);
-RcppExport SEXP _graphml_getPartition(SEXP treeSEXP, SEXP suppSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< Rcpp::List >::type tree(treeSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type supp(suppSEXP);
-    rcpp_result_gen = Rcpp::wrap(getPartition(tree, supp));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -367,6 +339,19 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// sse
+double sse(arma::vec x, int n, double xbar);
+RcppExport SEXP _graphml_sse(SEXP xSEXP, SEXP nSEXP, SEXP xbarSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
+    Rcpp::traits::input_parameter< int >::type n(nSEXP);
+    Rcpp::traits::input_parameter< double >::type xbar(xbarSEXP);
+    rcpp_result_gen = Rcpp::wrap(sse(x, n, xbar));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_graphml_ep_logz", (DL_FUNC) &_graphml_ep_logz, 4},
@@ -376,17 +361,15 @@ static const R_CallMethodDef CallEntries[] = {
     {"_graphml_log_multi_gamma", (DL_FUNC) &_graphml_log_multi_gamma, 2},
     {"_graphml_log_wishart_norm", (DL_FUNC) &_graphml_log_wishart_norm, 3},
     {"_graphml_gnormJT", (DL_FUNC) &_graphml_gnormJT, 5},
+    {"_graphml_timeTreeAndPartition", (DL_FUNC) &_graphml_timeTreeAndPartition, 1},
+    {"_graphml_timeTree", (DL_FUNC) &_graphml_timeTree, 1},
     {"_graphml_init_graph", (DL_FUNC) &_graphml_init_graph, 3},
     {"_graphml_generalApprox", (DL_FUNC) &_graphml_generalApprox, 4},
     {"_graphml_approx_v1", (DL_FUNC) &_graphml_approx_v1, 4},
-    {"_graphml_approx_integral", (DL_FUNC) &_graphml_approx_integral, 4},
+    {"_graphml_hyb", (DL_FUNC) &_graphml_hyb, 4},
+    {"_graphml_psi_cpp", (DL_FUNC) &_graphml_psi_cpp, 2},
     {"_graphml_evalPsi", (DL_FUNC) &_graphml_evalPsi, 2},
     {"_graphml_calcMode", (DL_FUNC) &_graphml_calcMode, 2},
-    {"_graphml_support", (DL_FUNC) &_graphml_support, 2},
-    {"_graphml_fitTree", (DL_FUNC) &_graphml_fitTree, 2},
-    {"_graphml_findAllCandidatePoints", (DL_FUNC) &_graphml_findAllCandidatePoints, 4},
-    {"_graphml_createPartitionMap", (DL_FUNC) &_graphml_createPartitionMap, 2},
-    {"_graphml_getPartition", (DL_FUNC) &_graphml_getPartition, 2},
     {"_graphml_rcpparma_hello_world", (DL_FUNC) &_graphml_rcpparma_hello_world, 0},
     {"_graphml_rcpparma_outerproduct", (DL_FUNC) &_graphml_rcpparma_outerproduct, 1},
     {"_graphml_rcpparma_innerproduct", (DL_FUNC) &_graphml_rcpparma_innerproduct, 1},
@@ -397,6 +380,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_graphml_createDfName", (DL_FUNC) &_graphml_createDfName, 1},
     {"_graphml_mat2df", (DL_FUNC) &_graphml_mat2df, 2},
     {"_graphml_lse", (DL_FUNC) &_graphml_lse, 2},
+    {"_graphml_sse", (DL_FUNC) &_graphml_sse, 3},
     {NULL, NULL, 0}
 };
 

@@ -12,6 +12,7 @@
 
 /** ------------------- start objective functions -------------------------- **/
 
+// [[Rcpp::export]]
 double psi_cpp(arma::vec& u, Rcpp::List& params) {
 
 	u_int p           = params["p"];    // dimension of the graph G

@@ -1,4 +1,4 @@
-
+setwd("C:/Users/ericc/Documents/graphml")
 source("examples/helpers.R")
 library(graphml)
 library(rpart)

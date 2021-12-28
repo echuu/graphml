@@ -29,6 +29,14 @@ gnormJT <- function(Adj, EdgeMat, b, D, iter = 500L) {
     .Call(`_graphml_gnormJT`, Adj, EdgeMat, b, D, iter)
 }
 
+timeTreeAndPartition <- function(data) {
+    .Call(`_graphml_timeTreeAndPartition`, data)
+}
+
+timeTree <- function(data) {
+    .Call(`_graphml_timeTree`, data)
+}
+
 init_graph <- function(G, b, V) {
     .Call(`_graphml_init_graph`, G, b, V)
 }
@@ -41,8 +49,12 @@ approx_v1 <- function(u_df, uStar, data, params) {
     .Call(`_graphml_approx_v1`, u_df, uStar, data, params)
 }
 
-approx_integral <- function(K, psi_df, bounds, params) {
-    .Call(`_graphml_approx_integral`, K, psi_df, bounds, params)
+hyb <- function(G, b, V, J) {
+    .Call(`_graphml_hyb`, G, b, V, J)
+}
+
+psi_cpp <- function(u, params) {
+    .Call(`_graphml_psi_cpp`, u, params)
 }
 
 evalPsi <- function(samps, params) {
@@ -51,26 +63,6 @@ evalPsi <- function(samps, params) {
 
 calcMode <- function(u_df, params) {
     .Call(`_graphml_calcMode`, u_df, params)
-}
-
-support <- function(samps, D) {
-    .Call(`_graphml_support`, samps, D)
-}
-
-fitTree <- function(x, formula) {
-    .Call(`_graphml_fitTree`, x, formula)
-}
-
-findAllCandidatePoints <- function(data, locs, uStar, D) {
-    .Call(`_graphml_findAllCandidatePoints`, data, locs, uStar, D)
-}
-
-createPartitionMap <- function(bounds, leafId) {
-    .Call(`_graphml_createPartitionMap`, bounds, leafId)
-}
-
-getPartition <- function(tree, supp) {
-    .Call(`_graphml_getPartition`, tree, supp)
 }
 
 rcpparma_hello_world <- function() {
@@ -111,5 +103,9 @@ mat2df <- function(x, nameVec) {
 
 lse <- function(arr, count) {
     .Call(`_graphml_lse`, arr, count)
+}
+
+sse <- function(x, n, xbar) {
+    .Call(`_graphml_sse`, x, n, xbar)
 }
 

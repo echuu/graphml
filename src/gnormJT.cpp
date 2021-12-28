@@ -1623,7 +1623,7 @@ double gnormJT(arma::umat Adj, arma::umat EdgeMat, double b, arma::mat D, int it
     else{
       // cout<<"3. non-complete prime component"<<endl;
       // Rcpp::Rcout << Adj(Clist[iC]-1, Clist[iC]-1) << std::endl;
-      // Rcpp::Rcout << "suppity sup sup suppity" << std::endl;
+      // Rcpp::Rcout << "computing normalizing constant for sub-graph" << std::endl;
       // lC = lC + gnorm_c(Adj(Clist[iC]-1, Clist[iC]-1), b, D(Clist[iC]-1, Clist[iC]-1), iter);
       lC = lC + generalApprox(Adj(Clist[iC]-1, Clist[iC]-1), b, D(Clist[iC]-1, Clist[iC]-1), iter);
     }
