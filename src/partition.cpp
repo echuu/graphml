@@ -181,41 +181,4 @@ std::unordered_map<int, arma::vec> createPartitionMap(arma::mat bounds,
 
 
 
-/* TODO: I dont' think we use this function anymore because I stuck it
-directly into the approx_v1() function -- */
-Rcpp::List getPartition(Rcpp::List tree, arma::mat supp) {
-
-    Rcpp::Environment tmp = Rcpp::Environment::global_env();
-    Rcpp::Function f = tmp["extractPartitionSimple"];
-
-    Rcpp::List partList = f(tree, supp);
-    arma::mat part = partList["partition"];
-    // Rcpp::Rcout<< part << std::endl;
-    arma::vec leafId = partList["leaf_id"];
-    int k = leafId.n_elem; // # of leaf nodes
-
-    arma::vec locs = partList["locs"];
-    // Rcpp::Rcout<< locs << std::endl;
-
-    std::unordered_map<int, arma::vec> partitionMap;
-    for (int i = 0; i < k; i++) {
-        // add the leaf node's corresponding rectangle into the map
-        int leaf_i = leafId(i);
-        // arma::vec col_d = part[d];
-        partitionMap[leaf_i] = part.col(i);
-    }
-
-    // Rcpp::Function unname = tmp["unname"];
-    // Rcpp::Rcout<< unname(tree["where"]) << std::endl;
-
-    return Rcpp::List::create(Rcpp::Named("locs") = locs,
-						      Rcpp::Named("leafId") = leafId
-            );
-    // store first column as leaf_id
-    // store the remaining columns as the lb/ub of the partition sets
-    // create the map that defines the boundary here
-
-    // return part;
-} // end getPartition() function
-
 // end partition.cpp 

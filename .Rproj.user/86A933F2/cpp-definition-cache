@@ -1,7 +1,60 @@
 [
     {
+        "file": "C:/Users/ericc/Documents/graphml/src/Graph.cpp",
+        "file_last_write": 1641412245.0,
+        "definitions": [
+            {
+                "usr": "c:@S@Graph@F@getFreeElem#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "getFreeElem",
+                "file": "C:/Users/ericc/Documents/graphml/src/Graph.cpp",
+                "line": 40,
+                "column": 18
+            },
+            {
+                "usr": "c:@S@Graph@F@getNonFreeElem#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "getNonFreeElem",
+                "file": "C:/Users/ericc/Documents/graphml/src/Graph.cpp",
+                "line": 55,
+                "column": 18
+            },
+            {
+                "usr": "c:@S@Graph@F@sampleGW#i#",
+                "kind": 7,
+                "parent_name": "Graph",
+                "name": "sampleGW(u_int)",
+                "file": "C:/Users/ericc/Documents/graphml/src/Graph.cpp",
+                "line": 79,
+                "column": 18
+            }
+        ]
+    },
+    {
+        "file": "C:/Users/ericc/Documents/graphml/src/Graph.h",
+        "file_last_write": 1641420492.0,
+        "definitions": [
+            {
+                "usr": "c:@S@Graph",
+                "kind": 2,
+                "parent_name": "",
+                "name": "Graph",
+                "file": "C:/Users/ericc/Documents/graphml/src/Graph.h",
+                "line": 15,
+                "column": 7
+            }
+        ]
+    },
+    {
+        "file": "C:/Users/ericc/Documents/graphml/src/Interval.cpp",
+        "file_last_write": 1641498241.0,
+        "definitions": []
+    },
+    {
         "file": "C:/Users/ericc/Documents/graphml/src/Interval.h",
-        "file_last_write": 1640588409.0,
+        "file_last_write": 1641500953.0,
         "definitions": [
             {
                 "usr": "c:@S@Interval",
@@ -9,7 +62,7 @@
                 "parent_name": "",
                 "name": "Interval",
                 "file": "C:/Users/ericc/Documents/graphml/src/Interval.h",
-                "line": 15,
+                "line": 9,
                 "column": 8
             },
             {
@@ -18,23 +71,101 @@
                 "parent_name": "Interval",
                 "name": "print",
                 "file": "C:/Users/ericc/Documents/graphml/src/Interval.h",
-                "line": 25,
+                "line": 19,
+                "column": 14
+            }
+        ]
+    },
+    {
+        "file": "C:/Users/ericc/Documents/graphml/src/Node.cpp",
+        "file_last_write": 1641499806.0,
+        "definitions": [
+            {
+                "usr": "c:@S@Node@F@calculateLeafValue#$@N@arma@S@Mat>#d#",
+                "kind": 7,
+                "parent_name": "Node",
+                "name": "calculateLeafValue(arma::mat)",
+                "file": "C:/Users/ericc/Documents/graphml/src/Node.cpp",
+                "line": 38,
                 "column": 14
             },
             {
-                "usr": "c:@F@dfs#*$@S@Node#&i#$@N@std@N@__1@S@vector>#*$@S@Interval#$@N@std@N@__1@S@allocator>#S4_#&$@N@arma@S@Mat>#d#S7_#&$@N@std@N@__1@S@unordered_map>#i#$@N@arma@S@Col>#i#$@N@std@N@__1@S@hash>#i#$@N@std@N@__1@S@equal_to>#i#$@N@std@N@__1@S@allocator>#$@N@std@N@__1@S@pair>#1i#S11_#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "dfs(Node *, unsigned int &, std::vector<Interval *>, arma::mat &, arma::mat &, std::unordered_map<u_int, arma::uvec> &)",
-                "file": "C:/Users/ericc/Documents/graphml/src/Interval.h",
-                "line": 41,
-                "column": 6
+                "usr": "c:@S@Node@F@printNode#",
+                "kind": 7,
+                "parent_name": "Node",
+                "name": "printNode",
+                "file": "C:/Users/ericc/Documents/graphml/src/Node.cpp",
+                "line": 44,
+                "column": 12
+            },
+            {
+                "usr": "c:@S@Node@F@setSSE#d#",
+                "kind": 7,
+                "parent_name": "Node",
+                "name": "setSSE(double)",
+                "file": "C:/Users/ericc/Documents/graphml/src/Node.cpp",
+                "line": 54,
+                "column": 12
+            },
+            {
+                "usr": "c:@S@Node@F@getLeafRows#",
+                "kind": 7,
+                "parent_name": "Node",
+                "name": "getLeafRows",
+                "file": "C:/Users/ericc/Documents/graphml/src/Node.cpp",
+                "line": 59,
+                "column": 18
+            },
+            {
+                "usr": "c:@S@Node@F@getFeature#",
+                "kind": 7,
+                "parent_name": "Node",
+                "name": "getFeature",
+                "file": "C:/Users/ericc/Documents/graphml/src/Node.cpp",
+                "line": 62,
+                "column": 20
+            },
+            {
+                "usr": "c:@S@Node@F@getThreshold#",
+                "kind": 7,
+                "parent_name": "Node",
+                "name": "getThreshold",
+                "file": "C:/Users/ericc/Documents/graphml/src/Node.cpp",
+                "line": 65,
+                "column": 14
+            },
+            {
+                "usr": "c:@S@Node@F@getSSE#",
+                "kind": 7,
+                "parent_name": "Node",
+                "name": "getSSE",
+                "file": "C:/Users/ericc/Documents/graphml/src/Node.cpp",
+                "line": 68,
+                "column": 14
+            },
+            {
+                "usr": "c:@S@Node@F@getData#",
+                "kind": 7,
+                "parent_name": "Node",
+                "name": "getData",
+                "file": "C:/Users/ericc/Documents/graphml/src/Node.cpp",
+                "line": 71,
+                "column": 17
+            },
+            {
+                "usr": "c:@S@Node@F@getLeafVal#",
+                "kind": 7,
+                "parent_name": "Node",
+                "name": "getLeafVal",
+                "file": "C:/Users/ericc/Documents/graphml/src/Node.cpp",
+                "line": 74,
+                "column": 14
             }
         ]
     },
     {
         "file": "C:/Users/ericc/Documents/graphml/src/Node.h",
-        "file_last_write": 1640545081.0,
+        "file_last_write": 1641499843.0,
         "definitions": [
             {
                 "usr": "c:@S@Node",
@@ -42,100 +173,155 @@
                 "parent_name": "",
                 "name": "Node",
                 "file": "C:/Users/ericc/Documents/graphml/src/Node.h",
-                "line": 18,
+                "line": 6,
                 "column": 7
-            },
-            {
-                "usr": "c:@S@Node@F@calculateLeafValue#$@N@arma@S@Mat>#d#",
-                "kind": 7,
-                "parent_name": "Node",
-                "name": "calculateLeafValue(arma::mat)",
-                "file": "C:/Users/ericc/Documents/graphml/src/Node.h",
-                "line": 61,
-                "column": 16
-            },
-            {
-                "usr": "c:@S@Node@F@printNode#",
-                "kind": 7,
-                "parent_name": "Node",
-                "name": "printNode",
-                "file": "C:/Users/ericc/Documents/graphml/src/Node.h",
-                "line": 66,
-                "column": 14
-            },
-            {
-                "usr": "c:@S@Node@F@setSSE#d#",
-                "kind": 7,
-                "parent_name": "Node",
-                "name": "setSSE(double)",
-                "file": "C:/Users/ericc/Documents/graphml/src/Node.h",
-                "line": 76,
-                "column": 14
-            },
-            {
-                "usr": "c:@S@Node@F@getLeafRows#",
-                "kind": 7,
-                "parent_name": "Node",
-                "name": "getLeafRows",
-                "file": "C:/Users/ericc/Documents/graphml/src/Node.h",
-                "line": 81,
-                "column": 20
-            },
-            {
-                "usr": "c:@S@Node@F@getFeature#",
-                "kind": 7,
-                "parent_name": "Node",
-                "name": "getFeature",
-                "file": "C:/Users/ericc/Documents/graphml/src/Node.h",
-                "line": 84,
-                "column": 15
-            },
-            {
-                "usr": "c:@S@Node@F@getThreshold#",
-                "kind": 7,
-                "parent_name": "Node",
-                "name": "getThreshold",
-                "file": "C:/Users/ericc/Documents/graphml/src/Node.h",
-                "line": 87,
-                "column": 16
-            },
-            {
-                "usr": "c:@S@Node@F@getSSE#",
-                "kind": 7,
-                "parent_name": "Node",
-                "name": "getSSE",
-                "file": "C:/Users/ericc/Documents/graphml/src/Node.h",
-                "line": 90,
-                "column": 16
-            },
-            {
-                "usr": "c:@S@Node@F@getData#",
-                "kind": 7,
-                "parent_name": "Node",
-                "name": "getData",
-                "file": "C:/Users/ericc/Documents/graphml/src/Node.h",
-                "line": 93,
-                "column": 19
-            },
-            {
-                "usr": "c:@S@Node@F@getLeafVal#",
-                "kind": 7,
-                "parent_name": "Node",
-                "name": "getLeafVal",
-                "file": "C:/Users/ericc/Documents/graphml/src/Node.h",
-                "line": 96,
-                "column": 16
             }
         ]
     },
     {
         "file": "C:/Users/ericc/Documents/graphml/src/Tree.cpp",
-        "file_last_write": 1640390675.0,
-        "definitions": []
+        "file_last_write": 1641509400.0,
+        "definitions": [
+            {
+                "usr": "c:@S@Tree@F@getSortedIndex#$@N@arma@S@Mat>#d#$@N@arma@S@Col>#i#i#",
+                "kind": 7,
+                "parent_name": "Tree",
+                "name": "getSortedIndex(arma::mat, arma::uvec, u_int)",
+                "file": "C:/Users/ericc/Documents/graphml/src/Tree.cpp",
+                "line": 74,
+                "column": 18
+            },
+            {
+                "usr": "c:@S@Tree@F@fasterBuildTree#$@N@arma@S@Col>#i#",
+                "kind": 7,
+                "parent_name": "Tree",
+                "name": "fasterBuildTree(arma::uvec)",
+                "file": "C:/Users/ericc/Documents/graphml/src/Tree.cpp",
+                "line": 95,
+                "column": 13
+            },
+            {
+                "usr": "c:@S@Tree@F@populateInterval#&$@N@arma@S@Col>#d#",
+                "kind": 7,
+                "parent_name": "Tree",
+                "name": "populateInterval(arma::vec &)",
+                "file": "C:/Users/ericc/Documents/graphml/src/Tree.cpp",
+                "line": 263,
+                "column": 12
+            },
+            {
+                "usr": "c:@S@Tree@F@buildTree#$@N@arma@S@Col>#i#",
+                "kind": 7,
+                "parent_name": "Tree",
+                "name": "buildTree(arma::uvec)",
+                "file": "C:/Users/ericc/Documents/graphml/src/Tree.cpp",
+                "line": 283,
+                "column": 13
+            },
+            {
+                "usr": "c:@S@Tree@F@sse#$@N@arma@S@Col>#d#I#d#",
+                "kind": 7,
+                "parent_name": "Tree",
+                "name": "sse(arma::vec, int, double)",
+                "file": "C:/Users/ericc/Documents/graphml/src/Tree.cpp",
+                "line": 467,
+                "column": 14
+            },
+            {
+                "usr": "c:@S@Tree@F@calcSplitCp#d#d#d#",
+                "kind": 7,
+                "parent_name": "Tree",
+                "name": "calcSplitCp(double, double, double)",
+                "file": "C:/Users/ericc/Documents/graphml/src/Tree.cpp",
+                "line": 476,
+                "column": 14
+            },
+            {
+                "usr": "c:@S@Tree@F@calculateSSE#$@N@arma@S@Col>#i#",
+                "kind": 7,
+                "parent_name": "Tree",
+                "name": "calculateSSE(arma::uvec)",
+                "file": "C:/Users/ericc/Documents/graphml/src/Tree.cpp",
+                "line": 492,
+                "column": 14
+            },
+            {
+                "usr": "c:@S@Tree@F@calculateRuleSSE#$@N@arma@S@Col>#i#S0_#",
+                "kind": 7,
+                "parent_name": "Tree",
+                "name": "calculateRuleSSE(arma::uvec, arma::uvec)",
+                "file": "C:/Users/ericc/Documents/graphml/src/Tree.cpp",
+                "line": 501,
+                "column": 14
+            },
+            {
+                "usr": "c:@S@Tree@F@isSmallerValue#d#",
+                "kind": 7,
+                "parent_name": "Tree",
+                "name": "isSmallerValue(double)",
+                "file": "C:/Users/ericc/Documents/graphml/src/Tree.cpp",
+                "line": 527,
+                "column": 12
+            },
+            {
+                "usr": "c:@S@Tree@F@getLeaves#",
+                "kind": 7,
+                "parent_name": "Tree",
+                "name": "getLeaves",
+                "file": "C:/Users/ericc/Documents/graphml/src/Tree.cpp",
+                "line": 550,
+                "column": 11
+            },
+            {
+                "usr": "c:@S@Tree@F@getNumFeats#",
+                "kind": 7,
+                "parent_name": "Tree",
+                "name": "getNumFeats",
+                "file": "C:/Users/ericc/Documents/graphml/src/Tree.cpp",
+                "line": 553,
+                "column": 13
+            },
+            {
+                "usr": "c:@S@Tree@F@getNumRows#",
+                "kind": 7,
+                "parent_name": "Tree",
+                "name": "getNumRows",
+                "file": "C:/Users/ericc/Documents/graphml/src/Tree.cpp",
+                "line": 556,
+                "column": 13
+            },
+            {
+                "usr": "c:@S@Tree@F@getSSE#",
+                "kind": 7,
+                "parent_name": "Tree",
+                "name": "getSSE",
+                "file": "C:/Users/ericc/Documents/graphml/src/Tree.cpp",
+                "line": 559,
+                "column": 14
+            },
+            {
+                "usr": "c:@S@Tree@F@getPartition#",
+                "kind": 7,
+                "parent_name": "Tree",
+                "name": "getPartition",
+                "file": "C:/Users/ericc/Documents/graphml/src/Tree.cpp",
+                "line": 562,
+                "column": 45
+            },
+            {
+                "usr": "c:@S@Tree@F@getLeafRowMap#",
+                "kind": 7,
+                "parent_name": "Tree",
+                "name": "getLeafRowMap",
+                "file": "C:/Users/ericc/Documents/graphml/src/Tree.cpp",
+                "line": 565,
+                "column": 46
+            }
+        ]
     },
     {
         "file": "C:/Users/ericc/Documents/graphml/src/Tree.h",
-        "file_last_write": 1640546378.0,
+        "file_last_write": 1641509171.0,
         "definitions": [
             {
                 "usr": "c:@S@Tree",
@@ -143,80 +329,160 @@
                 "parent_name": "",
                 "name": "Tree",
                 "file": "C:/Users/ericc/Documents/graphml/src/Tree.h",
-                "line": 16,
+                "line": 10,
                 "column": 7
+            }
+        ]
+    },
+    {
+        "file": "C:/Users/ericc/Documents/graphml/src/density.cpp",
+        "file_last_write": 1641505797.0,
+        "definitions": [
+            {
+                "usr": "c:@F@approxlogml#$@N@arma@S@Mat>#d#$@N@arma@S@Col>#d#S0_#*$@S@Graph#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "approxlogml(arma::mat, arma::vec, arma::mat, Graph *)",
+                "file": "C:/Users/ericc/Documents/graphml/src/density.cpp",
+                "line": 14,
+                "column": 8
             },
             {
-                "usr": "c:@S@Tree@F@buildTree#$@N@arma@S@Col>#i#",
-                "kind": 7,
-                "parent_name": "Tree",
-                "name": "buildTree(arma::uvec)",
-                "file": "C:/Users/ericc/Documents/graphml/src/Tree.h",
-                "line": 45,
-                "column": 15
+                "usr": "c:@F@integratePartition#*$@S@Graph#I#I#i#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "integratePartition(Graph *, int, int, u_int)",
+                "file": "C:/Users/ericc/Documents/graphml/src/density.cpp",
+                "line": 36,
+                "column": 8
             },
             {
-                "usr": "c:@S@Tree@F@calculateRuleSSE#$@N@arma@S@Col>#i#S0_#",
-                "kind": 7,
-                "parent_name": "Tree",
-                "name": "calculateRuleSSE(arma::uvec, arma::uvec)",
-                "file": "C:/Users/ericc/Documents/graphml/src/Tree.h",
-                "line": 178,
-                "column": 16
+                "usr": "c:@F@calcMode#$@N@arma@S@Mat>#d#*$@S@Graph#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "calcMode(arma::mat, Graph *)",
+                "file": "C:/Users/ericc/Documents/graphml/src/density.cpp",
+                "line": 99,
+                "column": 11
             },
             {
-                "usr": "c:@S@Tree@F@isSmallerValue#d#",
-                "kind": 7,
-                "parent_name": "Tree",
-                "name": "isSmallerValue(double)",
-                "file": "C:/Users/ericc/Documents/graphml/src/Tree.h",
-                "line": 204,
-                "column": 14
+                "usr": "c:@F@h#i#i#&$@N@arma@S@Mat>#d#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "h(u_int, u_int, arma::mat &)",
+                "file": "C:/Users/ericc/Documents/graphml/src/density.cpp",
+                "line": 148,
+                "column": 8
             },
             {
-                "usr": "c:@S@Tree@F@dfs#*$@S@Node#$@N@std@N@__1@S@basic_string>#C#$@N@std@N@__1@S@char_traits>#C#$@N@std@N@__1@S@allocator>#C#",
-                "kind": 7,
-                "parent_name": "Tree",
-                "name": "dfs(Node *, std::string)",
-                "file": "C:/Users/ericc/Documents/graphml/src/Tree.h",
-                "line": 209,
-                "column": 14
+                "usr": "c:@F@vec2mat#$@N@arma@S@Col>#d#*$@S@Graph#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "vec2mat(arma::vec, Graph *)",
+                "file": "C:/Users/ericc/Documents/graphml/src/density.cpp",
+                "line": 156,
+                "column": 11
             },
             {
-                "usr": "c:@S@Tree@F@printTree#",
-                "kind": 7,
-                "parent_name": "Tree",
-                "name": "printTree",
-                "file": "C:/Users/ericc/Documents/graphml/src/Tree.h",
-                "line": 222,
-                "column": 14
+                "usr": "c:@F@psi_cpp#&$@N@arma@S@Col>#d#*$@S@Graph#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "psi_cpp(arma::vec &, Graph *)",
+                "file": "C:/Users/ericc/Documents/graphml/src/density.cpp",
+                "line": 215,
+                "column": 8
             },
             {
-                "usr": "c:@S@Tree@F@getLeaves#",
-                "kind": 7,
-                "parent_name": "Tree",
-                "name": "getLeaves",
-                "file": "C:/Users/ericc/Documents/graphml/src/Tree.h",
-                "line": 227,
-                "column": 13
+                "usr": "c:@F@evalPsi#$@N@arma@S@Mat>#d#*$@S@Graph#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "evalPsi(arma::mat, Graph *)",
+                "file": "C:/Users/ericc/Documents/graphml/src/density.cpp",
+                "line": 239,
+                "column": 11
             },
             {
-                "usr": "c:@S@Tree@F@getNumFeats#",
-                "kind": 7,
-                "parent_name": "Tree",
-                "name": "getNumFeats",
-                "file": "C:/Users/ericc/Documents/graphml/src/Tree.h",
-                "line": 230,
-                "column": 15
+                "usr": "c:@F@psi_cpp_mat#&$@N@arma@S@Mat>#d#*$@S@Graph#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "psi_cpp_mat(arma::mat &, Graph *)",
+                "file": "C:/Users/ericc/Documents/graphml/src/density.cpp",
+                "line": 252,
+                "column": 8
             },
             {
-                "usr": "c:@S@Tree@F@getNumRows#",
-                "kind": 7,
-                "parent_name": "Tree",
-                "name": "getNumRows",
-                "file": "C:/Users/ericc/Documents/graphml/src/Tree.h",
-                "line": 233,
-                "column": 15
+                "usr": "c:@F@grad_gwish#&$@N@arma@S@Mat>#d#*$@S@Graph#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "grad_gwish(arma::mat &, Graph *)",
+                "file": "C:/Users/ericc/Documents/graphml/src/density.cpp",
+                "line": 274,
+                "column": 11
+            },
+            {
+                "usr": "c:@F@dpsi_ij#i#i#&$@N@arma@S@Mat>#d#*$@S@Graph#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "dpsi_ij(u_int, u_int, arma::mat &, Graph *)",
+                "file": "C:/Users/ericc/Documents/graphml/src/density.cpp",
+                "line": 292,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@dpsi#i#i#i#i#&$@N@arma@S@Mat>#d#*$@S@Graph#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "dpsi(u_int, u_int, u_int, u_int, arma::mat &, Graph *)",
+                "file": "C:/Users/ericc/Documents/graphml/src/density.cpp",
+                "line": 339,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@hess_gwish#&$@N@arma@S@Mat>#d#*$@S@Graph#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "hess_gwish(arma::mat &, Graph *)",
+                "file": "C:/Users/ericc/Documents/graphml/src/density.cpp",
+                "line": 445,
+                "column": 11
+            },
+            {
+                "usr": "c:@F@d2psi_ijkl#i#i#i#i#&$@N@arma@S@Mat>#d#*$@S@Graph#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "d2psi_ijkl(u_int, u_int, u_int, u_int, arma::mat &, Graph *)",
+                "file": "C:/Users/ericc/Documents/graphml/src/density.cpp",
+                "line": 546,
+                "column": 8
+            },
+            {
+                "usr": "c:@F@d2psi#i#i#i#i#i#i#&$@N@arma@S@Mat>#d#*$@S@Graph#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "d2psi(u_int, u_int, u_int, u_int, u_int, u_int, arma::mat &, Graph *)",
+                "file": "C:/Users/ericc/Documents/graphml/src/density.cpp",
+                "line": 565,
+                "column": 8
+            }
+        ]
+    },
+    {
+        "file": "C:/Users/ericc/Documents/graphml/src/density.h",
+        "file_last_write": 1641505207.0,
+        "definitions": []
+    },
+    {
+        "file": "C:/Users/ericc/Documents/graphml/src/driver.cpp",
+        "file_last_write": 1641506201.0,
+        "definitions": [
+            {
+                "usr": "c:@F@test#$@N@arma@S@Mat>#i#i#$@N@arma@S@Mat>#d#i#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "test(arma::umat, u_int, arma::mat, u_int)",
+                "file": "C:/Users/ericc/Documents/graphml/src/driver.cpp",
+                "line": 7,
+                "column": 8
             }
         ]
     },
@@ -587,15 +853,24 @@
     },
     {
         "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-        "file_last_write": 1640650318.0,
+        "file_last_write": 1641500031.0,
         "definitions": [
+            {
+                "usr": "c:@F@dfs#*$@S@Node#&i#$@N@std@N@__1@S@vector>#*$@S@Interval#$@N@std@N@__1@S@allocator>#S4_#&$@N@arma@S@Mat>#d#S7_#&$@N@std@N@__1@S@unordered_map>#i#$@N@arma@S@Col>#i#$@N@std@N@__1@S@hash>#i#$@N@std@N@__1@S@equal_to>#i#$@N@std@N@__1@S@allocator>#$@N@std@N@__1@S@pair>#1i#S11_#",
+                "kind": 6,
+                "parent_name": "",
+                "name": "dfs(Node *, unsigned int &, std::vector<Interval *>, arma::mat &, arma::mat &, std::unordered_map<u_int, arma::uvec> &)",
+                "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
+                "line": 24,
+                "column": 6
+            },
             {
                 "usr": "c:@F@timeTreeAndPartition#$@N@arma@S@Mat>#d#",
                 "kind": 6,
                 "parent_name": "",
                 "name": "timeTreeAndPartition(arma::mat)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 25,
+                "line": 107,
                 "column": 11
             },
             {
@@ -604,7 +879,7 @@
                 "parent_name": "",
                 "name": "timeTree(arma::mat)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 53,
+                "line": 135,
                 "column": 8
             },
             {
@@ -613,7 +888,7 @@
                 "parent_name": "",
                 "name": "timePartition(Tree *, arma::mat)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 79,
+                "line": 161,
                 "column": 11
             },
             {
@@ -622,7 +897,7 @@
                 "parent_name": "",
                 "name": "init_graph(arma::umat, u_int, arma::mat)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 104,
+                "line": 186,
                 "column": 12
             },
             {
@@ -631,7 +906,7 @@
                 "parent_name": "",
                 "name": "generalApprox(arma::umat, u_int, arma::mat, u_int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 174,
+                "line": 256,
                 "column": 8
             },
             {
@@ -640,7 +915,7 @@
                 "parent_name": "",
                 "name": "approx_v1(Rcpp::DataFrame, arma::vec, arma::mat, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 202,
+                "line": 284,
                 "column": 8
             },
             {
@@ -649,7 +924,7 @@
                 "parent_name": "",
                 "name": "hyb(arma::umat, u_int, arma::mat, u_int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 253,
+                "line": 335,
                 "column": 8
             },
             {
@@ -658,7 +933,7 @@
                 "parent_name": "",
                 "name": "approx_v2(arma::mat, arma::vec, arma::mat, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 283,
+                "line": 367,
                 "column": 8
             },
             {
@@ -667,7 +942,7 @@
                 "parent_name": "",
                 "name": "approx_helper(Rcpp::List &, int, int, u_int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 346,
+                "line": 425,
                 "column": 8
             },
             {
@@ -676,7 +951,7 @@
                 "parent_name": "",
                 "name": "approxZ(Rcpp::List &, arma::vec, int, int, u_int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 411,
+                "line": 490,
                 "column": 8
             },
             {
@@ -685,7 +960,7 @@
                 "parent_name": "",
                 "name": "approx_integral(u_int, arma::mat &, arma::mat &, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwish.cpp",
-                "line": 478,
+                "line": 557,
                 "column": 8
             }
         ]
@@ -697,7 +972,7 @@
     },
     {
         "file": "C:/Users/ericc/Documents/graphml/src/gwishDensity.cpp",
-        "file_last_write": 1640649633.0,
+        "file_last_write": 1641451277.0,
         "definitions": [
             {
                 "usr": "c:@F@psi_cpp#&$@N@arma@S@Col>#d#&I#",
@@ -786,7 +1061,7 @@
                 "parent_name": "",
                 "name": "calcMode(arma::mat, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/gwishDensity.cpp",
-                "line": 579,
+                "line": 578,
                 "column": 11
             }
         ]
@@ -798,7 +1073,7 @@
     },
     {
         "file": "C:/Users/ericc/Documents/graphml/src/partition.cpp",
-        "file_last_write": 1640588187.0,
+        "file_last_write": 1641451248.0,
         "definitions": [
             {
                 "usr": "c:@F@support#$@N@arma@S@Mat>#d#i#",
@@ -862,15 +1137,6 @@
                 "file": "C:/Users/ericc/Documents/graphml/src/partition.cpp",
                 "line": 159,
                 "column": 12
-            },
-            {
-                "usr": "c:@F@getPartition#I#$@N@arma@S@Mat>#d#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "getPartition(Rcpp::List, arma::mat)",
-                "file": "C:/Users/ericc/Documents/graphml/src/partition.cpp",
-                "line": 186,
-                "column": 12
             }
         ]
     },
@@ -923,7 +1189,7 @@
     },
     {
         "file": "C:/Users/ericc/Documents/graphml/src/rgwishart.cpp",
-        "file_last_write": 1638298520.0,
+        "file_last_write": 1641406996.0,
         "definitions": [
             {
                 "usr": "c:@F@rgw#i#&I#",
@@ -961,7 +1227,7 @@
     },
     {
         "file": "C:/Users/ericc/Documents/graphml/src/tools.cpp",
-        "file_last_write": 1639120669.0,
+        "file_last_write": 1641500913.0,
         "definitions": [
             {
                 "usr": "c:@F@xi#i#i#&$@N@arma@S@Mat>#d#",
@@ -969,7 +1235,7 @@
                 "parent_name": "",
                 "name": "xi(u_int, u_int, arma::mat &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/tools.cpp",
-                "line": 12,
+                "line": 11,
                 "column": 8
             },
             {
@@ -978,7 +1244,7 @@
                 "parent_name": "",
                 "name": "createDfName(unsigned int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/tools.cpp",
-                "line": 21,
+                "line": 20,
                 "column": 20
             },
             {
@@ -987,7 +1253,7 @@
                 "parent_name": "",
                 "name": "mat2df(arma::mat, Rcpp::StringVector)",
                 "file": "C:/Users/ericc/Documents/graphml/src/tools.cpp",
-                "line": 33,
+                "line": 32,
                 "column": 17
             },
             {
@@ -996,7 +1262,7 @@
                 "parent_name": "",
                 "name": "lse(arma::vec, int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/tools.cpp",
-                "line": 49,
+                "line": 48,
                 "column": 8
             },
             {
@@ -1005,7 +1271,7 @@
                 "parent_name": "",
                 "name": "matrix2vector(arma::mat, const bool)",
                 "file": "C:/Users/ericc/Documents/graphml/src/tools.cpp",
-                "line": 69,
+                "line": 68,
                 "column": 11
             },
             {
@@ -1014,7 +1280,7 @@
                 "parent_name": "",
                 "name": "getFreeElem(arma::umat, u_int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/tools.cpp",
-                "line": 81,
+                "line": 80,
                 "column": 11
             },
             {
@@ -1023,7 +1289,7 @@
                 "parent_name": "",
                 "name": "getNonFreeElem(arma::umat, u_int, u_int)",
                 "file": "C:/Users/ericc/Documents/graphml/src/tools.cpp",
-                "line": 96,
+                "line": 95,
                 "column": 11
             },
             {
@@ -1032,7 +1298,7 @@
                 "parent_name": "",
                 "name": "vec2mat(arma::vec, Rcpp::List &)",
                 "file": "C:/Users/ericc/Documents/graphml/src/tools.cpp",
-                "line": 127,
+                "line": 126,
                 "column": 11
             }
         ]
@@ -1057,21 +1323,6 @@
                 "parent_name": "",
                 "name": "sse(arma::vec, u_int, double)",
                 "file": "C:/Users/ericc/Documents/graphml/src/tree.h",
-                "line": 11,
-                "column": 8
-            }
-        ]
-    },
-    {
-        "file": "C:/Users/ericc/Documents/graphml/src/util.h",
-        "file_last_write": 1640373488.0,
-        "definitions": [
-            {
-                "usr": "c:@F@sse#$@N@arma@S@Col>#d#I#d#",
-                "kind": 6,
-                "parent_name": "",
-                "name": "sse(arma::vec, int, double)",
-                "file": "C:/Users/ericc/Documents/graphml/src/util.h",
                 "line": 11,
                 "column": 8
             }

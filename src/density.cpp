@@ -1,28 +1,226 @@
-// gwishDensity.cpp
+#include "Tree.h" 
+#include "density.h"
+#include "Graph.h"
+#include "tools.h"      // for lse()
+#include "epmgp.h"      // for ep_logz() function 
+#include "partition.h"  // for findOptPoints()
 
-#include "gwishDensity.h"
-#include "tools.h"
 #define RCPP_ARMADILLO_RETURN_COLVEC_AS_VECTOR
 // [[Rcpp::depends(RcppArmadillo)]]
 #define EIGEN_PERMANENTLY_DISABLE_STUPID_WARNINGS
 
 
-/**** update gradient, hessian to accommodate non-diagonal scale matrices *****/
+
+double approxlogml(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph) {
+
+    // TODO: fix the input so that we don't have to pass two matrices that are
+    // essentially the same thing
+
+    u_int D = graph->D;
+    // fit cart model 
+    Tree* tree = new Tree(z, 1);
+    std::unordered_map<u_int, arma::vec>* pmap = tree->getPartition();
+	std::unordered_map<u_int, arma::uvec>* leafRowMap = tree->getLeafRowMap();
+	unsigned int nLeaves = tree->getLeaves();
+    unsigned int d = tree->getNumFeats();
+
+    std::unordered_map<u_int, arma::vec> candidates = findOptPoints(
+		xy, *leafRowMap, nLeaves, uStar, D
+	);
+
+    return integratePartition(graph, candidates, *pmap, nLeaves);
+
+    return 0;
+} // end approxlogml() function
+
+double integratePartition(Graph* graph, 
+	std::unordered_map<u_int, arma::vec> candidates, 
+	std::unordered_map<u_int, arma::vec> bounds, 
+	u_int nLeaves) {
+
+    
+    u_int D = graph->D;    // dimension of parameter space
+	arma::vec log_terms(nLeaves, arma::fill::zeros);
+	arma::vec G_k(nLeaves, arma::fill::zeros);
+	arma::mat H_k(D, D, arma::fill::zeros);
+	arma::mat H_k_inv(D, D, arma::fill::zeros);
+	arma::vec lambda_k(D, arma::fill::zeros);
+	arma::vec b_k(D, arma::fill::zeros);
+	arma::vec m_k(D, arma::fill::zeros);
+	arma::vec lb(D, arma::fill::zeros);
+	arma::vec ub(D, arma::fill::zeros);
+	arma::vec u_k(D, arma::fill::zeros);
+	arma::vec candidate_k(D, arma::fill::zeros);
+
+	double psi_k;
+	arma::mat psi_mat(D, D, arma::fill::zeros);
+	//arma::vec bounds_k;
+	for (u_int k = 0; k < nLeaves; k++) {
+
+		// leaf_k = leaf(k);
+		candidate_k = candidates[k];
+		u_k = candidate_k.
+			elem(arma::conv_to<arma::uvec>::from(arma::linspace(0, D-1, D)));
+		// Rcpp::Rcout<< u_k << std::endl;
+		psi_mat = vec2mat(u_k, graph);
+		// double psi_k = psi_cpp_mat(psi_mat, params);
+		psi_k = candidate_k(D);
+
+		H_k = hess_gwish(psi_mat, graph); // 11/9: using general hessian
+		// H_k_inv = inv(H_k);
+		H_k_inv = arma::inv_sympd(H_k);
+		lambda_k = grad_gwish(psi_mat, graph); // 11/9: using general gradient
+		b_k = H_k * u_k - lambda_k;
+		m_k = H_k_inv * b_k;
+
+		lb = bounds[k].elem(arma::conv_to<arma::uvec>::from(
+			arma::linspace(0, 2 * D - 2, D)));
+		ub = bounds[k].elem(arma::conv_to<arma::uvec>::from(
+			arma::linspace(1, 2 * D - 1, D)));
+		/*
+		for (u_int d = 0; d < D; d++) {
+			lb(d) = bounds[leaf_k](2 * d); ub(d) = bounds[leaf_k](2 * d + 1);
+		}
+		*/
+		double val = 0;
+		double sign;
+		log_det(val, sign, H_k);
+		G_k(k) = ep_logz(m_k, H_k_inv, lb, ub);
+		log_terms(k) = D / 2 * std::log(2 * M_PI) - 0.5 * val - psi_k +
+			arma::dot(lambda_k, u_k) -
+			(0.5 * u_k.t() * H_k * u_k).eval()(0,0) +
+			(0.5 * m_k.t() * H_k * m_k).eval()(0,0) + G_k(k);
+	}
+
+	return lse(log_terms, nLeaves);
+} // end integratePartition() function
 
 
-/** ------------------- start objective functions -------------------------- **/
+arma::vec calcMode(arma::mat u_df, Graph* graph) {
+	double tol = 1e-8;
+	u_int maxSteps = 10;
+	bool VERBOSE = false;
+	
+	// use the MAP as starting point for algorithm
+	u_int D = graph->D;
+	u_int mapIndex = u_df.col(D).index_min();
+	
+	arma::vec theta = arma::conv_to<arma::vec>::from(u_df.row(mapIndex)).
+	subvec(0, D-1);
+	
+	u_int numSteps = 0;
+	double tolCriterion = 100;
+	double stepSize = 1;
+	
+	arma::mat thetaMat = vec2mat(theta, graph);
+	arma::mat thetaNew;
+	arma::mat thetaNewMat;
+	arma::mat G;
+	arma::mat invG;
+	double psiNew = 0, psiCurr = 0;
+	/* start newton's method loop */
+	while ((tolCriterion > tol) && (numSteps < maxSteps)) {
+		// thetaMat = create_psi_mat_cpp(theta, params);
+		// G = -hess_gwish(thetaMat, params);
+		// invG = inv(G);
+		invG = - arma::inv_sympd(hess_gwish(thetaMat, graph));
+		thetaNew = theta + stepSize * invG * grad_gwish(thetaMat, graph);
+		thetaNewMat = vec2mat(thetaNew, graph);
+		psiNew = psi_cpp_mat(thetaNewMat, graph);
+		psiCurr = psi_cpp_mat(thetaMat, graph);
+		if (-psiNew < -psiCurr) {
+			return(arma::conv_to<arma::vec>::from(theta));
+		}
+		tolCriterion = std::abs(psiNew - psiCurr);
+		theta = thetaNew;
+		thetaMat = thetaNewMat;
+		numSteps++;
+	} /* end newton's method loop */
+	if (numSteps == maxSteps) {
+		Rcpp::Rcout<< "Max # of steps reached in Newton's method." << std::endl;
+	} else if (VERBOSE) {
+		Rcpp::Rcout << "Converged in " << numSteps << " iters" << std::endl;
+	}	
+	return arma::conv_to<arma::vec>::from(theta);	
+} // end calcMode() function
 
-// [[Rcpp::export]]
-double psi_cpp(arma::vec& u, Rcpp::List& params) {
 
-	u_int p           = params["p"];    // dimension of the graph G
-	u_int b           = params["b"];    // degrees of freedom
-	arma::vec nu_i    = params["nu_i"]; // see p. 329 of Atay (step 2)
-	arma::vec b_i     = params["b_i"];  // see p. 329 of Atay (step 2)
-	arma::mat P       = params["P"];    // upper cholesky factor of V_n
-	arma::mat G       = params["G"];    // graph G
+double h(u_int i, u_int j, arma::mat& L) {
+    // used to compute a fraction quantity in the gradient/hessian functions
+	// L is UPPER TRIANGULAR cholesky factor of the INVERSE scale matrix, i.e,
+	// D^(-1) = L'L
+	return L(i, j) / L(j, j);
+} // end h() function (used to be called xi())
 
-	arma::mat psi_mat = vec2mat(u, params);
+
+arma::mat vec2mat(arma::vec u, Graph* graph) {
+
+	u_int p        = graph->p;    // dimension of the graph G
+	u_int D        = graph->D;    // dimension of parameter space
+	arma::vec nu_i = graph->nu_i; // see p. 329 of Atay (step 2)
+	arma::vec b_i  = graph->b_i;  // see p. 329 of Atay (step 2)
+	arma::mat P    = graph->P;    // upper cholesky factor of V_n
+	arma::mat G    = arma::conv_to<arma::mat>::from(graph->G);
+	arma::vec edgeInd = graph->edgeInd;
+	arma::uvec ids =  graph->free_index;
+	arma::vec u_prime(p * p, arma::fill::zeros);
+	u_prime.elem(ids) = u;
+	// Rcpp::Rcout << ids << std::endl;
+
+	arma::mat u_mat(D, D, arma::fill::zeros);
+	u_mat = reshape(u_prime, p, p);
+	// Rcpp::Rcout << edgeInd << std::endl;
+
+	/* compute the non-free elmts in the matrix using the free elmts */
+
+	// float test = sum(u_mat[i,i:(j-1)] * P[i:(j-1), j]);
+	// arma::mat x1 = psi_mat.submat(0, 0, 0, 3);
+	//Rcpp::Rcout << x1 << std::endl;
+	// Rcpp::Rcout << psi_mat.submat(0, 0, 3, 0) << std::endl;
+	// Rcpp::Rcout << arma::dot(x1, psi_mat.submat(0, 0, 3, 0)) << std::endl;
+
+	// u_mat should have all free elements in it
+	double x0, tmp1, tmp2;
+	for (u_int i = 0; i < p; i++) {
+		for (u_int j = i; j < p; j++) {
+			if (G(i,j) > 0) {
+				continue; // free element, so these already have entries
+			}
+			if (i == 0) { // first row
+				// TODO: double check this calculation
+				u_mat(i,j) = -1/P(j,j) * arma::dot(u_mat.submat(i, i, i, j-1),
+												   P.submat(i, j, j-1, j));
+			} else {
+				x0 = -1/P(j,j) * arma::dot(u_mat.submat(i, i, i, j-1),
+										   P.submat(i, j, j-1, j));
+
+				arma::vec tmp(i, arma::fill::zeros);
+				for (u_int r = 0; r < i; r++) {
+					tmp1 = u_mat(r,i) + arma::dot(u_mat.submat(r, r, r, i-1),
+											P.submat(r, i, i-1, i)) / P(i,i);
+					tmp2 = u_mat(r,j) + arma::dot(u_mat.submat(r, r, r, j-1),
+											P.submat(r, j, j-1, j)) / P(j,j);
+					tmp(r) = tmp1 * tmp2;
+				}
+
+				u_mat(i,j) = x0 - 1 / u_mat(i,i) * arma::sum(tmp);
+			}
+		} // end inner for() over j
+	} // end outer for() over i
+
+	return u_mat;
+} // end vec2mat() function
+
+
+double psi_cpp(arma::vec& u, Graph* graph) {
+
+	u_int p           = graph->p;    // dimension of the graph G
+	u_int b           = graph->b;    // degrees of freedom
+	arma::vec nu_i    = graph->nu_i; // see p. 329 of Atay (step 2)
+	arma::vec b_i     = graph->b_i;  // see p. 329 of Atay (step 2)
+	arma::mat P       = graph->P;    // upper cholesky factor of V_n
+
+	arma::mat psi_mat = vec2mat(u, graph);
 
 	double psi_u = p * std::log(2);
 	for (u_int i = 0; i < p; i++) {
@@ -38,14 +236,26 @@ double psi_cpp(arma::vec& u, Rcpp::List& params) {
 } // end of psi_cpp() function
 
 
-double psi_cpp_mat(arma::mat& psi_mat, Rcpp::List& params) {
+arma::mat evalPsi(arma::mat samps, Graph* graph) {
+	u_int J = samps.n_rows;
+	arma::mat psi_mat(J, 1, arma::fill::zeros);
+	for (u_int j = 0; j < J; j++) {
+		arma::vec u = arma::conv_to<arma::vec>::from(samps.row(j));
+		psi_mat(j, 0) = psi_cpp(u, graph);
+	}
+	arma::mat psi_df = arma::join_rows( samps, psi_mat );
+	return psi_df;
+} // end evalPsi() function
 
-	u_int p           = params["p"];    // dimension of the graph G
-	u_int b           = params["b"];    // degrees of freedom
-	arma::vec nu_i    = params["nu_i"]; // see p. 329 of Atay (step 2)
-	arma::vec b_i     = params["b_i"];  // see p. 329 of Atay (step 2)
-	arma::mat P       = params["P"];    // upper cholesky factor of V_n
-	arma::mat G       = params["G"];    // graph G
+
+
+double psi_cpp_mat(arma::mat& psi_mat, Graph* graph) {
+
+	u_int p           = graph->p;    // dimension of the graph G
+	u_int b           = graph->b;    // degrees of freedom
+	arma::vec nu_i    = graph->nu_i; // see p. 329 of Atay (step 2)
+	arma::vec b_i     = graph->b_i;  // see p. 329 of Atay (step 2)
+	arma::mat P       = graph->P;    // upper cholesky factor of V_n
 
 	double psi_u = p * std::log(2);
 	for (u_int i = 0; i < p; i++) {
@@ -59,62 +269,32 @@ double psi_cpp_mat(arma::mat& psi_mat, Rcpp::List& params) {
 	return -psi_u;
 } // end psi_cpp_mat() function
 
-// [[Rcpp::export]]
-arma::mat evalPsi(arma::mat samps, Rcpp::List& params) {
-	u_int J = samps.n_rows;
-
-	arma::mat psi_mat(J, 1, arma::fill::zeros);
-	for (u_int j = 0; j < J; j++) {
-		arma::vec u = arma::conv_to<arma::vec>::from(samps.row(j));
-		psi_mat(j, 0) = psi_cpp(u, params);
-	}
-
-	arma::mat psi_df = arma::join_rows( samps, psi_mat );
-
-	return psi_df;
-} // end evalPsi() function
-
-
-/** --------------------- end objective functions -------------------------- **/
-
 /** ------------------- start gradient functions --------------------------- **/
 
-arma::vec grad_gwish(arma::mat& psi_mat, Rcpp::List& params) {
-
-	arma::mat G       = params["G"]; // graph G represented as adjacency matrix
-	u_int p           = params["p"]; // dimension of the graph G
-	// arma::vec edgeInd = params["edgeInd"];
-	arma::uvec free   = params["free_index"];
-	// TODO: implement create_psi_mat() function later; for now, we pass it in
-	// arma::mat psi_mat = vec2chol(u, p)
-	// arma::mat psi_mat = create_psi_mat_cpp(u, params);
-
+arma::vec grad_gwish(arma::mat& psi_mat, Graph* graph) {
+	arma::mat G = arma::conv_to<arma::mat>::from(graph->G);
+	u_int p = graph->p; // dimension of the graph G
+	arma::uvec free = graph->free_index;
 	// initialize matrix that can store the gradient elements
 	arma::mat gg(p, p, arma::fill::zeros);
 	// populate the gradient matrix entry by entry
 	for (u_int i = 0; i < p; i++) {
 		for (u_int j = i; j < p; j++) {
 			if (G(i,j) > 0) {
-				gg(i,j) = dpsi_ij(i, j, psi_mat, params);
+				gg(i,j) = dpsi_ij(i, j, psi_mat, graph);
 			}
 		}
 	}
-	// convert the matrix back into a vector and return only the entries
-	// that have a corresponding edge in the graph
-	// arma::vec grad_vec = chol2vec(gg, p);
-	// arma::uvec ids = find(edgeInd);
-	// return grad_vec.elem(ids);
 	return gg.elem(free);
 } // end grad_gwish() function
 
 
-double dpsi_ij(u_int i, u_int j, arma::mat& psi_mat, Rcpp::List& params) {
+double dpsi_ij(u_int i, u_int j, arma::mat& psi_mat, Graph* graph) {
 
-	arma::mat G     = params["G"];    // graph G represented as adjacency matrix
-	u_int p         = params["p"];    // dimension of the graph G
-	u_int b         = params["b"];    // degrees of freedom
-	arma::vec nu_i  = params["nu_i"]; //
-	// arma::mat L     = params["P"];
+	arma::mat G = arma::conv_to<arma::mat>::from(graph->G);
+	u_int p = graph->p;  // dimension of the graph G
+	u_int b = graph->b;  // degrees of freedom
+	arma::vec nu_i = graph->nu_i; 
 
 	double d_ij; // derivative of psi wrt psi_ij (summation over
 				 // the derivatives wrt the free elements)
@@ -131,7 +311,7 @@ double dpsi_ij(u_int i, u_int j, arma::mat& psi_mat, Rcpp::List& params) {
 						continue;
 					}
 					// otherwise: call the derivative function
-					d_ij += psi_mat(r,s) * dpsi(r, s, i, j, psi_mat, params);
+					d_ij += psi_mat(r,s) * dpsi(r, s, i, j, psi_mat, graph);
 				} // end if for checking G[r,s]
 			} // end loop over s
 		} // end loop over r
@@ -144,7 +324,7 @@ double dpsi_ij(u_int i, u_int j, arma::mat& psi_mat, Rcpp::List& params) {
 					if (psi_mat(r,s) == 0) {
 						continue;
 					}
-					d_ij += psi_mat(r,s) * dpsi(r, s, i, j, psi_mat, params);
+					d_ij += psi_mat(r,s) * dpsi(r, s, i, j, psi_mat, graph);
 					// Rcpp::Rcout << "G[" << r+1 << ", " << s+1 <<
 					//      "] = " << G(r,s) << std::endl;
 				}
@@ -156,11 +336,10 @@ double dpsi_ij(u_int i, u_int j, arma::mat& psi_mat, Rcpp::List& params) {
 } // end dpsi_ij() function
 
 
-double dpsi(u_int r, u_int s, u_int i, u_int j,
-	arma::mat& psi, Rcpp::List& params) {
+double dpsi(u_int r, u_int s, u_int i, u_int j, arma::mat& psi, Graph* graph) {
 
-	arma::mat G = params["G"];
-	arma::mat L = params["P"];
+	arma::mat G = arma::conv_to<arma::mat>::from(graph->G);
+	arma::mat L = graph->P;
 
 	// Rcpp::Rcout << "beginning"  << std::endl;
 	// Rcpp::Rcout << "G(" << r << ", " << s << ") = " << G(r,s) << std::endl;
@@ -188,7 +367,7 @@ double dpsi(u_int r, u_int s, u_int i, u_int j,
 		// the initial check in this function: if (G(r,s) > 0)
 		x = 0;
 		for (k = 0; k < s; k++) {
-			x += dpsi(r, k, i, j, psi, params) * xi(k, s, L); // correct G
+			x += dpsi(r, k, i, j, psi, graph) * h(k, s, L); // correct G
 		}
 		return -x;
 	} // end row 1 case
@@ -204,14 +383,14 @@ double dpsi(u_int r, u_int s, u_int i, u_int j,
 	if (DWRT_SAME_ROW_DIAG) { // dpsi_rs / dpsi_rr
 		// Rcpp::Rcout << "HERE"  << std::endl;
 		for (k = r; k < s; k++) {
-			s0 += xi(k, s, L) * dpsi(r, k, i, j, psi, params);
+			s0 += h(k, s, L) * dpsi(r, k, i, j, psi, graph);
 		}
 		for (k = 0; k < r; k++) {
 			for (l = k; l < s; l++) {
-				s10 += psi(k,l) * xi(l, s, L);
+				s10 += psi(k,l) * h(l, s, L);
 			}
 			for (l = k; l < r; l++) {
-				s11 += psi(k,l) * xi(l, r, L);
+				s11 += psi(k,l) * h(l, r, L);
 			}
 			s1(k) = psi(k,r) * psi(k,s) +
 				psi(k,r) * s10 + psi(k,s) * s11 + s10 * s11;
@@ -222,7 +401,7 @@ double dpsi(u_int r, u_int s, u_int i, u_int j,
 	} else { // dpsi_rs / dpsi_ij
 		// general case when derivative is wrt general (i, j), i > 0
 		for (k = r; k < s; k++) {
-			s0 += xi(k, s, L) * dpsi(r, k, i, j, psi, params);
+			s0 += h(k, s, L) * dpsi(r, k, i, j, psi, graph);
 		}
 		/* calculation of s1, inner summation from 1:(r-1)
 		   s1 = s10 + s11 + s12 + s13, where each component is one of the four
@@ -233,22 +412,22 @@ double dpsi(u_int r, u_int s, u_int i, u_int j,
 
 			// compute the intermediate summations:
 			for (l = k; l < s; l++) {
-				s110 += psi(k, l) * xi(l, s, L);
+				s110 += psi(k, l) * h(l, s, L);
 				// note: s111 is just s110 w/ derivative wrt (ij) applied to
 				// the first term
-				s111 += dpsi(k, l, i, j, psi, params) * xi(l, s, L);
+				s111 += dpsi(k, l, i, j, psi, graph) * h(l, s, L);
 			}
 			for (l = k; l < r; l++) {
-				s120 += psi(k, l) * xi(l, r, L);
+				s120 += psi(k, l) * h(l, r, L);
 				// note: s121 is just s120 w/ derivative wrt (ij) applied to
 				// the first term
-				s121 += dpsi(k, l, i, j, psi, params) * xi(l, r, L);
+				s121 += dpsi(k, l, i, j, psi, graph) * h(l, r, L);
 			}
 
-			s10 = psi(k,s) * dpsi(k, r, i, j, psi, params) +
-				psi(k,r) * dpsi(k, s, i, j, psi, params);
-			s11 = dpsi(k, r, i, j, psi, params) * s110 + psi(k,r) * s111;
-			s12 = dpsi(k, s, i, j, psi, params) * s120 + psi(k,s) * s121;
+			s10 = psi(k,s) * dpsi(k, r, i, j, psi, graph) +
+				psi(k,r) * dpsi(k, s, i, j, psi, graph);
+			s11 = dpsi(k, r, i, j, psi, graph) * s110 + psi(k,r) * s111;
+			s12 = dpsi(k, s, i, j, psi, graph) * s120 + psi(k,s) * s121;
 			s13 = s121 * s110 + s120 * s111;
 
 			s1(k) = s10 + s11 + s12 + s13;
@@ -261,19 +440,17 @@ double dpsi(u_int r, u_int s, u_int i, u_int j,
 
 /** -------------------- end gradient functions ---------------------------- **/
 
-
 /** -------------------- start hessian functions --------------------------- **/
 
-arma::mat hess_gwish(arma::mat& psi_mat, Rcpp::List& params) {
+arma::mat hess_gwish(arma::mat& psi_mat, Graph* graph) {
 
-	u_int D           = params["D"];          // dimension of parameter space
-	arma::mat G       = params["G"];          // graph G
-	u_int n_nonfree   = params["n_nonfree"];  // number of nonfree elements
-	arma::mat ind_mat = params["t_ind"];      // index of the free elements
-	arma::mat vbar    = params["vbar"];       // index of nonfree elements
-	u_int b           = params["b"];          // degrees of freedom
-	arma::vec nu_i    = params["nu_i"];       // see Atay paper for definition
-	// arma::mat psi_mat = create_psi_mat_cpp(u, params);
+	u_int D           = graph->D;          // dimension of parameter space
+	arma::mat G       = arma::conv_to<arma::mat>::from(graph->G);
+	u_int n_nonfree   = graph->n_nonfree;  // number of nonfree elements
+	arma::mat ind_mat = graph->t_ind;      // index of the free elements
+	arma::mat vbar    = graph->vbar;       // index of nonfree elements
+	u_int b           = graph->b;          // degrees of freedom
+	arma::vec nu_i    = graph->nu_i;       // see Atay paper for definition
 
 	arma::mat H(D, D, arma::fill::zeros);     // (D x D) hessian matrix
 
@@ -297,8 +474,8 @@ arma::mat hess_gwish(arma::mat& psi_mat, Rcpp::List& params) {
                call to d2psi(), as defined below, since this case should be
                captured in the 2nd order mixed partial calculation, but we can
                do this part later.. just set up the architecture for now */
-            x += std::pow(dpsi(rr, ss, i, j, psi_mat, params), 2) +
-            psi_mat(rr,ss) * d2psi(rr, ss, i, j, i, j, psi_mat, params);
+            x += std::pow(dpsi(rr, ss, i, j, psi_mat, graph), 2) +
+            psi_mat(rr,ss) * d2psi(rr, ss, i, j, i, j, psi_mat, graph);
 
         } // end of iteration over non-free elements
 
@@ -328,9 +505,9 @@ arma::mat hess_gwish(arma::mat& psi_mat, Rcpp::List& params) {
 	            // 11/5/21: previous implementation (line commented out below)
 	            // did not account for the 2nd order derivative term
 	            // tmp += std::pow(dpsi_rsij(rr, ss, i, j, psi_mat, G), 2)
-	            x += std::pow(dpsi(rr, ss, i, j, psi_mat, params), 2) +
+	            x += std::pow(dpsi(rr, ss, i, j, psi_mat, graph), 2) +
 	            	psi_mat(rr, ss) * 
-					d2psi(rr, ss, i, j, i, j, psi_mat, params);
+					d2psi(rr, ss, i, j, i, j, psi_mat, graph);
 	        }
 
         	H(d,d) = 1 + x;
@@ -348,8 +525,8 @@ arma::mat hess_gwish(arma::mat& psi_mat, Rcpp::List& params) {
 	    	k = ind_mat(c, 0) - 1;
 	  		l = ind_mat(c, 1) - 1;
 
-	  		H(r,c) = dpsi(i, j, k, l, psi_mat, params) +
-				d2psi_ijkl(i, j, k, l, psi_mat, params);
+	  		H(r,c) = dpsi(i, j, k, l, psi_mat, graph) +
+				d2psi_ijkl(i, j, k, l, psi_mat, graph);
 	    	H(c, r) = H(r, c); // reflect the value over the diagonal
 	    } // end inner for() over upper triangular columns
 	} // end for() population off-diagonal elements of the hessian
@@ -358,6 +535,7 @@ arma::mat hess_gwish(arma::mat& psi_mat, Rcpp::List& params) {
 	return H;
 } // end hess_gwish() function
 
+
 /* d2psi_ijkl():
 	this function populated each entry in the hessian matrix. It computes
 	the summation over vbar (set of NONFREE elements), where each term in the
@@ -365,32 +543,30 @@ arma::mat hess_gwish(arma::mat& psi_mat, Rcpp::List& params) {
 	and (2) the product of psi(r,s) and the second order mixed partial of
 	psi(r,s) wrt psi(ij) and psi(kl)
 */
-double d2psi_ijkl(u_int i, u_int j, u_int k, u_int l,
-	arma::mat& psi, Rcpp::List& params) {
+double d2psi_ijkl(u_int i, u_int j, u_int k, u_int l, arma::mat& psi, 
+    Graph* graph) {
 
-	u_int n_nonfree   = params["n_nonfree"];  // # nonfree elements
-	arma::mat G       = params["G"];          // graph G
-	arma::mat vbar    = params["vbar"];       // index of nonfree elements
-
+	u_int n_nonfree   = graph->n_nonfree;  // # nonfree elements
+	arma::mat vbar    = graph->vbar;       // index of nonfree elements
 	arma::vec sum_vbar(n_nonfree, arma::fill::zeros); // store summation terms
 	u_int n, r, s;
 	for (n = 0; n < n_nonfree; n++) {
 		r = vbar(n, 0) - 1; // row index of nonfree element
 		s = vbar(n, 1) - 1; // col index of nonfree element
 
-		sum_vbar(n) = dpsi(r, s, k, l, psi, params) *
-			dpsi(r, s, i, j, psi, params) +
-			psi(r, s) * d2psi(r, s, i, j, k, l, psi, params);
+		sum_vbar(n) = dpsi(r, s, k, l, psi, graph) *
+			dpsi(r, s, i, j, psi, graph) +
+			psi(r, s) * d2psi(r, s, i, j, k, l, psi, graph);
 	} // end for() over the nonfree elements
 	return arma::sum(sum_vbar);
 } // end d2psi_ijkl() function
 
-double d2psi(u_int r, u_int s, u_int i, u_int j, u_int k, u_int l,
-	arma::mat& psi, Rcpp::List& params) {
 
-	arma::mat G       = params["G"];          // graph G
-	arma::mat vbar    = params["vbar"];       // index of nonfree elements
-	arma::mat L       = params["P"];          // UPPER cholesky factor
+double d2psi(u_int r, u_int s, u_int i, u_int j, u_int k, u_int l,
+	arma::mat& psi, Graph* graph) {
+
+	arma::mat G       = arma::conv_to<arma::mat>::from(graph->G);
+	arma::mat L       = graph->P;       // UPPER cholesky factor
 
 	/* check terminating conditions; these should break us out of recursion */
 	if (G(r, s) > 0) { return 0; } // taking 2nd deriv of free element -> 0
@@ -406,7 +582,7 @@ double d2psi(u_int r, u_int s, u_int i, u_int j, u_int k, u_int l,
 		// this should prevent any premature accumulation of x0 (the first
 		// summation term). this should also prevent the same check in the for
 		// loop to ever hit because we check this immediately
-		return d2psi(r, s, k, l, i, j, psi, params);
+		return d2psi(r, s, k, l, i, j, psi, graph);
 	}
 
 	/* compute 2nd order derivative for the general case, i.e,
@@ -428,7 +604,7 @@ double d2psi(u_int r, u_int s, u_int i, u_int j, u_int k, u_int l,
 	double x0 = 0;
 	for (m = r; m < s; m++) {
 		// Rcpp::Rcout << "(r,s) = (" << r << "," << s << ")" << std::endl;
-		x0 += xi(m, s, L) * d2psi(r, m, i, j, k, l, psi, params);
+		x0 += h(m, s, L) * d2psi(r, m, i, j, k, l, psi, graph);
 	}
 	// Rcpp::Rcout << "x0 = " << x0 << std::endl;
 
@@ -442,10 +618,10 @@ double d2psi(u_int r, u_int s, u_int i, u_int j, u_int k, u_int l,
 			// case 0: dpsi(r,s) / dpsi(r,r) dpsi(r,r)
 			double x2_0 = 0, x3_0 = 0;
 			for (n = m; n < s; n++) {
-				x2_0 += psi(m, n) * xi(n, s, L);
+				x2_0 += psi(m, n) * h(n, s, L);
 			}
 			for (n = m; n < r; n++) {
-				x3_0 += psi(m, n) * xi(n, r, L);
+				x3_0 += psi(m, n) * h(n, r, L);
 			}
 			x1 = psi(m, r) * psi(m, s);
 			x2 = psi(m, r) * x2_0;
@@ -460,23 +636,23 @@ double d2psi(u_int r, u_int s, u_int i, u_int j, u_int k, u_int l,
 				"(i,j) = (" << i << "," << j << "), " <<
 				"(k,l) = (" << k << "," << l << ")" << std::endl;
 			*/
-			x1 = psi(m, s) * dpsi(m, r, k, l, psi, params) +
-				 psi(m, r) * dpsi(m, s, k, l, psi, params);
+			x1 = psi(m, s) * dpsi(m, r, k, l, psi, graph) +
+				 psi(m, r) * dpsi(m, s, k, l, psi, graph);
 			double x2_0 = 0, x2_1 = 0;
 			for (n = m; n < s; n++) {
-				xi_ns = xi(n, s, L);
+				xi_ns = h(n, s, L);
 				x2_0 += xi_ns * psi(m, n);
-				x2_1 += xi_ns * dpsi(m, n, k, l, psi, params);
+				x2_1 += xi_ns * dpsi(m, n, k, l, psi, graph);
 			}
-			x2 = dpsi(m, r, k, l, psi, params) * x2_0 + psi(m, r) * x2_1;
+			x2 = dpsi(m, r, k, l, psi, graph) * x2_0 + psi(m, r) * x2_1;
 
 			double x3_0 = 0, x3_1 = 0;
 			for (n = m; n < r; n++) {
-				xi_nr = xi(n, r, L);
+				xi_nr = h(n, r, L);
 				x3_0 += xi_nr * psi(m, n);
-				x3_1 += xi_nr * dpsi(m, n, k, l, psi, params);
+				x3_1 += xi_nr * dpsi(m, n, k, l, psi, graph);
 			}
-			x3 = dpsi(m, s, k, l, psi, params) * x3_0 + psi(m, s) * x3_1;
+			x3 = dpsi(m, s, k, l, psi, graph) * x3_0 + psi(m, s) * x3_1;
 
 			// double x4_0 = 0, x4_1 = 0, x4_2 = 0, x4_3 = 0;
 			x4 = x3_1 * x2_0 + x3_0 * x2_1;
@@ -485,58 +661,58 @@ double d2psi(u_int r, u_int s, u_int i, u_int j, u_int k, u_int l,
 			// case 2: d^2(psi_rs) / (dpsi_ij dpsi_rr)
 			// this case should no longer hit because we check this in the very
 			// beginning, BEFORE any recursion begins
-			d2_sum_r(m) = d2psi(r, s, k, l, i, j, psi, params);
+			d2_sum_r(m) = d2psi(r, s, k, l, i, j, psi, graph);
 		} else { // case 3: dpsi(r,s) / dpsi(i,j) dpsi(k,l)
 			// double x1 = 0, x2 = 0, x3 = 0, x4 = 0;
-			x1 = psi(m, s) * d2psi(m, r, i, j, k, l, psi, params) +
-				 dpsi(m, r, i, j, psi, params) * dpsi(m, s, k, l, psi, params) +
-				 psi(m, r) * d2psi(m, s, i, j, k, l, psi, params) +
-				 dpsi(m, r, k, l, psi, params) * dpsi(m, s, i, j, psi, params);
+			x1 = psi(m, s) * d2psi(m, r, i, j, k, l, psi, graph) +
+				 dpsi(m, r, i, j, psi, graph) * dpsi(m, s, k, l, psi, graph) +
+				 psi(m, r) * d2psi(m, s, i, j, k, l, psi, graph) +
+				 dpsi(m, r, k, l, psi, graph) * dpsi(m, s, i, j, psi, graph);
 
 			/* compute x2 */
 			double x2_0 = 0, x2_1 = 0, x2_2 = 0, x2_3 = 0;
 			for (n = m; n < s; n++) { // check: ssummation over s
-				xi_ns = xi(n, s, L);
+				xi_ns = h(n, s, L);
 				x2_0 += xi_ns * psi(m, n);
-				x2_1 += xi_ns * dpsi(m, n, k, l, psi, params);
-				x2_2 += xi_ns * dpsi(m, n, i, j, psi, params);
-				x2_3 += xi_ns * d2psi(m, n, i, j, k, l, psi, params);
+				x2_1 += xi_ns * dpsi(m, n, k, l, psi, graph);
+				x2_2 += xi_ns * dpsi(m, n, i, j, psi, graph);
+				x2_3 += xi_ns * d2psi(m, n, i, j, k, l, psi, graph);
 			}
 			if (x2_1 == 0) {
-				x2 = d2psi(m, r, i, j, k, l, psi, params) * x2_0 +
-			     dpsi(m, r, k, l, psi, params) * x2_2 +
+				x2 = d2psi(m, r, i, j, k, l, psi, graph) * x2_0 +
+			     dpsi(m, r, k, l, psi, graph) * x2_2 +
 			     psi(m, r) * x2_3;
 			} else if (x2_2 == 0) {
-				x2 = d2psi(m, r, i, j, k, l, psi, params) * x2_0 +
-			     dpsi(m, r, i, j, psi, params) * x2_1 +
+				x2 = d2psi(m, r, i, j, k, l, psi, graph) * x2_0 +
+			     dpsi(m, r, i, j, psi, graph) * x2_1 +
 			     psi(m, r) * x2_3;
 			} else {
-				x2 = d2psi(m, r, i, j, k, l, psi, params) * x2_0 +
-			     dpsi(m, r, i, j, psi, params) * x2_1 +
-			     dpsi(m, r, k, l, psi, params) * x2_2 +
+				x2 = d2psi(m, r, i, j, k, l, psi, graph) * x2_0 +
+			     dpsi(m, r, i, j, psi, graph) * x2_1 +
+			     dpsi(m, r, k, l, psi, graph) * x2_2 +
 			     psi(m, r) * x2_3;
 			}
 			/* compute x3 */
 			double x3_0 = 0, x3_1 = 0, x3_2 = 0, x3_3 = 0;
 			for (n = m; n < r; n++) { // check: summation over r
-				xi_nr = xi(n, r, L);
+				xi_nr = h(n, r, L);
 				x3_0 += xi_nr * psi(m, n);
-				x3_1 += xi_nr * dpsi(m, n, k, l, psi, params);
-				x3_2 += xi_nr * dpsi(m, n, i, j, psi, params);
-				x3_3 += xi_nr * d2psi(m, n, i, j, k, l, psi, params);
+				x3_1 += xi_nr * dpsi(m, n, k, l, psi, graph);
+				x3_2 += xi_nr * dpsi(m, n, i, j, psi, graph);
+				x3_3 += xi_nr * d2psi(m, n, i, j, k, l, psi, graph);
 			}
 			if (x3_1 == 0) {
-				x3 = d2psi(m, s, i, j, k, l, psi, params)  * x3_0 +
-			     dpsi(m, s, k, l, psi, params) * x3_2 +
+				x3 = d2psi(m, s, i, j, k, l, psi, graph)  * x3_0 +
+			     dpsi(m, s, k, l, psi, graph) * x3_2 +
 			     psi(m, s) * x3_3;
 			} else if (x3_2 == 0) {
-				x3 = d2psi(m, s, i, j, k, l, psi, params)  * x3_0 +
-			     dpsi(m, s, i, j, psi, params) * x3_1 +
+				x3 = d2psi(m, s, i, j, k, l, psi, graph)  * x3_0 +
+			     dpsi(m, s, i, j, psi, graph) * x3_1 +
 			     psi(m, s) * x3_3;
 			} else {
-				x3 = d2psi(m, s, i, j, k, l, psi, params)  * x3_0 +
-			     dpsi(m, s, i, j, psi, params) * x3_1 +
-			     dpsi(m, s, k, l, psi, params) * x3_2 +
+				x3 = d2psi(m, s, i, j, k, l, psi, graph)  * x3_0 +
+			     dpsi(m, s, i, j, psi, graph) * x3_1 +
+			     dpsi(m, s, k, l, psi, graph) * x3_2 +
 			     psi(m, s) * x3_3;
 			}
 			/* compute x4 */
@@ -544,22 +720,6 @@ double d2psi(u_int r, u_int s, u_int i, u_int j, u_int k, u_int l,
 				x4_21 = 0, x4_30 = 0, x4_31 = 0;
 			x4_00 = x3_3; x4_10 = x3_2; x4_20 = x3_1; x4_30 = x3_0;
 			x4_01 = x2_0; x4_11 = x2_1; x4_21 = x2_2; x4_31 = x2_3;
-			/*
-		    for (n = m; n < r; n++) {
-				xi_nr = xi(n, r, L);
-				x4_00 += xi_nr * d2psi(m, n, i, j, k, l, psi, params); // = x3_3
-				x4_10 += xi_nr * dpsi(m, n, i, j, psi, params);        // = x3_2
-				x4_20 += xi_nr * dpsi(m, n, k, l, psi, params);        // = x3_1
-				x4_30 += xi_nr * psi(m, n);                            // = x3_0
-			}
-			for (n = m; n < s; n++) {
-				xi_ns = xi(n, s, L);
-				x4_01 += xi_ns * psi(m, n);                            // = x2_0
-				x4_11 += xi_ns * dpsi(m, n, k, l, psi, params);        // = x2_1
-				x4_21 += xi_ns * dpsi(m, n, i, j, psi, params);        // = x2_2
-				x4_31 += xi_ns * d2psi(m, n, i, j, k, l, psi, params); // = x2_3
-			}
-			*/
 			x4 = x4_00 * x4_01 + x4_10 * x4_11 + x4_20 * x4_21 + x4_30 * x4_31;
 			d2_sum_r(m) = -1/psi(r,r) * (
 				x1 + x2 + x3 + x4
@@ -571,57 +731,4 @@ double d2psi(u_int r, u_int s, u_int i, u_int j, u_int k, u_int l,
 } // end d2psi() function
 
 
-/** -------------------- end hessian functions ----------------------------- **/
 
-
-/** -----------------  newton's method for root-finding  ------------------- **/
-arma::vec calcMode(arma::mat u_df, Rcpp::List& params) {
-	double tol = 1e-8;
-	u_int maxSteps = 10;
-	bool VERBOSE = false;
-	
-	// use the MAP as starting point for algorithm
-	u_int D = params["D"];
-	u_int mapIndex = u_df.col(D).index_min();
-	
-	arma::vec theta = arma::conv_to<arma::vec>::from(u_df.row(mapIndex)).
-	subvec(0, D-1);
-	
-	u_int numSteps = 0;
-	double tolCriterion = 100;
-	double stepSize = 1;
-	
-	arma::mat thetaMat = vec2mat(theta, params);
-	arma::mat thetaNew;
-	arma::mat thetaNewMat;
-	arma::mat G;
-	arma::mat invG;
-	double psiNew = 0, psiCurr = 0;
-	/* start newton's method loop */
-	while ((tolCriterion > tol) && (numSteps < maxSteps)) {
-		// thetaMat = create_psi_mat_cpp(theta, params);
-		// G = -hess_gwish(thetaMat, params);
-		// invG = inv(G);
-		invG = - arma::inv_sympd(hess_gwish(thetaMat, params));
-		thetaNew = theta + stepSize * invG * grad_gwish(thetaMat, params);
-		thetaNewMat = vec2mat(thetaNew, params);
-		psiNew = psi_cpp_mat(thetaNewMat, params);
-		psiCurr = psi_cpp_mat(thetaMat, params);
-		if (-psiNew < -psiCurr) {
-			return(arma::conv_to<arma::vec>::from(theta));
-		}
-		tolCriterion = std::abs(psiNew - psiCurr);
-		theta = thetaNew;
-		thetaMat = thetaNewMat;
-		numSteps++;
-	} /* end newton's method loop */
-	if (numSteps == maxSteps) {
-		Rcpp::Rcout<< "Max # of steps reached in Newton's method." << std::endl;
-	} else if (VERBOSE) {
-		Rcpp::Rcout << "Converged in " << numSteps << " iters" << std::endl;
-	}	
-	return arma::conv_to<arma::vec>::from(theta);	
-} // calcMode() function
-
-
-// end gwishDensity.cpp

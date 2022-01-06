@@ -8,6 +8,7 @@
 #include <cmath>
 
 #include "Node.h"
+#include "Graph.h"
 #include "Tree.h"
 #include "Interval.h"
 #define RCPP_ARMADILLO_RETURN_COLVEC_AS_VECTOR
@@ -18,6 +19,87 @@
 using namespace Rcpp;
 
 /** ------------------------------------------------------------------------ **/
+
+// recursive function to determine decision rules
+void dfs(Node* node, unsigned int& k, std::vector<Interval*> intervalStack,
+    arma::mat& partition, arma::mat& supp, 
+    std::unordered_map<u_int, arma::uvec>& leafRowMap) {
+
+    /*  k:          current partition set that we are updating
+        decisions:  stack that holdes Interval objects
+        partition:  nLeaves x (2 * nFeats) matrix, storing intervals row-wise
+    */
+
+    if (node->isLeaf) {
+        /*
+            extract the interval's feature
+            replace the current interval values for that feature with the 
+            updated interval values: lb = max(curr, new), ub = min(curr, new);
+            this shrinks the interval to accommodate a tighter bound as we
+            go deeper into the tree
+        */
+        for (const auto interval : intervalStack) {
+            double lb = interval->lb;
+            double ub = interval->ub; 
+            unsigned int col = interval->feature; // features are 1-indexed
+
+            // need to take max, min to accommodate for shrinking intervals,
+            // further restrictions on the same feature as we go down the tree
+            // partition(k, 2*col) = std::max(partition(k, 2*col), lb);
+            // partition(k, 2*col+1) = std::min(partition(k, 2*col+1), ub);
+
+            partition(2*col, k) = std::max(partition(2*col, k), lb);
+            partition(2*col+1, k) = std::min(partition(2*col+1, k), ub);
+        } // end of for() updating the k-th leaf
+
+        // add the rows corresponding to this leaf into the hashmap
+        // this is used in the hybrid algo to find candidate/representative 
+        // points in each partition (leaf) set
+        // NOTE: since we are doing this in the same order as storing the
+        // intervals (above), we ensure that the k-th partition set
+        // corresponds to the leafRows that we store in the map below
+        leafRowMap[k] = node->getLeafRows();
+
+        // Rcpp::Rcout << "row " << k << " : leaf value = " << 
+        // node->getLeafVal() << std::endl;
+        k++; // move to next leaf node / interval to update
+        return;
+    } // end of terminating condition
+
+    /*  keep going down the tree and pushing the rules onto the stack until we
+        reach a leaf node, then we use all elements in the stack to construct
+        the interval. after constructing the interval, pop the leaf node off 
+        so we can continue down another path to find the next leaf node
+    */ 
+
+    // extract the rule for the curr node -> this will give left and ride nodes
+    // features are stored in the Node object as 1-index because the data 
+    // looks like [y|X], so features start from column 1 rather than column 0
+    // but when creating subsequent maps and matrices, we still want the 
+    // first feature to be in the 0-th (first) column (element in map)
+    unsigned int feature = node->getFeature() - 1;
+    double lb = supp(feature, 0);
+    double ub = supp(feature, 1);
+    double threshVal = node->getThreshold();  // threshold value for node
+    // construct interval for the left node
+    Interval* leftInterval = new Interval(lb, threshVal, feature);
+    // construct interval for the right node
+    Interval* rightInterval = new Interval(threshVal, ub, feature);
+
+    // travel down left node
+    intervalStack.push_back(leftInterval);
+    dfs(node->left, k, intervalStack, partition, supp, leafRowMap);
+    delete intervalStack.back();
+    intervalStack.pop_back();
+
+    // travel down right node
+    intervalStack.push_back(rightInterval);
+    dfs(node->right, k, intervalStack, partition, supp, leafRowMap);
+    delete intervalStack.back();
+    intervalStack.pop_back();
+
+} // end dfs() function
+
 
 // testing time complexity of cart algorithm 
 
@@ -100,7 +182,6 @@ arma::mat timePartition(Tree* tree, arma::mat data) {
 /* ------------------  algorithm specific functions ------------------------- */
 
 
-// [[Rcpp::export]]
 Rcpp::List init_graph(arma::umat G, u_int b, arma::mat V) {
 
     // Rcpp::Rcout << G << std::endl;
@@ -198,7 +279,6 @@ double generalApprox(arma::umat G, u_int b, arma::mat V, u_int J) {
 } // end generalApprox() function
 
 
-// [[Rcpp::export]]
 double approx_v1(Rcpp::DataFrame u_df,
 				 arma::vec uStar,
 				 arma::mat data,
@@ -260,6 +340,8 @@ double hyb(arma::umat G, u_int b, arma::mat V, u_int J) {
     arma::mat samps = rgw(J, obj);
     // Rcpp::Rcout << "obtained samples" << std::endl;
     // evalute the samples using the negative log posterior (psi in last column)
+
+	// TODO: fix evalPsi so that we can use the z = [y | X] instead of [X | y]
     arma::mat samps_psi = evalPsi(samps, obj);
     // Rcpp::Rcout << "evaluated samples" << std::endl;
     // calculate global mode
@@ -286,59 +368,26 @@ double approx_v2(arma::mat z,
 				 Rcpp::List& params) {
 
 	u_int D = params["D"];
-	// Rcpp::Formula formula = params["formula"];
-	// fit CART model
-	// Rcpp::List tree = fitTree(u_df, formula);
 
-	Tree* tree = new Tree(z);
-	// Rcpp::Rcout << "done fitting tree" << std::endl;
-	// get the support
-	arma::mat supp = support(data, D);
-
+	// use new implementation of tree, which returns partition as one of the
+	// the fitted tree's member variables
+	Tree* tree = new Tree(z, 1);
+	std::unordered_map<u_int, arma::vec>* pmap = tree->getPartition();
+	std::unordered_map<u_int, arma::uvec>* leafRowMap = tree->getLeafRowMap();
 	unsigned int nLeaves = tree->getLeaves();
     unsigned int d = tree->getNumFeats();
-    // unsigned int n = tree->getNumRows();  
-    unsigned int k = 0;
 
-	arma::mat partition = createDefaultPartition(supp, d, nLeaves);
-	std::vector<Interval*> intervalStack; 
-	std::unordered_map<u_int, arma::uvec> leafRowMap;
-	dfs(tree->root, k, intervalStack, partition, supp, leafRowMap);
-
-	// Rcpp::Rcout << "extracted partition from tree" << std::endl;
-
-	/* extract partition from the rpart object -> see f() function call below;
-	   ideally, we have a separate C++ function that extracts the partition
-	   and turns it into the partitionMap object that we have below. */
 	// -------------------------------------------------------------------------
-	// Rcpp::Environment tmp = Rcpp::Environment::global_env();
-    // Rcpp::Function f = tmp["extractPartitionSimple"];
-
-    // Rcpp::List partList = f(tree, supp);
-    // arma::mat part = partList["partition"];
-    // arma::vec leafId = partList["leaf_id"];
-    // int k = leafId.n_elem; // # of leaf nodes
-    // arma::vec locs = partList["locs"];
-	
-	// convert the partition from matrix form to map from leaf_i -> partition_i
-    std::unordered_map<u_int, arma::vec> partitionMap;
-    for (u_int i = 0; i < nLeaves; i++) {
-        // add the leaf node's corresponding rectangle into the map
-        // arma::vec col_d = part[d];
-        partitionMap[i] = partition.col(i);
-    }
-	// -------------------------------------------------------------------------
-	/* */
 
 	// go into here and figure how to use the ROWS of each partition set's 
 	// points instead of finding the rows' locations that are equal to
 	// the current leaf node / location that we're working on
 	std::unordered_map<u_int, arma::vec> candidates = findOptPoints(
-		data, leafRowMap, nLeaves, uStar, D
+		data, *leafRowMap, nLeaves, uStar, D
 	);
 
 	// std::unordered_map<int, arma::vec> boundMap = partitionMap;
-	 return approx_helper(params, candidates, partitionMap, nLeaves);
+	 return approx_helper(params, candidates, *pmap, nLeaves);
 	 
 } // end approxZ() function
 

@@ -26,13 +26,13 @@ arma::mat rgw(unsigned int J, Rcpp::List& obj) {
     arma::mat V     = obj["V"];
     arma::mat P_inv = obj["P_inv"];
     arma::mat P     = obj["P"];
-	unsigned int b  = obj["b"];
-	unsigned int p  = obj["p"];
+	  unsigned int b  = obj["b"];
+	  unsigned int p  = obj["p"];
     unsigned int D  = obj["D"];
     arma::mat samps(D, J, arma::fill::zeros);
     arma::mat omega, phi, zeta;
     arma::vec u0, u;
-	arma::uvec ids  = obj["free_index"];
+	  arma::uvec ids  = obj["free_index"];
 
     for (unsigned int j = 0; j < J; j++) {
         omega = rgwish_c(G, P, b, p, 1e-8);     // draw covar matrix

@@ -12,6 +12,20 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// test
+double test(arma::umat G, u_int b, arma::mat V, u_int J);
+RcppExport SEXP _graphml_test(SEXP GSEXP, SEXP bSEXP, SEXP VSEXP, SEXP JSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::umat >::type G(GSEXP);
+    Rcpp::traits::input_parameter< u_int >::type b(bSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type V(VSEXP);
+    Rcpp::traits::input_parameter< u_int >::type J(JSEXP);
+    rcpp_result_gen = Rcpp::wrap(test(G, b, V, J));
+    return rcpp_result_gen;
+END_RCPP
+}
 // ep_logz
 double ep_logz(arma::vec m, arma::mat K, arma::vec lb, arma::vec ub);
 RcppExport SEXP _graphml_ep_logz(SEXP mSEXP, SEXP KSEXP, SEXP lbSEXP, SEXP ubSEXP) {
@@ -209,18 +223,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// calcMode
-arma::vec calcMode(arma::mat u_df, Rcpp::List& params);
-RcppExport SEXP _graphml_calcMode(SEXP u_dfSEXP, SEXP paramsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::mat >::type u_df(u_dfSEXP);
-    Rcpp::traits::input_parameter< Rcpp::List& >::type params(paramsSEXP);
-    rcpp_result_gen = Rcpp::wrap(calcMode(u_df, params));
-    return rcpp_result_gen;
-END_RCPP
-}
 // rcpparma_hello_world
 arma::mat rcpparma_hello_world();
 RcppExport SEXP _graphml_rcpparma_hello_world() {
@@ -339,21 +341,9 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// sse
-double sse(arma::vec x, int n, double xbar);
-RcppExport SEXP _graphml_sse(SEXP xSEXP, SEXP nSEXP, SEXP xbarSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::vec >::type x(xSEXP);
-    Rcpp::traits::input_parameter< int >::type n(nSEXP);
-    Rcpp::traits::input_parameter< double >::type xbar(xbarSEXP);
-    rcpp_result_gen = Rcpp::wrap(sse(x, n, xbar));
-    return rcpp_result_gen;
-END_RCPP
-}
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_graphml_test", (DL_FUNC) &_graphml_test, 4},
     {"_graphml_ep_logz", (DL_FUNC) &_graphml_ep_logz, 4},
     {"_graphml_getJT", (DL_FUNC) &_graphml_getJT, 1},
     {"_graphml_log_exp_mc", (DL_FUNC) &_graphml_log_exp_mc, 7},
@@ -369,7 +359,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_graphml_hyb", (DL_FUNC) &_graphml_hyb, 4},
     {"_graphml_psi_cpp", (DL_FUNC) &_graphml_psi_cpp, 2},
     {"_graphml_evalPsi", (DL_FUNC) &_graphml_evalPsi, 2},
-    {"_graphml_calcMode", (DL_FUNC) &_graphml_calcMode, 2},
     {"_graphml_rcpparma_hello_world", (DL_FUNC) &_graphml_rcpparma_hello_world, 0},
     {"_graphml_rcpparma_outerproduct", (DL_FUNC) &_graphml_rcpparma_outerproduct, 1},
     {"_graphml_rcpparma_innerproduct", (DL_FUNC) &_graphml_rcpparma_innerproduct, 1},
@@ -380,7 +369,6 @@ static const R_CallMethodDef CallEntries[] = {
     {"_graphml_createDfName", (DL_FUNC) &_graphml_createDfName, 1},
     {"_graphml_mat2df", (DL_FUNC) &_graphml_mat2df, 2},
     {"_graphml_lse", (DL_FUNC) &_graphml_lse, 2},
-    {"_graphml_sse", (DL_FUNC) &_graphml_sse, 3},
     {NULL, NULL, 0}
 };
 

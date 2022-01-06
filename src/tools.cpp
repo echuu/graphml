@@ -8,7 +8,6 @@
 #define EIGEN_PERMANENTLY_DISABLE_STUPID_WARNINGS
 
 
-
 double xi(u_int i, u_int j, arma::mat& L) {
     // used to compute a fraction quantity in the gradient/hessian functions
 	// L is UPPER TRIANGULAR cholesky factor of the INVERSE scale matrix, i.e,

@@ -20,6 +20,24 @@ J = 1000
 set.seed(1)
 
 BDgraph::gnorm(G, b, V, J)
+hyb(G, b, V, J)
+
+set.seed(1)
+graphml::hyb(G, b, V, J)
+set.seed(1)
+graphml::test(G, b, V, J)
+
+
+microbenchmark::microbenchmark(
+  old_cpp  = graphml::hyb(G, b, V, J),
+  new_cpp = graphml::test(G, b, V, J),
+  times = 20
+)
+
+
+# --------------------------------------------------------------------
+
+
 graphml::gnorm_c(G, b, V, J)
 graphml::gnormJT(G, getEdgeMat(G), b, V, J)
 graphml::generalApprox(G, b, V, J)
@@ -30,7 +48,8 @@ graphml::hyb(G, b, V, J)
 
 microbenchmark::microbenchmark(
   jt  = graphml::gnormJT(G, getEdgeMat(G), b, V, J),
-  hyb = graphml::generalApprox(G, b, V, J),
+  old = graphml::generalApprox(G, b, V, J),
+  hyb_cpp = graphml::hyb(G, b, V, J),
   times = 20
 )
 
