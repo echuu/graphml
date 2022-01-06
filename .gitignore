@@ -2,6 +2,10 @@
 .Rhistory
 .RData
 .Ruserdata
+.vscode
+.Rbuildignore
+.Rhistory
+.DS_Store
 src/*.o
 src/*.so
 src/*.dll
