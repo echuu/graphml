@@ -16,23 +16,24 @@ G = matrix(c(1,1,0,1,1,
 b = 300
 V = BDgraph::rgwish(1, G, b, diag(p))
 J = 1000
-##### new implementation
-set.seed(1)
-
-BDgraph::gnorm(G, b, V, J)
-hyb(G, b, V, J)
 
 set.seed(1)
-graphml::hyb(G, b, V, J)
+graphml::approxfaster(G, b, V, J)
 set.seed(1)
-graphml::test(G, b, V, J)
-
+graphml::testParallel(G, b, V, J)
+set.seed(1)
+graphml::testmap(G, b, V, J)
 
 microbenchmark::microbenchmark(
-  old_cpp  = graphml::hyb(G, b, V, J),
-  new_cpp = graphml::test(G, b, V, J),
+  rpart = graphml::generalApprox(G, b, V, J),   # uses rpart()
+  # pll_cpp = graphml::testParallel(G, b, V, J),  # parallel
+  map_cpp = graphml::testmap(G, b, V, J),
+  rpart_cpp_pll_1 = graphml::approxfaster(G, b, V, J),
   times = 20
 )
+
+
+
 
 
 # --------------------------------------------------------------------

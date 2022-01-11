@@ -1,3 +1,5 @@
+
+
 #include "Tree.h" 
 #include "density.h"
 #include "Graph.h"
@@ -5,20 +7,26 @@
 #include "epmgp.h"      // for ep_logz() function 
 #include "partition.h"  // for findOptPoints()
 
+
+// parallelization:
+#include <omp.h>
+// [[Rcpp::plugins(openmp)]]
+
 #define RCPP_ARMADILLO_RETURN_COLVEC_AS_VECTOR
 // [[Rcpp::depends(RcppArmadillo)]]
 #define EIGEN_PERMANENTLY_DISABLE_STUPID_WARNINGS
 
 
 
-double approxlogml(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph) {
+// uses C++ implementation of CART and parallel integration routine
+double approxlogmlFast(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph) {
 
     // TODO: fix the input so that we don't have to pass two matrices that are
     // essentially the same thing
 
     u_int D = graph->D;
     // fit cart model 
-    Tree* tree = new Tree(z, 1);
+    Tree* tree = new Tree(z);
     std::unordered_map<u_int, arma::vec>* pmap = tree->getPartition();
 	std::unordered_map<u_int, arma::uvec>* leafRowMap = tree->getLeafRowMap();
 	unsigned int nLeaves = tree->getLeaves();
@@ -28,72 +36,109 @@ double approxlogml(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph) {
 		xy, *leafRowMap, nLeaves, uStar, D
 	);
 
-    return integratePartition(graph, candidates, *pmap, nLeaves);
+    return integratePartitionFast(graph, candidates, *pmap, nLeaves);
 
-    return 0;
+    // return 0;
 } // end approxlogml() function
 
-double integratePartition(Graph* graph, 
+
+// instead of sorting the features for every node, we sort once in the beginning
+// and use a hashmap of the proposed rows and compare to the sorted
+// original row indeces to determine the order of the sorted features for 
+// the proposed feature on which to splt
+double approxlogml_map(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph) {
+
+    // TODO: fix the input so that we don't have to pass two matrices that are
+    // essentially the same thing
+
+    u_int D = graph->D;
+    // fit cart model 
+	Tree* tree = new Tree(z, true);
+    std::unordered_map<u_int, arma::vec>* pmap = tree->getPartition();
+	std::unordered_map<u_int, arma::uvec>* leafRowMap = tree->getLeafRowMap();
+	unsigned int nLeaves = tree->getLeaves();
+    unsigned int d = tree->getNumFeats();
+
+    std::unordered_map<u_int, arma::vec> candidates = findOptPoints(
+		xy, *leafRowMap, nLeaves, uStar, D
+	);
+
+    return integratePartitionFast(graph, candidates, *pmap, nLeaves);
+
+    // return 0;
+} // end approxlogml() function
+
+
+// parallel integration routine
+double integratePartitionFast(Graph* graph, 
 	std::unordered_map<u_int, arma::vec> candidates, 
 	std::unordered_map<u_int, arma::vec> bounds, 
 	u_int nLeaves) {
 
-    
     u_int D = graph->D;    // dimension of parameter space
-	arma::vec log_terms(nLeaves, arma::fill::zeros);
-	arma::vec G_k(nLeaves, arma::fill::zeros);
-	arma::mat H_k(D, D, arma::fill::zeros);
-	arma::mat H_k_inv(D, D, arma::fill::zeros);
-	arma::vec lambda_k(D, arma::fill::zeros);
-	arma::vec b_k(D, arma::fill::zeros);
-	arma::vec m_k(D, arma::fill::zeros);
-	arma::vec lb(D, arma::fill::zeros);
-	arma::vec ub(D, arma::fill::zeros);
-	arma::vec u_k(D, arma::fill::zeros);
-	arma::vec candidate_k(D, arma::fill::zeros);
+    arma::uvec lbInd = arma::conv_to<arma::uvec>::from(
+                arma::linspace(0, 2 * D - 2, D));
+    arma::uvec ubInd = arma::conv_to<arma::uvec>::from(
+                arma::linspace(1, 2 * D - 1, D));
+    arma::uvec uIndex = arma::conv_to<arma::uvec>::from(
+                arma::linspace(0, D-1, D));
 
-	double psi_k;
-	arma::mat psi_mat(D, D, arma::fill::zeros);
-	//arma::vec bounds_k;
-	for (u_int k = 0; k < nLeaves; k++) {
+    std::vector<double> vec; 
+    // std::vector<int> iterations(omp_get_max_threads(), 0);
+    #pragma omp parallel shared(candidates, graph, bounds, nLeaves)
+    {
+        // std::vector<double> vec_private (nLeaves);
+        std::vector<double> vec_private;
+        arma::mat H_k(D, D, arma::fill::zeros);
+        arma::mat H_k_inv(D, D, arma::fill::zeros);
+        arma::vec lambda_k(D, arma::fill::zeros);
+        arma::vec b_k(D, arma::fill::zeros);
+        arma::vec m_k(D, arma::fill::zeros);
+        arma::vec lb(D, arma::fill::zeros);
+        arma::vec ub(D, arma::fill::zeros);
+        arma::vec u_k(D, arma::fill::zeros);
+        arma::vec candidate_k(D, arma::fill::zeros);
+        double psi_k, G_k, tmp;
+	    arma::mat psi_mat(D, D, arma::fill::zeros);
 
-		// leaf_k = leaf(k);
-		candidate_k = candidates[k];
-		u_k = candidate_k.
-			elem(arma::conv_to<arma::uvec>::from(arma::linspace(0, D-1, D)));
-		// Rcpp::Rcout<< u_k << std::endl;
-		psi_mat = vec2mat(u_k, graph);
-		// double psi_k = psi_cpp_mat(psi_mat, params);
-		psi_k = candidate_k(D);
+        #pragma omp for // fill vec_private in parallel
+        for (u_int k = 0; k < nLeaves; k++) {
+            candidate_k = candidates[k];
+            u_k = candidate_k.elem(uIndex);
+            psi_mat = vec2mat(u_k, graph);
+            psi_k = candidate_k(D);
 
-		H_k = hess_gwish(psi_mat, graph); // 11/9: using general hessian
-		// H_k_inv = inv(H_k);
-		H_k_inv = arma::inv_sympd(H_k);
-		lambda_k = grad_gwish(psi_mat, graph); // 11/9: using general gradient
-		b_k = H_k * u_k - lambda_k;
-		m_k = H_k_inv * b_k;
+            H_k = hess_gwish(psi_mat, graph); 
+            H_k_inv = arma::inv_sympd(H_k);
+            lambda_k = grad_gwish(psi_mat, graph); 
+            b_k = H_k * u_k - lambda_k;
+            m_k = H_k_inv * b_k;
 
-		lb = bounds[k].elem(arma::conv_to<arma::uvec>::from(
-			arma::linspace(0, 2 * D - 2, D)));
-		ub = bounds[k].elem(arma::conv_to<arma::uvec>::from(
-			arma::linspace(1, 2 * D - 1, D)));
-		/*
-		for (u_int d = 0; d < D; d++) {
-			lb(d) = bounds[leaf_k](2 * d); ub(d) = bounds[leaf_k](2 * d + 1);
-		}
-		*/
-		double val = 0;
-		double sign;
-		log_det(val, sign, H_k);
-		G_k(k) = ep_logz(m_k, H_k_inv, lb, ub);
-		log_terms(k) = D / 2 * std::log(2 * M_PI) - 0.5 * val - psi_k +
-			arma::dot(lambda_k, u_k) -
-			(0.5 * u_k.t() * H_k * u_k).eval()(0,0) +
-			(0.5 * m_k.t() * H_k * m_k).eval()(0,0) + G_k(k);
-	}
+            lb = bounds[k].elem(lbInd);
+            ub = bounds[k].elem(ubInd);
+            double val = 0;
+            double sign;
+            log_det(val, sign, H_k);
+            G_k = ep(m_k, H_k_inv, lb, ub);
+            tmp = D / 2 * std::log(2 * M_PI) - 0.5 * val - psi_k +
+                arma::dot(lambda_k, u_k) -
+                (0.5 * u_k.t() * H_k * u_k).eval()(0,0) +
+                (0.5 * m_k.t() * H_k * m_k).eval()(0,0) + G_k; 
+            vec_private.push_back(tmp);
+            // iterations[omp_get_thread_num()]++;
+        } // end of for loop
 
-	return lse(log_terms, nLeaves);
+        #pragma omp critical
+        vec.insert(vec.end(), vec_private.begin(), vec_private.end());
+    } // end of omp
+
+    // for (unsigned int j = 0; j < iterations.size(); j++) {
+    //     Rcpp::Rcout << iterations[j] << std::endl;
+    // }
+	
+	return lse(vec, nLeaves);
 } // end integratePartition() function
+
 
 
 arma::vec calcMode(arma::mat u_df, Graph* graph) {
@@ -105,8 +150,8 @@ arma::vec calcMode(arma::mat u_df, Graph* graph) {
 	u_int D = graph->D;
 	u_int mapIndex = u_df.col(D).index_min();
 	
-	arma::vec theta = arma::conv_to<arma::vec>::from(u_df.row(mapIndex)).
-	subvec(0, D-1);
+	arma::vec theta = arma::conv_to<arma::vec>::from(
+        u_df.row(mapIndex)).subvec(0, D-1);
 	
 	u_int numSteps = 0;
 	double tolCriterion = 100;
@@ -120,9 +165,6 @@ arma::vec calcMode(arma::mat u_df, Graph* graph) {
 	double psiNew = 0, psiCurr = 0;
 	/* start newton's method loop */
 	while ((tolCriterion > tol) && (numSteps < maxSteps)) {
-		// thetaMat = create_psi_mat_cpp(theta, params);
-		// G = -hess_gwish(thetaMat, params);
-		// invG = inv(G);
 		invG = - arma::inv_sympd(hess_gwish(thetaMat, graph));
 		thetaNew = theta + stepSize * invG * grad_gwish(thetaMat, graph);
 		thetaNewMat = vec2mat(thetaNew, graph);
@@ -175,7 +217,7 @@ arma::mat vec2mat(arma::vec u, Graph* graph) {
 
 	// float test = sum(u_mat[i,i:(j-1)] * P[i:(j-1), j]);
 	// arma::mat x1 = psi_mat.submat(0, 0, 0, 3);
-	//Rcpp::Rcout << x1 << std::endl;
+	// Rcpp::Rcout << x1 << std::endl;
 	// Rcpp::Rcout << psi_mat.submat(0, 0, 3, 0) << std::endl;
 	// Rcpp::Rcout << arma::dot(x1, psi_mat.submat(0, 0, 3, 0)) << std::endl;
 
@@ -212,6 +254,9 @@ arma::mat vec2mat(arma::vec u, Graph* graph) {
 } // end vec2mat() function
 
 
+
+/* ------------- start functions for: density, gradient, hessian ------------ */ 
+
 double psi_cpp(arma::vec& u, Graph* graph) {
 
 	u_int p           = graph->p;    // dimension of the graph G
@@ -234,19 +279,6 @@ double psi_cpp(arma::vec& u, Graph* graph) {
 
 	return -psi_u;
 } // end of psi_cpp() function
-
-
-arma::mat evalPsi(arma::mat samps, Graph* graph) {
-	u_int J = samps.n_rows;
-	arma::mat psi_mat(J, 1, arma::fill::zeros);
-	for (u_int j = 0; j < J; j++) {
-		arma::vec u = arma::conv_to<arma::vec>::from(samps.row(j));
-		psi_mat(j, 0) = psi_cpp(u, graph);
-	}
-	arma::mat psi_df = arma::join_rows( samps, psi_mat );
-	return psi_df;
-} // end evalPsi() function
-
 
 
 double psi_cpp_mat(arma::mat& psi_mat, Graph* graph) {
@@ -731,4 +763,4 @@ double d2psi(u_int r, u_int s, u_int i, u_int j, u_int k, u_int l,
 } // end d2psi() function
 
 
-
+// end density.cpp file

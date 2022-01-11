@@ -3,39 +3,32 @@
 #include <RcppArmadillo.h>
 #include "graphml_types.h"
 #include <Rcpp.h>
+#include <vector>
+#include "density.h"
 // [[Rcpp::depends(RcppArmadillo)]]
 
 
+
 Rcpp::List init_graph(arma::umat G, u_int b, arma::mat V);
+Rcpp::List initTreeParams(u_int d);
 
-double generalApprox(arma::umat G, u_int b, arma::mat V, u_int J);
+std::vector<double> evalPsiParallel(arma::mat samps, Graph* graph);
+arma::mat evalPsi(arma::mat samps, Graph* graph);
 
-double approx_v1(Rcpp::DataFrame u_df,
+
+// approx_pll() <-- integratePartitionFast()
+
+double integratePartitionFast(Graph* graph, 
+	arma::vec leafId,
+	std::unordered_map<u_int, arma::vec> candidates, 
+	std::unordered_map<u_int, arma::vec> bounds, 
+	u_int nLeaves);
+
+double approx_pll(Rcpp::DataFrame u_df,
 				 arma::vec uStar,
 				 arma::mat data,
+				 Graph* graph,
 				 Rcpp::List& params);
-
-double approxZ(Rcpp::List& params,
-	arma::vec leaf,
-	std::unordered_map<int, arma::vec> candidates,
-	std::unordered_map<int, arma::vec> bounds,
-	u_int K);
-
-double approx_integral(u_int K, arma::mat& psi_df, arma::mat& bounds,
-	Rcpp::List& params);
-
-
-double hyb(arma::umat G, u_int b, arma::mat V, u_int J);
-
-double approx_v2(arma::mat z,
-				 arma::vec uStar,
-				 arma::mat data,
-				 Rcpp::List& params);
-
-double approx_helper(Rcpp::List& params, 
-					 std::unordered_map<u_int, arma::vec> candidates, 
-					 std::unordered_map<u_int, arma::vec> bounds, 
-					 u_int nLeaves);
 
 
 

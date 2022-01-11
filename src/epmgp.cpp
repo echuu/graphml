@@ -1,5 +1,6 @@
 #include "epmgp.h"
 
+
 const double EPS_CONVERGE = 1e-8;
 
 
@@ -71,380 +72,755 @@ double erfcx (double x) {
 
 Rcpp::List trunc_norm_moments(arma::vec lb_in, arma::vec ub_in,
 							  arma::vec mu_in, arma::vec sigma_in) {
-  int d = lb_in.n_elem;
-  arma::vec logz_hat_out(d);
-  arma::vec z_hat_out(d);
-  arma::vec mu_hat_out(d);
-  arma::vec sigma_hat_out(d);
+	int d = lb_in.n_elem;
+	arma::vec logz_hat_out(d, arma::fill::zeros);
+	arma::vec z_hat_out(d, arma::fill::zeros);
+	arma::vec mu_hat_out(d, arma::fill::zeros);
+	arma::vec sigma_hat_out(d, arma::fill::zeros);
 
-  for (int i = 0; i < d; i++) {
+	for (int i = 0; i < d; i++) {
 
-	double lb = lb_in(i);
-	double ub = ub_in(i);
-	double mu = mu_in(i);
-	double sigma = sigma_in(i);
+		double lb = lb_in(i);
+		double ub = ub_in(i);
+		double mu = mu_in(i);
+		double sigma = sigma_in(i);
 
-	double logz_hat_other_tail;
-	double logz_hat;
-	double mean_const;
-	double var_const;
+		double logz_hat_other_tail;
+		double logz_hat;
+		double mean_const;
+		double var_const;
 
-	// establish bounds
-	double a = (lb - mu) / std::sqrt(2 * sigma);
-	double b = (ub - mu) / std::sqrt(2 * sigma);
+		// establish bounds
+		double a = (lb - mu) / std::sqrt(2 * sigma);
+		double b = (ub - mu) / std::sqrt(2 * sigma);
 
-	/*
-	Rcpp::Rcout << "a = " << a << std::endl;
-	Rcpp::Rcout << "b = " << b << std::endl;
+		/*
+		Rcpp::Rcout << "a = " << a << std::endl;
+		Rcpp::Rcout << "b = " << b << std::endl;
 
-	if (abs(b) > abs(a)) {
-	  Rcpp::Rcout << "|b| > |a|" << std::endl;
-	} else if (abs(a) == abs(b)) {
-	  Rcpp::Rcout << "|a| = |b|" << std::endl;
-	}
-	*/
+		if (abs(b) > abs(a)) {
+		Rcpp::Rcout << "|b| > |a|" << std::endl;
+		} else if (abs(a) == abs(b)) {
+		Rcpp::Rcout << "|a| = |b|" << std::endl;
+		}
+		*/
 
-	// stable calculation
+		// stable calculation
 
-	// problem case 1
-	if (std::isinf(a) && std::isinf(b)) {
-	  // check the sign
-	  if (copysign(1.0, a) == copysign(1.0, b)) {
-		// integrating from inf to inf, should be 0
+		// problem case 1
+		if (std::isinf(a) && std::isinf(b)) {
+		// check the sign
+		if (copysign(1.0, a) == copysign(1.0, b)) {
+			// integrating from inf to inf, should be 0
+			logz_hat_out(i) = -arma::datum::inf;
+			z_hat_out(i) = 0.0;
+			mu_hat_out(i) = a;
+			sigma_hat_out(i) = 0.0;
+			continue;
+		}
+		else {
+			logz_hat_out(i) = 0.0;
+			z_hat_out(i) = 1.0;
+			mu_hat_out(i) = mu;
+			sigma_hat_out(i) = sigma;
+			continue;
+		}
+		}
+
+		// problem case 2
+		else if (a > b) {
+		// bounds are wrong, return 0 by convention
 		logz_hat_out(i) = -arma::datum::inf;
-		z_hat_out(i) = 0.0;
-		mu_hat_out(i) = a;
-		sigma_hat_out(i) = 0.0;
-		continue;
-	  }
-	  else {
-		logz_hat_out(i) = 0.0;
-		z_hat_out(i) = 1.0;
+		z_hat_out(i) = 0;
 		mu_hat_out(i) = mu;
-		sigma_hat_out(i) = sigma;
+		sigma_hat_out(i) = 0;
 		continue;
-	  }
-	}
+		}
 
-	// problem case 2
-	else if (a > b) {
-	  // bounds are wrong, return 0 by convention
-	  logz_hat_out(i) = -arma::datum::inf;
-	  z_hat_out(i) = 0;
-	  mu_hat_out(i) = mu;
-	  sigma_hat_out(i) = 0;
-	  continue;
-	}
+		// typical case 1
+		else if (a == -arma::datum::inf) {
+		// integrating up to b
+		if (b > 26.0) {
+			// will be very close to 1
+			logz_hat_other_tail = std::log(0.5) + std::log(erfcx(b)) - std::pow(b, 2);
+			logz_hat = std::log1p(-std::exp(logz_hat_other_tail));
+		}
+		else {
+			// b is small enough
+			logz_hat = std::log(0.5) + std::log(erfcx(-b)) - std::pow(b, 2);
+		}
 
-	// typical case 1
-	else if (a == -arma::datum::inf) {
-	  // integrating up to b
-	  if (b > 26.0) {
-		// will be very close to 1
-		logz_hat_other_tail = std::log(0.5) + std::log(erfcx(b)) - std::pow(b, 2);
-		logz_hat = std::log1p(-std::exp(logz_hat_other_tail));
-	  }
-	  else {
-		// b is small enough
-		logz_hat = std::log(0.5) + std::log(erfcx(-b)) - std::pow(b, 2);
-	  }
+		mean_const = -2.0 / erfcx(-b);
+		var_const = (-2.0 / erfcx(-b)) * (ub + mu);
+		}
 
-	  mean_const = -2.0 / erfcx(-b);
-	  var_const = (-2.0 / erfcx(-b)) * (ub + mu);
-	}
+		// typical case 2
+		else if (b == arma::datum::inf) {
+		// Rcpp::Rcout << "handling unbounded upper constraint" << std::endl;
+		// Rcpp::Rcout << "a: " << a << std::endl;
+		// integrate from a to inf
+		if (a < -26.0) {
+			// will be very close to 1
+			logz_hat_other_tail = std::log(0.5) + std::log(erfcx(-a)) - std::pow(a, 2);
+			logz_hat = std::log1p(-std::exp(logz_hat_other_tail));
+		}
+		else {
+			// should be stable
+			logz_hat = std::log(0.5) + std::log(erfcx(a)) - std::pow(a, 2);
+		}
 
-	// typical case 2
-	else if (b == arma::datum::inf) {
-	  // Rcpp::Rcout << "handling unbounded upper constraint" << std::endl;
-	  // Rcpp::Rcout << "a: " << a << std::endl;
-	  // integrate from a to inf
-	  if (a < -26.0) {
-		// will be very close to 1
-		logz_hat_other_tail = std::log(0.5) + std::log(erfcx(-a)) - std::pow(a, 2);
-		logz_hat = std::log1p(-std::exp(logz_hat_other_tail));
-	  }
-	  else {
-		// should be stable
-		logz_hat = std::log(0.5) + std::log(erfcx(a)) - std::pow(a, 2);
-	  }
+		mean_const = 2.0 / erfcx(a);
+		var_const = (2.0 / erfcx(a)) * (lb + mu);
+		}
 
-	  mean_const = 2.0 / erfcx(a);
-	  var_const = (2.0 / erfcx(a)) * (lb + mu);
-	}
+		// typical case 3
+		else {
+		// range from a to b, need stable exponent calculation
+		double exp_a2b2 = std::exp(std::pow(a, 2) - std::pow(b, 2));
+		double exp_b2a2 = std::exp(std::pow(b, 2) - std::pow(a, 2));
 
-	// typical case 3
-	else {
-	  // range from a to b, need stable exponent calculation
-	  double exp_a2b2 = std::exp(std::pow(a, 2) - std::pow(b, 2));
-	  double exp_b2a2 = std::exp(std::pow(b, 2) - std::pow(a, 2));
-
-	  // Rcpp::Rcout << "exp_a2b2: " << exp_a2b2 << std::endl;
-	  // Rcpp::Rcout << "exp_b2a2: " << exp_b2a2 << std::endl;
+		// Rcpp::Rcout << "exp_a2b2: " << exp_a2b2 << std::endl;
+		// Rcpp::Rcout << "exp_b2a2: " << exp_b2a2 << std::endl;
 
 
-	  if (copysign(1.0, a) == copysign(1.0, b)) {
-		// exploit symmetry in problem to make calculations stable for erfcx
-		double maxab = std::max(std::abs(a), std::abs(b));
-		double minab = std::min(std::abs(a), std::abs(b));
+		if (copysign(1.0, a) == copysign(1.0, b)) {
+			// exploit symmetry in problem to make calculations stable for erfcx
+			double maxab = std::max(std::abs(a), std::abs(b));
+			double minab = std::min(std::abs(a), std::abs(b));
 
-		logz_hat =
-		  std::log(0.5) - std::pow(minab, 2) +
-		  std::log( std::abs(
-			  std::exp( -(std::pow(maxab, 2) - std::pow(minab, 2))) *
-				erfcx(maxab) -
-				erfcx(minab) ) );
+			logz_hat =
+			std::log(0.5) - std::pow(minab, 2) +
+			std::log( std::abs(
+				std::exp( -(std::pow(maxab, 2) - std::pow(minab, 2))) *
+					erfcx(maxab) -
+					erfcx(minab) ) );
 
-		double erfcx_a = erfcx(std::abs(a));
-		double erfcx_b = erfcx(std::abs(b));
+			double erfcx_a = erfcx(std::abs(a));
+			double erfcx_b = erfcx(std::abs(b));
 
-		// Rcpp::Rcout << "erfcx_a: " << erfcx_a << std::endl;
-		// Rcpp::Rcout << "erfcx_b: " << erfcx_b << std::endl;
+			// Rcpp::Rcout << "erfcx_a: " << erfcx_a << std::endl;
+			// Rcpp::Rcout << "erfcx_b: " << erfcx_b << std::endl;
 
-		mean_const = 2. * copysign(1.0, a) * (
-		  1 / (( erfcx_a - exp_a2b2 * erfcx_b )) -
-			1 / (( exp_b2a2 * erfcx_a - erfcx_b ))
-		);
-		var_const = 2. * copysign(1.0, a) * (
-		  (lb + mu) / (erfcx_a - exp_a2b2 * erfcx_b) -
-			(ub + mu) / (exp_b2a2 * erfcx_a - erfcx_b)
-		);
-		// Rcpp::Rcout << "mean_const: " << mean_const << std::endl;
-		// Rcpp::Rcout << "var_const: " << var_const << std::endl;
-		// Rcpp::Rcout << "random: " << (exp_b2a2 * erfcx_a - erfcx_b) << std::endl;
-	  }
-
-	  else {
-		// the signs are different, so b > a and b >= 0 and a <= 0
-		if (std::abs(b) >= std::abs(a)) {
-
-		  if (a >= -26.0) {
-			// do things normally
-			// Rcpp::Rcout << "first if" << std::endl;
-			logz_hat = std::log(0.5) - std::pow(a, 2) + std::log(
-			  erfcx(a) - std::exp(-(std::pow(b, 2) - std::pow(a, 2))) * erfcx(b)
+			mean_const = 2. * copysign(1.0, a) * (
+			1 / (( erfcx_a - exp_a2b2 * erfcx_b )) -
+				1 / (( exp_b2a2 * erfcx_a - erfcx_b ))
 			);
-
-			mean_const = 2 * (
-			  1 / (erfcx(a) - exp_a2b2 * erfcx(b)) -
-				1 / (exp_b2a2 * erfcx(a) - erfcx(b))
+			var_const = 2. * copysign(1.0, a) * (
+			(lb + mu) / (erfcx_a - exp_a2b2 * erfcx_b) -
+				(ub + mu) / (exp_b2a2 * erfcx_a - erfcx_b)
 			);
-			var_const = 2 * (
-			  (lb + mu) / (erfcx(a) - exp_a2b2 * erfcx(b)) -
-				(ub + mu) / (exp_b2a2 * erfcx(a) - erfcx(b))
-			);
-		  }
-
-		  else {
-			// a is too small, so put in something close to 2 instead
-
-			logz_hat = std::log(0.5) - std::pow(b, 2) + std::log(
-			  erfcx(-b) - std::exp(-(std::pow(a, 2) - std::pow(b, 2))) * erfcx(-a)
-			);
-
-			mean_const = 2 * (
-			  1 / (erfcx(a) - exp_a2b2 * erfcx(b)) -
-				1 / (std::exp(std::pow(b, 2)) * 2 - erfcx(b))
-			);
-			var_const = 2 * (
-			  (lb + mu) / (erfcx(a) - exp_a2b2 * erfcx(b)) -
-				(ub + mu) / (std::exp(std::pow(b, 2)) * 2 - erfcx(b))
-			);
-		  }
-		} // end first if()
+			// Rcpp::Rcout << "mean_const: " << mean_const << std::endl;
+			// Rcpp::Rcout << "var_const: " << var_const << std::endl;
+			// Rcpp::Rcout << "random: " << (exp_b2a2 * erfcx_a - erfcx_b) << std::endl;
+		}
 
 		else {
-		  // abs(a) is bigger than abs(b), so reverse the calculation
-		  if (b <= 26.0) {
-			// do things normally but mirrored across 0
-			// Rcpp::Rcout << "here" << std::endl;
-			logz_hat = std::log(0.5) - std::pow(b, 2) + std::log(
-			  erfcx(-b) - std::exp(-(std::pow(a, 2) - std::pow(b, 2))) * erfcx(-a)
-			);
+			// the signs are different, so b > a and b >= 0 and a <= 0
+			if (std::abs(b) >= std::abs(a)) {
 
-			mean_const = -2 * (
-			  1 / (erfcx(-a) - exp_a2b2 * erfcx(-b)) -
-				1 / (exp_b2a2 * erfcx(-a) - erfcx(-b))
-			);
-			var_const = -2 * (
-			  (lb + mu) / (erfcx(-a) - exp_a2b2 * erfcx(-b)) -
-				(ub + mu) / (exp_b2a2 * erfcx(-a) - erfcx(-b))
-			);
-		  }
-		  else {
-			// b is too big, put something close to 2 instead
-			logz_hat = std::log(0.5) + std::log(
-			  2. - std::exp(-std::pow(a, 2)) * erfcx(-a) - std::exp(-std::pow(b, 2)) * erfcx(b)
-			);
+			if (a >= -26.0) {
+				// do things normally
+				// Rcpp::Rcout << "first if" << std::endl;
+				logz_hat = std::log(0.5) - std::pow(a, 2) + std::log(
+				erfcx(a) - std::exp(-(std::pow(b, 2) - std::pow(a, 2))) * erfcx(b)
+				);
 
-			mean_const = -2 * (
-			  1 / (erfcx(-a) - std::exp(std::pow(a, 2)) * 2) -
-				1 / (exp_b2a2 * erfcx(-a) - erfcx(-b))
-			);
-			var_const = -2 * (
-			  (lb + mu) / (erfcx(-a) - std::exp(std::pow(a, 2)) * 2) -
-				(ub + mu) / (exp_b2a2 * erfcx(-a) - erfcx(-b))
-			);
-		  }
+				mean_const = 2 * (
+				1 / (erfcx(a) - exp_a2b2 * erfcx(b)) -
+					1 / (exp_b2a2 * erfcx(a) - erfcx(b))
+				);
+				var_const = 2 * (
+				(lb + mu) / (erfcx(a) - exp_a2b2 * erfcx(b)) -
+					(ub + mu) / (exp_b2a2 * erfcx(a) - erfcx(b))
+				);
+			}
+
+			else {
+				// a is too small, so put in something close to 2 instead
+
+				logz_hat = std::log(0.5) - std::pow(b, 2) + std::log(
+				erfcx(-b) - std::exp(-(std::pow(a, 2) - std::pow(b, 2))) * erfcx(-a)
+				);
+
+				mean_const = 2 * (
+				1 / (erfcx(a) - exp_a2b2 * erfcx(b)) -
+					1 / (std::exp(std::pow(b, 2)) * 2 - erfcx(b))
+				);
+				var_const = 2 * (
+				(lb + mu) / (erfcx(a) - exp_a2b2 * erfcx(b)) -
+					(ub + mu) / (std::exp(std::pow(b, 2)) * 2 - erfcx(b))
+				);
+			}
+			} // end first if()
+
+			else {
+			// abs(a) is bigger than abs(b), so reverse the calculation
+			if (b <= 26.0) {
+				// do things normally but mirrored across 0
+				// Rcpp::Rcout << "here" << std::endl;
+				logz_hat = std::log(0.5) - std::pow(b, 2) + std::log(
+				erfcx(-b) - std::exp(-(std::pow(a, 2) - std::pow(b, 2))) * erfcx(-a)
+				);
+
+				mean_const = -2 * (
+				1 / (erfcx(-a) - exp_a2b2 * erfcx(-b)) -
+					1 / (exp_b2a2 * erfcx(-a) - erfcx(-b))
+				);
+				var_const = -2 * (
+				(lb + mu) / (erfcx(-a) - exp_a2b2 * erfcx(-b)) -
+					(ub + mu) / (exp_b2a2 * erfcx(-a) - erfcx(-b))
+				);
+			}
+			else {
+				// b is too big, put something close to 2 instead
+				logz_hat = std::log(0.5) + std::log(
+				2. - std::exp(-std::pow(a, 2)) * erfcx(-a) - std::exp(-std::pow(b, 2)) * erfcx(b)
+				);
+
+				mean_const = -2 * (
+				1 / (erfcx(-a) - std::exp(std::pow(a, 2)) * 2) -
+					1 / (exp_b2a2 * erfcx(-a) - erfcx(-b))
+				);
+				var_const = -2 * (
+				(lb + mu) / (erfcx(-a) - std::exp(std::pow(a, 2)) * 2) -
+					(ub + mu) / (exp_b2a2 * erfcx(-a) - erfcx(-b))
+				);
+			}
+			}
 		}
-	  }
+		}
+
+		// Rcpp::Rcout << "Log z hat: " << logz_hat << std::endl;
+
+		double z_hat = std::exp(logz_hat);
+		double mu_hat = mu + mean_const * std::sqrt(sigma / (2 * arma::datum::pi));
+		double sigma_hat =
+		sigma + var_const * sqrt(sigma / (2 * arma::datum::pi)) +
+		std::pow(mu, 2) - std::pow(mu_hat, 2);
+
+		logz_hat_out(i) = logz_hat;
+		z_hat_out(i) = z_hat;
+		mu_hat_out(i) = mu_hat;
+		sigma_hat_out(i) = sigma_hat;
 	}
 
-	// Rcpp::Rcout << "Log z hat: " << logz_hat << std::endl;
+	// TruncParams* truncparams = new TruncParams(logz_hat_out, mu_hat_out, sigma_hat_out);
 
-	double z_hat = std::exp(logz_hat);
-	double mu_hat = mu + mean_const * std::sqrt(sigma / (2 * arma::datum::pi));
-	double sigma_hat =
-	  sigma + var_const * sqrt(sigma / (2 * arma::datum::pi)) +
-	  std::pow(mu, 2) - std::pow(mu_hat, 2);
+	Rcpp::List result = Rcpp::List::create(
+		Rcpp::_["logz_hat"] = logz_hat_out,
+		Rcpp::_["z_hat"] = z_hat_out,
+		Rcpp::_["mu_hat"] = mu_hat_out,
+		Rcpp::_["sigma_hat"] = sigma_hat_out
+	);
 
-	logz_hat_out(i) = logz_hat;
-	z_hat_out(i) = z_hat;
-	mu_hat_out(i) = mu_hat;
-	sigma_hat_out(i) = sigma_hat;
-  }
+	return result;
 
-  Rcpp::List result = Rcpp::List::create(
-	Rcpp::_["logz_hat"] = logz_hat_out,
-	Rcpp::_["z_hat"] = z_hat_out,
-	Rcpp::_["mu_hat"] = mu_hat_out,
-	Rcpp::_["sigma_hat"] = sigma_hat_out
-  );
+	// return truncparams;
+} // end trunc_norm_moments() function
 
-  return result;
+
+TruncParams* tn(arma::vec lb_in, arma::vec ub_in,
+				arma::vec mu_in, arma::vec sigma_in) {
+
+	int d = lb_in.n_elem;
+
+	arma::vec logz_hat_out(d, arma::fill::zeros);
+	arma::vec z_hat_out(d, arma::fill::zeros);
+	arma::vec mu_hat_out(d, arma::fill::zeros);
+	arma::vec sigma_hat_out(d, arma::fill::zeros);
+
+	for (int i = 0; i < d; i++) {
+
+		double lb = lb_in(i);
+		double ub = ub_in(i);
+		double mu = mu_in(i);
+		double sigma = sigma_in(i);
+
+		double logz_hat_other_tail;
+		double logz_hat;
+		double mean_const;
+		double var_const;
+
+		// establish bounds
+		double a = (lb - mu) / std::sqrt(2 * sigma);
+		double b = (ub - mu) / std::sqrt(2 * sigma);
+
+		// stable calculation
+
+		// problem case 1
+		if (std::isinf(a) && std::isinf(b)) {
+		// check the sign
+		if (copysign(1.0, a) == copysign(1.0, b)) {
+			// integrating from inf to inf, should be 0
+			logz_hat_out(i) = -arma::datum::inf;
+			z_hat_out(i) = 0.0;
+			mu_hat_out(i) = a;
+			sigma_hat_out(i) = 0.0;
+			continue;
+		}
+		else {
+			logz_hat_out(i) = 0.0;
+			z_hat_out(i) = 1.0;
+			mu_hat_out(i) = mu;
+			sigma_hat_out(i) = sigma;
+			continue;
+		}
+		}
+
+		// problem case 2
+		else if (a > b) {
+		// bounds are wrong, return 0 by convention
+		logz_hat_out(i) = -arma::datum::inf;
+		z_hat_out(i) = 0;
+		mu_hat_out(i) = mu;
+		sigma_hat_out(i) = 0;
+		continue;
+		}
+
+		// typical case 1
+		else if (a == -arma::datum::inf) {
+		// integrating up to b
+		if (b > 26.0) {
+			// will be very close to 1
+			logz_hat_other_tail = std::log(0.5) + std::log(erfcx(b)) - std::pow(b, 2);
+			logz_hat = std::log1p(-std::exp(logz_hat_other_tail));
+		}
+		else {
+			// b is small enough
+			logz_hat = std::log(0.5) + std::log(erfcx(-b)) - std::pow(b, 2);
+		}
+
+		mean_const = -2.0 / erfcx(-b);
+		var_const = (-2.0 / erfcx(-b)) * (ub + mu);
+		}
+
+		// typical case 2
+		else if (b == arma::datum::inf) {
+		// Rcpp::Rcout << "handling unbounded upper constraint" << std::endl;
+		// Rcpp::Rcout << "a: " << a << std::endl;
+		// integrate from a to inf
+		if (a < -26.0) {
+			// will be very close to 1
+			logz_hat_other_tail = std::log(0.5) + std::log(erfcx(-a)) - std::pow(a, 2);
+			logz_hat = std::log1p(-std::exp(logz_hat_other_tail));
+		}
+		else {
+			// should be stable
+			logz_hat = std::log(0.5) + std::log(erfcx(a)) - std::pow(a, 2);
+		}
+
+		mean_const = 2.0 / erfcx(a);
+		var_const = (2.0 / erfcx(a)) * (lb + mu);
+		}
+
+		// typical case 3
+		else {
+		// range from a to b, need stable exponent calculation
+		double exp_a2b2 = std::exp(std::pow(a, 2) - std::pow(b, 2));
+		double exp_b2a2 = std::exp(std::pow(b, 2) - std::pow(a, 2));
+
+		// Rcpp::Rcout << "exp_a2b2: " << exp_a2b2 << std::endl;
+		// Rcpp::Rcout << "exp_b2a2: " << exp_b2a2 << std::endl;
+
+
+		if (copysign(1.0, a) == copysign(1.0, b)) {
+			// exploit symmetry in problem to make calculations stable for erfcx
+			double maxab = std::max(std::abs(a), std::abs(b));
+			double minab = std::min(std::abs(a), std::abs(b));
+
+			logz_hat =
+			std::log(0.5) - std::pow(minab, 2) +
+			std::log( std::abs(
+				std::exp( -(std::pow(maxab, 2) - std::pow(minab, 2))) *
+					erfcx(maxab) -
+					erfcx(minab) ) );
+
+			double erfcx_a = erfcx(std::abs(a));
+			double erfcx_b = erfcx(std::abs(b));
+
+			// Rcpp::Rcout << "erfcx_a: " << erfcx_a << std::endl;
+			// Rcpp::Rcout << "erfcx_b: " << erfcx_b << std::endl;
+
+			mean_const = 2. * copysign(1.0, a) * (
+			1 / (( erfcx_a - exp_a2b2 * erfcx_b )) -
+				1 / (( exp_b2a2 * erfcx_a - erfcx_b ))
+			);
+			var_const = 2. * copysign(1.0, a) * (
+			(lb + mu) / (erfcx_a - exp_a2b2 * erfcx_b) -
+				(ub + mu) / (exp_b2a2 * erfcx_a - erfcx_b)
+			);
+			// Rcpp::Rcout << "mean_const: " << mean_const << std::endl;
+			// Rcpp::Rcout << "var_const: " << var_const << std::endl;
+			// Rcpp::Rcout << "random: " << (exp_b2a2 * erfcx_a - erfcx_b) << std::endl;
+		}
+
+		else {
+			// the signs are different, so b > a and b >= 0 and a <= 0
+			if (std::abs(b) >= std::abs(a)) {
+
+			if (a >= -26.0) {
+				// do things normally
+				// Rcpp::Rcout << "first if" << std::endl;
+				logz_hat = std::log(0.5) - std::pow(a, 2) + std::log(
+				erfcx(a) - std::exp(-(std::pow(b, 2) - std::pow(a, 2))) * erfcx(b)
+				);
+
+				mean_const = 2 * (
+				1 / (erfcx(a) - exp_a2b2 * erfcx(b)) -
+					1 / (exp_b2a2 * erfcx(a) - erfcx(b))
+				);
+				var_const = 2 * (
+				(lb + mu) / (erfcx(a) - exp_a2b2 * erfcx(b)) -
+					(ub + mu) / (exp_b2a2 * erfcx(a) - erfcx(b))
+				);
+			}
+
+			else {
+				// a is too small, so put in something close to 2 instead
+
+				logz_hat = std::log(0.5) - std::pow(b, 2) + std::log(
+				erfcx(-b) - std::exp(-(std::pow(a, 2) - std::pow(b, 2))) * erfcx(-a)
+				);
+
+				mean_const = 2 * (
+				1 / (erfcx(a) - exp_a2b2 * erfcx(b)) -
+					1 / (std::exp(std::pow(b, 2)) * 2 - erfcx(b))
+				);
+				var_const = 2 * (
+				(lb + mu) / (erfcx(a) - exp_a2b2 * erfcx(b)) -
+					(ub + mu) / (std::exp(std::pow(b, 2)) * 2 - erfcx(b))
+				);
+			}
+			} // end first if()
+
+			else {
+			// abs(a) is bigger than abs(b), so reverse the calculation
+			if (b <= 26.0) {
+				// do things normally but mirrored across 0
+				// Rcpp::Rcout << "here" << std::endl;
+				logz_hat = std::log(0.5) - std::pow(b, 2) + std::log(
+				erfcx(-b) - std::exp(-(std::pow(a, 2) - std::pow(b, 2))) * erfcx(-a)
+				);
+
+				mean_const = -2 * (
+				1 / (erfcx(-a) - exp_a2b2 * erfcx(-b)) -
+					1 / (exp_b2a2 * erfcx(-a) - erfcx(-b))
+				);
+				var_const = -2 * (
+				(lb + mu) / (erfcx(-a) - exp_a2b2 * erfcx(-b)) -
+					(ub + mu) / (exp_b2a2 * erfcx(-a) - erfcx(-b))
+				);
+			}
+			else {
+				// b is too big, put something close to 2 instead
+				logz_hat = std::log(0.5) + std::log(
+				2. - std::exp(-std::pow(a, 2)) * erfcx(-a) - std::exp(-std::pow(b, 2)) * erfcx(b)
+				);
+
+				mean_const = -2 * (
+				1 / (erfcx(-a) - std::exp(std::pow(a, 2)) * 2) -
+					1 / (exp_b2a2 * erfcx(-a) - erfcx(-b))
+				);
+				var_const = -2 * (
+				(lb + mu) / (erfcx(-a) - std::exp(std::pow(a, 2)) * 2) -
+					(ub + mu) / (exp_b2a2 * erfcx(-a) - erfcx(-b))
+				);
+			}
+			}
+		}
+		}
+
+		// Rcpp::Rcout << "Log z hat: " << logz_hat << std::endl;
+
+		double z_hat = std::exp(logz_hat);
+		double mu_hat = mu + mean_const * std::sqrt(sigma / (2 * arma::datum::pi));
+		double sigma_hat =
+		sigma + var_const * sqrt(sigma / (2 * arma::datum::pi)) +
+		std::pow(mu, 2) - std::pow(mu_hat, 2);
+
+		logz_hat_out(i) = logz_hat;
+		z_hat_out(i) = z_hat;
+		mu_hat_out(i) = mu_hat;
+		sigma_hat_out(i) = sigma_hat;
+	}
+
+	/* store these as pointers? maybe need to make a struct */
+
+	TruncParams* truncparams = new TruncParams(logz_hat_out, mu_hat_out, 
+		sigma_hat_out);
+
+	return truncparams;
+} // end trunc_norm_moments() function
+
+
+double ep(arma::vec m, arma::mat K, arma::vec lb, arma::vec ub) {
+
+	arma::vec nu_site = arma::zeros(K.n_rows);
+	arma::vec tau_site = arma::zeros(K.n_rows);
+
+	// initialize q(x)
+	arma::mat Sigma = K;
+	arma::vec mu = (lb + ub) / 2;
+	for (int i = 0; i < mu.n_elem; i++) {
+		if (std::isinf(mu(i))) {
+			mu(i) = copysign(1.0, mu(i)) * 100;
+		}
+	}
+
+	arma::mat Kinvm = arma::solve(K, m);
+	// Rcpp::Rcout << "Kinvm: " << Kinvm << std::endl;
+	double logZ = arma::datum::inf;
+	arma::vec mu_last = -arma::datum::inf * arma::ones(arma::size(mu));
+	double converged = false;
+	int k = 1;
+
+	// algorithm loop
+	arma::vec tau_cavity;
+	arma::vec nu_cavity;
+	arma::mat L;
+	arma::vec logz_hat;
+	arma::vec sigma_hat;
+	arma::vec mu_hat;
+
+	while (!converged) {
+
+		// make cavity distribution
+		tau_cavity = 1 / arma::diagvec(Sigma) - tau_site;
+		nu_cavity = mu / arma::diagvec(Sigma) - nu_site;
+
+		// compute moments using truncated normals
+		TruncParams* truncparams = tn(
+			lb, ub, nu_cavity / tau_cavity, 1 / tau_cavity);
+		
+		arma::vec sigma_hat_out = truncparams->getsigmahat();
+		arma::vec logz_hat_out = truncparams->getlogzhat();
+		arma::vec mu_hat_out = truncparams->getmuhat();
+
+		logz_hat = logz_hat_out;
+		sigma_hat = sigma_hat_out;
+		mu_hat = mu_hat_out;
+
+		// Rcpp::Rcout << "sigma_hat: " << sigma_hat_out << std::endl;
+
+		// update the site parameters
+		arma::vec delta_tau_site = (1 / sigma_hat) - tau_cavity - tau_site;
+		tau_site += delta_tau_site;
+		nu_site = (mu_hat / sigma_hat) - nu_cavity;
+
+		// Rcpp::Rcout << "nu_site: " << nu_site.t() << std::endl;
+
+		// enforce nonnegativity of tau_site
+		if (arma::any(tau_site < 0)) {
+		for (int i = 0; i < tau_site.n_elem; i++) {
+			if (tau_site(i) > -1e-8) {
+			tau_site(i) = 0.0;
+			}
+		}
+		}
+
+		// update q(x) Sigma and mu
+		arma::mat S_site_half = arma::diagmat(arma::sqrt(tau_site));
+		L = arma::chol(
+		arma::eye(K.n_rows, K.n_cols) + S_site_half * K * S_site_half);
+		arma::mat V = arma::solve(L.t(), S_site_half * K);
+		Sigma = K - V.t() * V;
+		mu = Sigma * (nu_site + Kinvm);
+
+		// Rcpp::Rcout << "tau site: " << tau_site << std::endl;
+		// Rcpp::Rcout << "tau cavity: " << tau_cavity << std::endl;
+		// Rcpp::Rcout << "L: " << L << std::endl;
+
+		// check convergence criteria
+		if ((arma::norm(mu_last - mu)) < EPS_CONVERGE) {
+			// Rcpp::Rcout << "converged: " << k << " iters" << std::endl;
+			converged = true;
+		} else {
+			mu_last = mu;
+		}
+		k++;
+
+		// if (k == 3) { break; }
+
+	} // end while loop
+
+	if (logZ != -arma::datum::inf) {
+		double lZ1 = 0.5 * arma::sum(arma::log(1 + tau_site / tau_cavity)) -
+		arma::sum(arma::log(arma::diagvec(L)));
+
+		double lZ2 = 0.5 * arma::as_scalar(
+		(nu_site - tau_site % m).t() *
+		(Sigma - arma::diagmat(1 / (tau_cavity + tau_site))) *
+		(nu_site - tau_site % m)
+		);
+
+		double lZ3 = 0.5 * arma::as_scalar(
+		nu_cavity.t() *
+			arma::solve(arma::diagmat(tau_site) + arma::diagmat(tau_cavity),
+						tau_site % nu_cavity / tau_cavity - 2 * nu_site)
+		);
+
+		double lZ4 = -0.5 * arma::as_scalar(
+		(tau_cavity % m).t() *
+			arma::solve(arma::diagmat(tau_site) + arma::diagmat(tau_cavity),
+						tau_site % m - 2 * nu_site)
+		);
+
+		// Rcpp::Rcout << "tmp: " << (nu_site - tau_site % m).t() << std::endl;
+		/*
+		Rcpp::Rcout << "lz1: " << lZ1 << std::endl;
+		Rcpp::Rcout << "lz2: " << lZ2 << std::endl;
+		Rcpp::Rcout << "lz3: " << lZ3 << std::endl;
+		Rcpp::Rcout << "lz4: " << lZ4 << std::endl;
+		Rcpp::Rcout << "logzhat: " << logz_hat << std::endl;
+		*/
+		logZ = lZ1 + lZ2 + lZ3 + lZ4 + arma::sum(logz_hat);
+
+
+
+	}
+  	return logZ;
 }
 
 
 // [[Rcpp::export]]
 double ep_logz(arma::vec m, arma::mat K, arma::vec lb, arma::vec ub) {
 
-  arma::vec nu_site = arma::zeros(K.n_rows);
-  arma::vec tau_site = arma::zeros(K.n_rows);
+	arma::vec nu_site = arma::zeros(K.n_rows);
+	arma::vec tau_site = arma::zeros(K.n_rows);
 
-  // initialize q(x)
-  arma::mat Sigma = K;
-  arma::vec mu = (lb + ub) / 2;
-  for (int i = 0; i < mu.n_elem; i++) {
-	if (std::isinf(mu(i))) {
-	  mu(i) = copysign(1.0, mu(i)) * 100;
-	}
-  }
-
-  arma::mat Kinvm = arma::solve(K, m);
-  // Rcpp::Rcout << "Kinvm: " << Kinvm << std::endl;
-  double logZ = arma::datum::inf;
-  arma::vec mu_last = -arma::datum::inf * arma::ones(arma::size(mu));
-  double converged = false;
-  int k = 1;
-
-  // algorithm loop
-  arma::vec tau_cavity;
-  arma::vec nu_cavity;
-  arma::mat L;
-  arma::vec logz_hat;
-  arma::vec sigma_hat;
-  arma::vec mu_hat;
-
-  while (!converged) {
-
-	// make cavity distribution
-	tau_cavity = 1 / arma::diagvec(Sigma) - tau_site;
-	nu_cavity = mu / arma::diagvec(Sigma) - nu_site;
-
-	// compute moments using truncated normals
-	Rcpp::List moments = trunc_norm_moments(lb, ub, nu_cavity / tau_cavity, 1 / tau_cavity);
-	arma::vec sigma_hat_out = moments["sigma_hat"];
-	arma::vec logz_hat_out = moments["logz_hat"];
-	arma::vec mu_hat_out = moments["mu_hat"];
-	logz_hat = logz_hat_out;
-	sigma_hat = sigma_hat_out;
-	mu_hat = mu_hat_out;
-
-	// Rcpp::Rcout << "sigma_hat: " << sigma_hat_out << std::endl;
-
-	// update the site parameters
-	arma::vec delta_tau_site = (1 / sigma_hat) - tau_cavity - tau_site;
-	tau_site += delta_tau_site;
-	nu_site = (mu_hat / sigma_hat) - nu_cavity;
-
-	// Rcpp::Rcout << "nu_site: " << nu_site.t() << std::endl;
-
-	// enforce nonnegativity of tau_site
-	if (arma::any(tau_site < 0)) {
-	  for (int i = 0; i < tau_site.n_elem; i++) {
-		if (tau_site(i) > -1e-8) {
-		  tau_site(i) = 0.0;
+	// initialize q(x)
+	arma::mat Sigma = K;
+	arma::vec mu = (lb + ub) / 2;
+	for (int i = 0; i < mu.n_elem; i++) {
+		if (std::isinf(mu(i))) {
+			mu(i) = copysign(1.0, mu(i)) * 100;
 		}
-	  }
 	}
 
-	// update q(x) Sigma and mu
-	arma::mat S_site_half = arma::diagmat(arma::sqrt(tau_site));
-	L = arma::chol(
-	  arma::eye(K.n_rows, K.n_cols) + S_site_half * K * S_site_half);
-	arma::mat V = arma::solve(L.t(), S_site_half * K);
-	Sigma = K - V.t() * V;
-	mu = Sigma * (nu_site + Kinvm);
+	arma::mat Kinvm = arma::solve(K, m);
+	// Rcpp::Rcout << "Kinvm: " << Kinvm << std::endl;
+	double logZ = arma::datum::inf;
+	arma::vec mu_last = -arma::datum::inf * arma::ones(arma::size(mu));
+	double converged = false;
+	int k = 1;
 
-	// Rcpp::Rcout << "tau site: " << tau_site << std::endl;
-	// Rcpp::Rcout << "tau cavity: " << tau_cavity << std::endl;
-	// Rcpp::Rcout << "L: " << L << std::endl;
+	// algorithm loop
+	arma::vec tau_cavity;
+	arma::vec nu_cavity;
+	arma::mat L;
+	arma::vec logz_hat;
+	arma::vec sigma_hat;
+	arma::vec mu_hat;
 
-	// check convergence criteria
-	if ((arma::norm(mu_last - mu)) < EPS_CONVERGE) {
-	  // Rcpp::Rcout << "converged: " << k << " iters" << std::endl;
-	  converged = true;
-	} else {
-	  mu_last = mu;
+	while (!converged) {
+
+		// make cavity distribution
+		tau_cavity = 1 / arma::diagvec(Sigma) - tau_site;
+		nu_cavity = mu / arma::diagvec(Sigma) - nu_site;
+
+		// compute moments using truncated normals
+		// TruncParams* truncparams = trunc_norm_moments(
+		// 	lb, ub, nu_cavity / tau_cavity, 1 / tau_cavity);
+		
+		Rcpp::List moments = trunc_norm_moments(
+			lb, ub, nu_cavity / tau_cavity, 1 / tau_cavity);
+		
+		// arma::vec sigma_hat_out = truncparams->getsigmahat();
+		// arma::vec logz_hat_out = truncparams->getlogzhat();
+		// arma::vec mu_hat_out = truncparams->getmuhat();
+		arma::vec sigma_hat_out = moments["sigma_hat"];
+		arma::vec logz_hat_out = moments["logz_hat"];
+		arma::vec mu_hat_out = moments["mu_hat"];
+		logz_hat = logz_hat_out;
+		sigma_hat = sigma_hat_out;
+		mu_hat = mu_hat_out;
+
+		// Rcpp::Rcout << "sigma_hat: " << sigma_hat_out << std::endl;
+
+		// update the site parameters
+		arma::vec delta_tau_site = (1 / sigma_hat) - tau_cavity - tau_site;
+		tau_site += delta_tau_site;
+		nu_site = (mu_hat / sigma_hat) - nu_cavity;
+
+		// Rcpp::Rcout << "nu_site: " << nu_site.t() << std::endl;
+
+		// enforce nonnegativity of tau_site
+		if (arma::any(tau_site < 0)) {
+		for (int i = 0; i < tau_site.n_elem; i++) {
+			if (tau_site(i) > -1e-8) {
+			tau_site(i) = 0.0;
+			}
+		}
+		}
+
+		// update q(x) Sigma and mu
+		arma::mat S_site_half = arma::diagmat(arma::sqrt(tau_site));
+		L = arma::chol(
+		arma::eye(K.n_rows, K.n_cols) + S_site_half * K * S_site_half);
+		arma::mat V = arma::solve(L.t(), S_site_half * K);
+		Sigma = K - V.t() * V;
+		mu = Sigma * (nu_site + Kinvm);
+
+		// Rcpp::Rcout << "tau site: " << tau_site << std::endl;
+		// Rcpp::Rcout << "tau cavity: " << tau_cavity << std::endl;
+		// Rcpp::Rcout << "L: " << L << std::endl;
+
+		// check convergence criteria
+		if ((arma::norm(mu_last - mu)) < EPS_CONVERGE) {
+			// Rcpp::Rcout << "converged: " << k << " iters" << std::endl;
+			converged = true;
+		} else {
+			mu_last = mu;
+		}
+		k++;
+
+		// if (k == 3) { break; }
+
+	} // end while loop
+
+	if (logZ != -arma::datum::inf) {
+		double lZ1 = 0.5 * arma::sum(arma::log(1 + tau_site / tau_cavity)) -
+		arma::sum(arma::log(arma::diagvec(L)));
+
+		double lZ2 = 0.5 * arma::as_scalar(
+		(nu_site - tau_site % m).t() *
+		(Sigma - arma::diagmat(1 / (tau_cavity + tau_site))) *
+		(nu_site - tau_site % m)
+		);
+
+		double lZ3 = 0.5 * arma::as_scalar(
+		nu_cavity.t() *
+			arma::solve(arma::diagmat(tau_site) + arma::diagmat(tau_cavity),
+						tau_site % nu_cavity / tau_cavity - 2 * nu_site)
+		);
+
+		double lZ4 = -0.5 * arma::as_scalar(
+		(tau_cavity % m).t() *
+			arma::solve(arma::diagmat(tau_site) + arma::diagmat(tau_cavity),
+						tau_site % m - 2 * nu_site)
+		);
+
+		// Rcpp::Rcout << "tmp: " << (nu_site - tau_site % m).t() << std::endl;
+		/*
+		Rcpp::Rcout << "lz1: " << lZ1 << std::endl;
+		Rcpp::Rcout << "lz2: " << lZ2 << std::endl;
+		Rcpp::Rcout << "lz3: " << lZ3 << std::endl;
+		Rcpp::Rcout << "lz4: " << lZ4 << std::endl;
+		Rcpp::Rcout << "logzhat: " << logz_hat << std::endl;
+		*/
+		logZ = lZ1 + lZ2 + lZ3 + lZ4 + arma::sum(logz_hat);
+
+
+
 	}
-	k++;
 
-	// if (k == 3) { break; }
-
-  } // end while loop
-
-  if (logZ != -arma::datum::inf) {
-	double lZ1 = 0.5 * arma::sum(arma::log(1 + tau_site / tau_cavity)) -
-	  arma::sum(arma::log(arma::diagvec(L)));
-
-	double lZ2 = 0.5 * arma::as_scalar(
-	  (nu_site - tau_site % m).t() *
-	  (Sigma - arma::diagmat(1 / (tau_cavity + tau_site))) *
-	  (nu_site - tau_site % m)
-	);
-
-	double lZ3 = 0.5 * arma::as_scalar(
-	  nu_cavity.t() *
-		arma::solve(arma::diagmat(tau_site) + arma::diagmat(tau_cavity),
-					tau_site % nu_cavity / tau_cavity - 2 * nu_site)
-	);
-
-	double lZ4 = -0.5 * arma::as_scalar(
-	  (tau_cavity % m).t() *
-		arma::solve(arma::diagmat(tau_site) + arma::diagmat(tau_cavity),
-					tau_site % m - 2 * nu_site)
-	);
-
-	// Rcpp::Rcout << "tmp: " << (nu_site - tau_site % m).t() << std::endl;
 	/*
-	Rcpp::Rcout << "lz1: " << lZ1 << std::endl;
-	Rcpp::Rcout << "lz2: " << lZ2 << std::endl;
-	Rcpp::Rcout << "lz3: " << lZ3 << std::endl;
-	Rcpp::Rcout << "lz4: " << lZ4 << std::endl;
-	Rcpp::Rcout << "logzhat: " << logz_hat << std::endl;
+	Rcpp::List result = Rcpp::List::create(
+		Rcpp::_["logZ"] = logZ,
+		Rcpp::_["mu"] = mu,
+		Rcpp::_["Sigma"] = Sigma
+	);
 	*/
-	logZ = lZ1 + lZ2 + lZ3 + lZ4 + arma::sum(logz_hat);
-
-
-
-  }
-
-  /*
-  Rcpp::List result = Rcpp::List::create(
-	Rcpp::_["logZ"] = logZ,
-	Rcpp::_["mu"] = mu,
-	Rcpp::_["Sigma"] = Sigma
-  );
-  */
 
   return logZ;
 }

@@ -94,7 +94,40 @@ arma::mat Graph::sampleGW(u_int m) {
 } // end sampleGW() function
 
 
+arma::mat Graph::sampleGWParallel(u_int J) {
 
+	arma::mat G = arma::conv_to<arma::mat>::from(this->G);
+    // arma::mat samps(graph->D, m, arma::fill::zeros);
+	arma::mat samps(J, this->D, arma::fill::zeros);
+	arma::mat P_inv = this->P_inv;
 
+	std::vector<arma::vec> vec; 
+	#pragma omp parallel shared(G)
+    {
+		arma::mat omega, phi, zeta;
+		arma::vec u0, u;
+		arma::uvec ids  = this->free_index;
+		std::vector<arma::vec> vec_private; 
+		#pragma omp for // fill vec_private in parallel
+		for (unsigned int j = 0; j < J; j++) {
+			omega = rgwish_c(G, this->P, this->b, this->p, 1e-8);
+			phi   = arma::chol(omega);             // upper choleksy
+			zeta  = phi * P_inv;             // compute transformation
+			u0    = arma::vectorise(zeta);
+			u     = u0(ids);                       // extract free elements
+			// samps.col(j) = u;
+			vec_private.push_back(u);
+		} // end sampling loop
+		#pragma omp critical
+        vec.insert(vec.end(), vec_private.begin(), vec_private.end());
+	} // end of outer omp
+
+	for (unsigned int j = 0; j < J; j++) {
+		arma::rowvec u = arma::conv_to< arma::rowvec >::from( vec[j] );
+		samps.row(j) = u;
+	}
+     // return samps.t(); // return as a (m x D) matrix
+	 return samps;
+} // end sampleGW() function
 
 

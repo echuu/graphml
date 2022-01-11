@@ -12,7 +12,6 @@
 
 /** ------------------- start objective functions -------------------------- **/
 
-// [[Rcpp::export]]
 double psi_cpp(arma::vec& u, Rcpp::List& params) {
 
 	u_int p           = params["p"];    // dimension of the graph G
@@ -59,7 +58,6 @@ double psi_cpp_mat(arma::mat& psi_mat, Rcpp::List& params) {
 	return -psi_u;
 } // end psi_cpp_mat() function
 
-// [[Rcpp::export]]
 arma::mat evalPsi(arma::mat samps, Rcpp::List& params) {
 	u_int J = samps.n_rows;
 

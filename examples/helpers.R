@@ -75,10 +75,10 @@ l1_norm = function(u, u_0) {
 
 createDfName_R = function(param_dim) {
   name_vec = character(param_dim + 1)
-  for (d in 1:param_dim) {
+  for (d in 1:(param_dim)) {
     name_vec[d] = paste("u", d, sep = '')
   }
-  name_vec[param_dim + 1] = "psi_u"
+  name_vec[param_dim+1] = "psi_u"
   return(name_vec)
 }
 

@@ -65,18 +65,18 @@ arma::vec findCandidatePoint(arma::mat data, arma::vec uStar, u_int dim) {
 } // end findCandidatePoint() function
 
 
-std::unordered_map<int, arma::vec> findAllCandidatePoints(arma::mat data,
+std::unordered_map<u_int, arma::vec> findAllCandidatePoints(arma::mat data,
     arma::vec locs, arma::vec uStar, u_int D) {
     /* locs should correspond to the each of the data points */
     arma::vec locsUnique = arma::unique(locs);
-    int n = locsUnique.n_elem;
+    u_int k = locsUnique.n_elem;
     arma::mat data_subset;
     arma::uvec locRows;
     //arma::mat candidates(n, D, arma::fill::zeros); // store the candidate pts
-    std::unordered_map<int, arma::vec> candidate_map;
+    std::unordered_map<u_int, arma::vec> candidate_map;
 
-    for (u_int i = 0; i < n; i++) {
-        int loc = locsUnique(i);
+    for (u_int i = 0; i < k; i++) { // iterating through leaf nodes
+        u_int loc = locsUnique(i);
         locRows = find(locs == loc);
         // Rcpp::Rcout<< locRows << std::endl;
         data_subset = data.rows(locRows);

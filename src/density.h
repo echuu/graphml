@@ -14,19 +14,30 @@
     access the variables we need instead of extracting them out of a parameter
     object. */
 
-/** ---------------------- hybrid-ep functions ----------------------------- **/
-arma::vec calcMode(arma::mat u_df, Graph* graph);
-double approxlogml(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph);
-double integratePartition(Graph* graph, 
-    std::unordered_map<u_int, arma::vec> candidates, 
+
+/* parallel */
+double approxlogmlFast(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph);
+double integratePartitionFast(Graph* graph, 
+	std::unordered_map<u_int, arma::vec> candidates, 
 	std::unordered_map<u_int, arma::vec> bounds, 
 	u_int nLeaves);
+
+double approxlogml_map(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph);
+
+
+
+/** ---------------------- hybrid-ep functions ----------------------------- **/
+arma::vec calcMode(arma::mat u_df, Graph* graph);
+// double approxlogml(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph);
+// double integratePartition(Graph* graph, 
+//     std::unordered_map<u_int, arma::vec> candidates, 
+// 	std::unordered_map<u_int, arma::vec> bounds, 
+// 	u_int nLeaves);
 
 /** ---------------------- objective functions ----------------------------- **/
 double h(u_int i, u_int j, arma::mat& L);
 arma::mat vec2mat(arma::vec u, Graph* graph);
 double psi_cpp(arma::vec& u, Graph* graph);
-arma::mat evalPsi(arma::mat samps, Graph* graph);
 double psi_cpp_mat(arma::mat& psi_mat, Graph* graph);
 
 /** ----------------------  gradient functions ----------------------------- **/

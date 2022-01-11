@@ -11,15 +11,10 @@ struct Interval {
         double lb;
         double ub;
         unsigned int feature;
-        Interval(double lb, double ub, unsigned int feature) {
-            this->lb = lb;
-            this->ub = ub;
-            this->feature = feature;
-        }
-        void print() {
-             Rcpp::Rcout << "[ " << this->lb << ", " << 
-                this->ub << "]" << std::endl;
-        }
+
+        Interval(double lb, double ub, unsigned int feature);
+        void print();
+        
 };
 
 

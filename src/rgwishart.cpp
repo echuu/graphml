@@ -19,7 +19,7 @@ arma::mat rgwish_c(arma::mat G, arma::mat Ts, unsigned int b, unsigned int p,
 arma::mat rgw(unsigned int J, Rcpp::List& obj);
 
 
-// [[Rcpp::export]]
+
 arma::mat rgw(unsigned int J, Rcpp::List& obj) {
 
     arma::mat G     = obj["G"];
@@ -47,7 +47,6 @@ arma::mat rgw(unsigned int J, Rcpp::List& obj) {
 
 
 /* sampling from Wishart distribution, in which Ts = chol( solve( Ds ) ) */
-// [[Rcpp::export]]
 arma::mat rwish_c(arma::mat Ts, unsigned int b, unsigned int p)
 // Ts upper triangle, psi lower triangle
 {
@@ -70,7 +69,6 @@ arma::mat rwish_c(arma::mat Ts, unsigned int b, unsigned int p)
 
 /* sampling from G-Wishart distribution */
 // G is adjacency matrix which has zero in its diagonal, threshold = 1e-8
-// [[Rcpp::export]]
 arma::mat rgwish_c(arma::mat G, arma::mat Ts, unsigned int b, unsigned int p,
     double threshold_c)
 // Ts upper triangle

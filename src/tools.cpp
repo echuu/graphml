@@ -16,7 +16,6 @@ double xi(u_int i, u_int j, arma::mat& L) {
 } // end xi() function
 
 
-// [[Rcpp::export]]
 Rcpp::StringVector createDfName(unsigned int D) {
     // this is called from initGraph() so that the column names of the samples
     // have names; these names are passed into mat2df() [see below] to create
@@ -28,7 +27,6 @@ Rcpp::StringVector createDfName(unsigned int D) {
 }
 
 
-// [[Rcpp::export]]
 Rcpp::DataFrame mat2df(arma::mat x, Rcpp::StringVector nameVec) {
     // this function calls an R function to create the u_df dataframe that 
     // we need to pass into rpart() function; eventually when we have a C++ 
@@ -44,7 +42,6 @@ Rcpp::DataFrame mat2df(arma::mat x, Rcpp::StringVector nameVec) {
 } // end of mat2df() function
 
 
-// [[Rcpp::export]]
 double lse(arma::vec arr, int count) {
     // log-sum-exp() function
     if(count > 0){
@@ -64,6 +61,25 @@ double lse(arma::vec arr, int count) {
     }
 } // end of lse() function
 
+
+double lse(std::vector<double> arr, int count) {
+	if(count > 0){
+        double maxVal = arr[0];
+        double sum = 0;
+        for (int i = 1 ; i < count ; i++){
+            if (arr[i] > maxVal){
+                maxVal = arr[i];
+            }
+        }
+        for (int i = 0; i < count ; i++){
+            sum += exp(arr[i] - maxVal);
+        }
+        return log(sum) + maxVal;
+    } else {
+        return 0.0;
+    }
+} // end of lse() function
+ 
 
 arma::vec matrix2vector(arma::mat m, const bool byrow=false) {
   if (byrow) {

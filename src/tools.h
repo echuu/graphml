@@ -17,6 +17,7 @@ arma::mat getNonFreeElem(arma::umat G, u_int p, u_int n_nonfree);
 /** --------------------- calculation functions ---------------------------- **/
 double xi(u_int i, u_int j, arma::mat& L);
 double lse(arma::vec arr, int count);
+double lse(std::vector<double> arr, int count);
 
 /** ---------------------- reshaping functions ----------------------------- **/
 arma::mat vec2mat(arma::vec u, Rcpp::List& params); 
