@@ -90,7 +90,6 @@ arma::vec matrix2vector(arma::mat m, const bool byrow=false) {
 } // end matrix2vector() function
 
 
-
 /** -------------------- gwish-specific functions -------------------------- **/
 
 arma::mat getFreeElem(arma::umat G, u_int p) {
