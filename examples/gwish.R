@@ -1,12 +1,13 @@
 
 # // [[Rcpp::plugins(openmp)]]
 
-source("examples/helpers.R")
-library(graphml)
-library(rpart)
-library(dplyr)
+source("examples/helpers.R") # load this before running generalApprox()
+library(rpart)  # load this before running generalApprox()
+library(dplyr)  # load this before running generalApprox()
 
-set.seed(1)
+library(graphml)
+
+set.seed(2)
 p = 5
 G = matrix(c(1,1,0,1,1,
              1,1,1,0,0,
@@ -18,18 +19,28 @@ V = BDgraph::rgwish(1, G, b, diag(p))
 J = 1000
 
 set.seed(1)
+graphml::generalApprox(G, b, V, J)
+BDgraph::gnorm(G, b, V, J)
 graphml::approxfaster(G, b, V, J)
-set.seed(1)
-graphml::testParallel(G, b, V, J)
-set.seed(1)
 graphml::testmap(G, b, V, J)
 
+set.seed(1)
+graphml::generalApprox(G, b, V, J)      # rpart, no parallel
+set.seed(1)
+graphml::approxlogml(G, b, V, J)        # new cpp, no parallel
+set.seed(1)
+graphml::approxlogml_slow(G, b, V, J)   # old cpp, no parallel
+set.seed(1)
+graphml::approxlogml_fast(G, b, V, J)   # new cpp, with parallel
+
+
 microbenchmark::microbenchmark(
-  rpart = graphml::generalApprox(G, b, V, J),   # uses rpart()
-  # pll_cpp = graphml::testParallel(G, b, V, J),  # parallel
-  map_cpp = graphml::testmap(G, b, V, J),
-  rpart_cpp_pll_1 = graphml::approxfaster(G, b, V, J),
-  times = 20
+  rpart    = graphml::generalApprox(G, b, V, J),      # uses rpart()
+  # slow_cpp = graphml::testParallel(G, b, V, J),     # old cpp (slowest)
+  fast_cpp = graphml::testmap(G, b, V, J),            # new cpp (ooptimized)
+  cpp_pll  = graphml::approxfaster(G, b, V, J),       # new cpp with parallel
+  sota     = BDgraph::gnorm(G, b, V, J),
+  times = 50
 )
 
 

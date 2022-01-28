@@ -2,7 +2,7 @@
 
 
 
-cpp = function(u_df, samps, samps_psi, GG, u_star_cpp) {
+# cpp = function(u_df, samps, samps_psi, GG, u_star_cpp) {
   u_rpart = rpart::rpart(psi_u ~ ., u_df)
   param_support = graphml::support(samps, GG$D)
 
@@ -21,7 +21,7 @@ cpp = function(u_df, samps, samps_psi, GG, u_star_cpp) {
 
 
 
-h = function(u_df, samps, params, D, u_0 = NULL) {
+# h = function(u_df, samps, params, D, u_0 = NULL) {
   options(scipen = 999)
   options(dplyr.summarise.inform = FALSE)
 
