@@ -1,13 +1,231 @@
 // gwishDensity.cpp
 
-#include "gwishDensity.h"
+#include "gwish_R.h"
 #include "tools.h"
+#include <Rcpp.h>
 #define RCPP_ARMADILLO_RETURN_COLVEC_AS_VECTOR
 // [[Rcpp::depends(RcppArmadillo)]]
 #define EIGEN_PERMANENTLY_DISABLE_STUPID_WARNINGS
 
+/* gwish_R.cpp: 
+ * This file contains the functions that take an R object as input and make
+ * calls to external R functions (rpart) to obtain the cart model. This was
+ * developed before I implemented the Graph and Tree classes to do these 
+ * calculations completely within C++ to avoid making external function calls.
+ */
+
 
 /**** update gradient, hessian to accommodate non-diagonal scale matrices *****/
+
+/* initialize R object that stores model parameters */
+Rcpp::List init_graph(arma::umat G, u_int b, arma::mat V) {
+
+    // Rcpp::Rcout << G << std::endl;
+	u_int p = G.n_rows;
+	arma::mat P = chol(inv(V));
+	arma::mat P_inv = arma::inv(P);
+	arma::mat F = getFreeElem(G, p);          // upper triangular matrix of G
+	arma::vec free = vectorise(F);            // indicator for free elements
+	arma::uvec free_ids = find(free); // extract indices of the free elements
+	arma::uvec upInd = trimatu_ind(size(G));
+
+	// indicator for upper diag free
+	arma::vec edgeInd = arma::conv_to<arma::vec>::from(G(upInd));
+	// Rcpp::Rcout << "edge indicator" << std::endl;
+
+	// construct A matrix to compute k_i
+	arma::vec k_i  = arma::conv_to<arma::vec>::from(arma::sum(F, 0) - 1);
+	arma::vec nu_i = arma::conv_to<arma::vec>::from(arma::sum(F, 1) - 1);
+	arma::vec b_i  = nu_i + k_i + 1;
+	u_int D = arma::sum(edgeInd);
+
+	// create index matrix for the free parameters
+	arma::uvec ind_vec = find(F > 0); // extract indices of the free elements
+	arma::mat t_ind(D, 2, arma::fill::zeros);
+	for (u_int d = 0; d < D; d++) {
+		t_ind(d, 0) = ind_vec(d) % p; // row of free elmt
+		t_ind(d, 1) = ind_vec(d) / p; // col of free elmt
+	}
+	/* can eventually remove this, but the other functions already subtract one
+		 because they assume R implementation (i.e., 1-index instead of 0-index)
+		 once everything is written in C++, we can fix the other functions and
+		 remove the following line
+	 */
+	t_ind = t_ind + 1;
+    // Rcpp::Rcout << t_ind << std::endl;
+
+	u_int n_nonfree = p * (p + 1) / 2 - D; // # of nonfree elements
+	arma::mat vbar = getNonFreeElem(G, p, n_nonfree);
+    // Rcpp::Rcout << vbar << std::endl;
+
+	Rcpp::Environment stats("package:stats");
+	Rcpp::Function asFormula = stats["as.formula"];
+
+	return Rcpp::List::create(Rcpp::Named("G") = G, 
+							  Rcpp::Named("b") = b, 
+							  Rcpp::Named("V") = V,
+						  	  Rcpp::Named("p") = p, 
+							  Rcpp::Named("P") = P, 
+							  Rcpp::Named("D") = D,
+							  Rcpp::Named("P_inv") = P_inv,
+							  Rcpp::Named("FREE_PARAMS_ALL") = free,
+							  Rcpp::Named("free_index") = free_ids,
+							  Rcpp::Named("edgeInd") = edgeInd,
+							  Rcpp::Named("k_i") = k_i,
+							  Rcpp::Named("nu_i") = nu_i,
+							  Rcpp::Named("b_i") = b_i,
+							  Rcpp::Named("t_ind") = t_ind,
+							  Rcpp::Named("n_nonfree") = n_nonfree,
+							  Rcpp::Named("vbar") = vbar,
+							  Rcpp::Named("df_name") = createDfName(D),
+							  Rcpp::Named("formula") = asFormula("psi_u ~.")
+	);
+
+} // end init_graph() function
+
+
+/* evaluate each sample using the objective function */
+arma::mat evalPsi(arma::mat samps, Rcpp::List& params) {
+	u_int J = samps.n_rows;
+
+	arma::mat psi_mat(J, 1, arma::fill::zeros);
+	for (u_int j = 0; j < J; j++) {
+		arma::vec u = arma::conv_to<arma::vec>::from(samps.row(j));
+		psi_mat(j, 0) = psi_cpp(u, params);
+	}
+
+	arma::mat psi_df = arma::join_rows( samps, psi_mat );
+
+	return psi_df;
+} // end evalPsi() function
+
+/*  use newton's method for root-finding to find the global mode */
+arma::vec calcMode(arma::mat u_df, Rcpp::List& params) {
+	double tol = 1e-8;
+	u_int maxSteps = 10;
+	bool VERBOSE = false;
+	
+	// use the MAP as starting point for algorithm
+	u_int D = params["D"];
+	u_int mapIndex = u_df.col(D).index_min();
+	
+	arma::vec theta = arma::conv_to<arma::vec>::from(u_df.row(mapIndex)).
+	subvec(0, D-1);
+	
+	u_int numSteps = 0;
+	double tolCriterion = 100;
+	double stepSize = 1;
+	
+	arma::mat thetaMat = vec2mat(theta, params);
+	arma::mat thetaNew;
+	arma::mat thetaNewMat;
+	arma::mat G;
+	arma::mat invG;
+	double psiNew = 0, psiCurr = 0;
+	/* start newton's method loop */
+	while ((tolCriterion > tol) && (numSteps < maxSteps)) {
+		// thetaMat = create_psi_mat_cpp(theta, params);
+		// G = -hess_gwish(thetaMat, params);
+		// invG = inv(G);
+		invG = - arma::inv_sympd(hess_gwish(thetaMat, params));
+		thetaNew = theta + stepSize * invG * grad_gwish(thetaMat, params);
+		thetaNewMat = vec2mat(thetaNew, params);
+		psiNew = psi_cpp_mat(thetaNewMat, params);
+		psiCurr = psi_cpp_mat(thetaMat, params);
+		if (-psiNew < -psiCurr) {
+			return(arma::conv_to<arma::vec>::from(theta));
+		}
+		tolCriterion = std::abs(psiNew - psiCurr);
+		theta = thetaNew;
+		thetaMat = thetaNewMat;
+		numSteps++;
+	} /* end newton's method loop */
+	if (numSteps == maxSteps) {
+		Rcpp::Rcout<< "Max # of steps reached in Newton's method." << std::endl;
+	} else if (VERBOSE) {
+		Rcpp::Rcout << "Converged in " << numSteps << " iters" << std::endl;
+	}	
+	return arma::conv_to<arma::vec>::from(theta);	
+} // calcMode() function
+
+
+/* ------------------------- misc helper functions -------------------------- */
+
+
+Rcpp::StringVector createDfName(unsigned int D) {
+    // this is called from initGraph() so that the column names of the samples
+    // have names; these names are passed into mat2df() [see below] to create
+    // the equivalent of u_df in the R implementation
+    Rcpp::Environment env = Rcpp::Environment::global_env();
+    Rcpp::Function createDfName_R = env["createDfName_R"];
+    Rcpp::StringVector nameVec = createDfName_R(D);
+    return nameVec;
+} // end createDfName() function
+
+
+Rcpp::DataFrame mat2df(arma::mat x, Rcpp::StringVector nameVec) {
+    // this function calls an R function to create the u_df dataframe that 
+    // we need to pass into rpart() function; eventually when we have a C++ 
+    // implementation for rpart, we will no longer need to create dataframes 
+    // convert x (J x (D+1)) a matrix to
+    // x_df: with colnames: u1, u2, ... , uD, psi_u
+    Rcpp::Environment env = Rcpp::Environment::global_env();
+    Rcpp::Function mat2df_R = env["mat2df_R"];
+    // Rcpp::StringVector nameVec = params["u_df_names"];
+    Rcpp::DataFrame x_df = mat2df_R(x, nameVec);
+
+    return x_df;
+} // end of mat2df() function
+
+
+/** -------------------- gwish-specific functions -------------------------- **/
+
+arma::mat getFreeElem(arma::umat G, u_int p) {
+    // set lower diagonalt elements of G to 0 so that we have the free elements
+    // on the diagonal + upper diagonal remaining; these are used to compute
+    // intermediate quantities such as k_i, nu_i, b_i; see initGraph() for 
+    // these calculations (see Atay paper for the 'A' matrix)
+	arma::mat F = arma::conv_to<arma::mat>::from(G);
+	for (u_int r = 1; r < p; r++) {
+		for (u_int c = 0; c < r; c++) {
+			F(r, c) = 0;
+		}
+	}
+	return F;
+} // end getFreeElem() function
+
+
+arma::mat getNonFreeElem(arma::umat G, u_int p, u_int n_nonfree) {
+    // get the 2-column matrix that has row, column index of each of the nonfree
+    // elements
+	arma::mat F = arma::conv_to<arma::mat>::from(G);
+	for (u_int r = 0; r < (p - 1); r++) {
+		for (u_int c = r + 1; c < p; c++) {
+			if (F(r, c) == 0) {
+				F(r, c) = -1;
+			}
+		}
+	}
+	arma::uvec ind_vbar = find(F < 0); // extract indices of the nonfree elmts
+    // TODO: think about when n_nonfree == 0 --> what does this mean? what
+    // happens to the subsequent calculations;
+	arma::mat vbar(n_nonfree, 2, arma::fill::zeros);
+	for (u_int n = 0; n < n_nonfree; n++) {
+		vbar(n, 0) = ind_vbar(n) % p; // row of nonfree elmt
+		vbar(n, 1) = ind_vbar(n) / p; // col of nonfree elmt
+	}
+	vbar = vbar + 1;
+
+	return vbar;
+} // end getFreeElem() function
+
+
+double xi(u_int i, u_int j, arma::mat& L) {
+    // used to compute a fraction quantity in the gradient/hessian functions
+	// L is UPPER TRIANGULAR cholesky factor of the INVERSE scale matrix, i.e,
+	// D^(-1) = L'L
+	return L(i, j) / L(j, j);
+} // end xi() function
 
 
 /** ------------------- start objective functions -------------------------- **/
@@ -57,21 +275,6 @@ double psi_cpp_mat(arma::mat& psi_mat, Rcpp::List& params) {
 	}
 	return -psi_u;
 } // end psi_cpp_mat() function
-
-arma::mat evalPsi(arma::mat samps, Rcpp::List& params) {
-	u_int J = samps.n_rows;
-
-	arma::mat psi_mat(J, 1, arma::fill::zeros);
-	for (u_int j = 0; j < J; j++) {
-		arma::vec u = arma::conv_to<arma::vec>::from(samps.row(j));
-		psi_mat(j, 0) = psi_cpp(u, params);
-	}
-
-	arma::mat psi_df = arma::join_rows( samps, psi_mat );
-
-	return psi_df;
-} // end evalPsi() function
-
 
 /** --------------------- end objective functions -------------------------- **/
 
@@ -568,58 +771,8 @@ double d2psi(u_int r, u_int s, u_int i, u_int j, u_int k, u_int l,
 	return - x0 + arma::sum(d2_sum_r);
 } // end d2psi() function
 
-
 /** -------------------- end hessian functions ----------------------------- **/
 
-
-/** -----------------  newton's method for root-finding  ------------------- **/
-arma::vec calcMode(arma::mat u_df, Rcpp::List& params) {
-	double tol = 1e-8;
-	u_int maxSteps = 10;
-	bool VERBOSE = false;
-	
-	// use the MAP as starting point for algorithm
-	u_int D = params["D"];
-	u_int mapIndex = u_df.col(D).index_min();
-	
-	arma::vec theta = arma::conv_to<arma::vec>::from(u_df.row(mapIndex)).
-	subvec(0, D-1);
-	
-	u_int numSteps = 0;
-	double tolCriterion = 100;
-	double stepSize = 1;
-	
-	arma::mat thetaMat = vec2mat(theta, params);
-	arma::mat thetaNew;
-	arma::mat thetaNewMat;
-	arma::mat G;
-	arma::mat invG;
-	double psiNew = 0, psiCurr = 0;
-	/* start newton's method loop */
-	while ((tolCriterion > tol) && (numSteps < maxSteps)) {
-		// thetaMat = create_psi_mat_cpp(theta, params);
-		// G = -hess_gwish(thetaMat, params);
-		// invG = inv(G);
-		invG = - arma::inv_sympd(hess_gwish(thetaMat, params));
-		thetaNew = theta + stepSize * invG * grad_gwish(thetaMat, params);
-		thetaNewMat = vec2mat(thetaNew, params);
-		psiNew = psi_cpp_mat(thetaNewMat, params);
-		psiCurr = psi_cpp_mat(thetaMat, params);
-		if (-psiNew < -psiCurr) {
-			return(arma::conv_to<arma::vec>::from(theta));
-		}
-		tolCriterion = std::abs(psiNew - psiCurr);
-		theta = thetaNew;
-		thetaMat = thetaNewMat;
-		numSteps++;
-	} /* end newton's method loop */
-	if (numSteps == maxSteps) {
-		Rcpp::Rcout<< "Max # of steps reached in Newton's method." << std::endl;
-	} else if (VERBOSE) {
-		Rcpp::Rcout << "Converged in " << numSteps << " iters" << std::endl;
-	}	
-	return arma::conv_to<arma::vec>::from(theta);	
-} // calcMode() function
 
 
 // end gwishDensity.cpp

@@ -1,5 +1,4 @@
 
-
 #include "Tree.h" 
 #include "density.h"
 #include "Graph.h"
@@ -17,29 +16,32 @@
 #define EIGEN_PERMANENTLY_DISABLE_STUPID_WARNINGS
 
 
+// [[Rcpp::export]]
+double approxlogml_fast(arma::umat G, u_int b, arma::mat V, u_int J) {
 
-// uses C++ implementation of CART and parallel integration routine
-double approxlogmlFast(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph) {
+    Graph* graph = new Graph(G, b, V); // instantiate Graph object
+	// Rcpp::List obj = initTreeParams(graph->D);
 
-    // TODO: fix the input so that we don't have to pass two matrices that are
-    // essentially the same thing
+	// arma::mat samps = sampleGWParallel(J, graph);
+	arma::mat samps = graph->sampleGWParallel(J);
 
-    u_int D = graph->D;
-    // fit cart model 
-    Tree* tree = new Tree(z);
-    std::unordered_map<u_int, arma::vec>* pmap = tree->getPartition();
-	std::unordered_map<u_int, arma::uvec>* leafRowMap = tree->getLeafRowMap();
-	unsigned int nLeaves = tree->getLeaves();
-    unsigned int d = tree->getNumFeats();
+	std::vector<double> psivec = evalPsiParallel(samps, graph);
+	// std::vector<double> psivec = this->evalPsiParallel(samps, graph);
+	arma::mat psi_col = arma::conv_to<arma::mat>::from(psivec);
+	arma::mat samps_psi = arma::join_rows( samps, psi_col );
 
-    std::unordered_map<u_int, arma::vec> candidates = findOptPoints(
-		xy, *leafRowMap, nLeaves, uStar, D
-	);
+    // Rcpp::DataFrame u_df = mat2df(samps_psi, obj["df_name"]); // in tools.cpp
 
-    return integratePartitionFast(graph, candidates, *pmap, nLeaves);
+    // calculate global mode
+    arma::vec u_star = calcMode(samps_psi, graph);
 
-    // return 0;
-} // end approxlogml() function
+    arma::mat z = arma::join_rows( samps_psi.col(samps_psi.n_cols - 1), samps );
+
+    // compute the final approximation
+    double res = approxlogml_map(z, u_star, samps_psi, graph);
+
+    return res;
+} // end approxlogml_fast() function
 
 
 // instead of sorting the features for every node, we sort once in the beginning
@@ -65,9 +67,11 @@ double approxlogml_map(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph)
 
     return integratePartitionFast(graph, candidates, *pmap, nLeaves);
 
-    // return 0;
 } // end approxlogml() function
 
+
+
+/* --- functions that are common to the different approximation functions --- */
 
 // parallel integration routine
 double integratePartitionFast(Graph* graph, 
@@ -138,7 +142,6 @@ double integratePartitionFast(Graph* graph,
 	
 	return lse(vec, nLeaves);
 } // end integratePartition() function
-
 
 
 arma::vec calcMode(arma::mat u_df, Graph* graph) {

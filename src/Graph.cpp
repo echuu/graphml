@@ -76,6 +76,7 @@ arma::mat Graph::getNonFreeElem() {
 } // end getFreeElem() function
 
 
+// TODO: separate parallel / sequential functions -> put this into seq. file
 arma::mat Graph::sampleGW(u_int m) {
     arma::mat G = arma::conv_to<arma::mat>::from(this->G);
     arma::mat samps(this->D, m, arma::fill::zeros);
@@ -93,7 +94,7 @@ arma::mat Graph::sampleGW(u_int m) {
      return samps.t(); // return as a (m x D) matrix
 } // end sampleGW() function
 
-
+// TODO: separate parallel / sequential functions -> put this into parallel file
 arma::mat Graph::sampleGWParallel(u_int J) {
 
 	arma::mat G = arma::conv_to<arma::mat>::from(this->G);

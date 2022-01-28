@@ -3,6 +3,7 @@
 #define INTERVAL_H
 
 #include "graphml_types.h"
+#include "Node.h"
 #include <vector>
 
 

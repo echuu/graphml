@@ -1,12 +1,15 @@
 
 #include "ogApprox.h"
 #include "gwish.h"
-#include "rgwishart.h"
+#include "rgwishart.h"    // sampling from gw distribution
 
-#include "partition.h"
-#include "epmgp.h"
+#include "partition.h"    // for support(), candidate point function
+#include "epmgp.h"        // gaussian probability estimation
 #include "tools.h"
-#include "gwishDensity.h"
+#include "gwish_R.h"      // psi, grad, hess functions that take R object input
+
+#include <Rcpp.h>
+// [[Rcpp::depends(RcppArmadillo)]]
 
 /*  ogApprox.cpp: Implementation for the hybrid-ep approximation that relies on
     rpart() from R to fit the tree. The fitted tree will be done in R and post-
@@ -16,11 +19,10 @@
     generalApprox() <-- approx_v1() <-- approxZ() 
 */
 
+/* ----------------------- main 3 algorithm functions ----------------------- */
 
 // [[Rcpp::export]]
 double generalApprox(arma::umat G, u_int b, arma::mat V, u_int J) {
-
-    // Rcpp::Rcout << p << " x " << p << " graph" << std::endl;
     // initialize graph object
     Rcpp::List obj = init_graph(G, b, V);
     // Rcpp::Rcout << "graph initialized" << std::endl;
@@ -38,10 +40,7 @@ double generalApprox(arma::umat G, u_int b, arma::mat V, u_int J) {
     // Rcpp::Rcout << "computed mode" << std::endl;
 
     // compute the final approximation
-    return approx_v1(u_df,
-                     u_star,
-                     samps_psi,
-                     obj);
+    return approx_v1(u_df, u_star, samps_psi, obj);
 } // end generalApprox() function
 
 
@@ -63,7 +62,6 @@ double approx_v1(Rcpp::DataFrame u_df,
 	// -------------------------------------------------------------------------
 	Rcpp::Environment tmp = Rcpp::Environment::global_env();
     Rcpp::Function f = tmp["extractPartitionSimple"];
-
     Rcpp::List partList = f(tree, supp);
     arma::mat part = partList["partition"];
     arma::vec leafId = partList["leaf_id"];
@@ -78,7 +76,6 @@ double approx_v1(Rcpp::DataFrame u_df,
         partitionMap[leaf_i] = part.col(i);
     }
 	// -------------------------------------------------------------------------
-	/* */
 
 	// go into here and figure how to use the ROWS of each partition set's 
 	// points instead of finding the rows' locations that are equal to
@@ -146,7 +143,7 @@ double approxZ(Rcpp::List& params,
 		double val = 0;
 		double sign;
 		log_det(val, sign, H_k);
-		G_k(k) = ep_logz(m_k, H_k_inv, lb, ub);
+		G_k(k) = ep(m_k, H_k_inv, lb, ub);
 		log_terms(k) = D / 2 * std::log(2 * M_PI) - 0.5 * val - psi_k +
 			arma::dot(lambda_k, u_k) -
 			(0.5 * u_k.t() * H_k * u_k).eval()(0,0) +
@@ -155,3 +152,21 @@ double approxZ(Rcpp::List& params,
 
 	return lse(log_terms, K);
 } // end approxZ() function
+
+
+/* ----------------------- algorithm helper functions ----------------------- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

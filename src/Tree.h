@@ -36,10 +36,11 @@ class Tree {
         std::unordered_map<u_int, arma::uvec>* leafRowMap;
         std::vector<Interval*>* intervalStack; 
 
-
         // map for storing feature -> sorted indices
         std::unordered_map<u_int, arma::uvec> featureIndexMap; 
 
+        // member variables for the optimized version of tree building algorithm
+        std::vector<u_int> yloc;
 
     public: 
         // TODO: make this private again after finish testing
@@ -47,16 +48,17 @@ class Tree {
         double numSplits;
         
         Tree(arma::mat df);
-        Tree(arma::mat df, bool indicator);
+        Tree(arma::mat df, bool fast);
         arma::uvec getSortedIndex(arma::mat data, arma::uvec rowvec, u_int d);
         Node* buildTreeSort(arma::uvec rowIds, double currSSE, u_int nodesize);
-        Node* buildTreeMap(arma::uvec rowIds, double currSSE, u_int nodesize);
+        Node* fastbuild(u_int nodenum, u_int start, u_int end, arma::uvec rowIds);
        
         void populateInterval(arma::vec& leafInterval);
+        double calcImprove(arma::uvec left, arma::uvec right);
         double sse(arma::vec x, int n, double xbar);
         double calcSplitCp(double currSSE, double leftSSE, double rightSSE);
         double calculateSSE(arma::uvec rowIndex);
-        double calculateRuleSSE(arma::uvec leftRows, arma::uvec rightRows);
+        arma::mat support(arma::mat X, u_int nfeats);
         
         int getLeaves();
         u_int getNumFeats();
@@ -64,20 +66,16 @@ class Tree {
         double getSSE();
         std::unordered_map<u_int, arma::vec>* getPartition();
         std::unordered_map<u_int, arma::uvec>* getLeafRowMap();
-        
-        /*  we don't actually use this anymore b/c it is built into the tree
-            fitting algorithm, but just keep it as as member function in case
-            we need to separate the two routines later */
-        // Node* buildTree(arma::uvec rowIds);
-        // void dfs(Node* node, unsigned int& k, 
-        //     std::vector<Interval*> intervalStack,
-        //     arma::mat& partition, arma::mat& supp, 
-        //     std::unordered_map<u_int, arma::uvec>& leafRowMap);
-        // bool isSmallerValue(double val);
+
+
+        /* tree printing functions */
+        void dfs(Node* ptr, std::string spacing = "");
+        void printTree();
 
         /*  ------------------------- setters ------------------------------- */
 
 }; 
+
 
 
 

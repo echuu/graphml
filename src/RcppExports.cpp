@@ -12,9 +12,9 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// testParallel
-double testParallel(arma::umat G, u_int b, arma::mat V, u_int J);
-RcppExport SEXP _graphml_testParallel(SEXP GSEXP, SEXP bSEXP, SEXP VSEXP, SEXP JSEXP) {
+// approxlogml_fast
+double approxlogml_fast(arma::umat G, u_int b, arma::mat V, u_int J);
+RcppExport SEXP _graphml_approxlogml_fast(SEXP GSEXP, SEXP bSEXP, SEXP VSEXP, SEXP JSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -22,35 +22,7 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< u_int >::type b(bSEXP);
     Rcpp::traits::input_parameter< arma::mat >::type V(VSEXP);
     Rcpp::traits::input_parameter< u_int >::type J(JSEXP);
-    rcpp_result_gen = Rcpp::wrap(testParallel(G, b, V, J));
-    return rcpp_result_gen;
-END_RCPP
-}
-// testmap
-double testmap(arma::umat G, u_int b, arma::mat V, u_int J);
-RcppExport SEXP _graphml_testmap(SEXP GSEXP, SEXP bSEXP, SEXP VSEXP, SEXP JSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::umat >::type G(GSEXP);
-    Rcpp::traits::input_parameter< u_int >::type b(bSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type V(VSEXP);
-    Rcpp::traits::input_parameter< u_int >::type J(JSEXP);
-    rcpp_result_gen = Rcpp::wrap(testmap(G, b, V, J));
-    return rcpp_result_gen;
-END_RCPP
-}
-// approxfaster
-double approxfaster(arma::umat G, u_int b, arma::mat V, u_int J);
-RcppExport SEXP _graphml_approxfaster(SEXP GSEXP, SEXP bSEXP, SEXP VSEXP, SEXP JSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::umat >::type G(GSEXP);
-    Rcpp::traits::input_parameter< u_int >::type b(bSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type V(VSEXP);
-    Rcpp::traits::input_parameter< u_int >::type J(JSEXP);
-    rcpp_result_gen = Rcpp::wrap(approxfaster(G, b, V, J));
+    rcpp_result_gen = Rcpp::wrap(approxlogml_fast(G, b, V, J));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -65,6 +37,34 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< arma::vec >::type lb(lbSEXP);
     Rcpp::traits::input_parameter< arma::vec >::type ub(ubSEXP);
     rcpp_result_gen = Rcpp::wrap(ep_logz(m, K, lb, ub));
+    return rcpp_result_gen;
+END_RCPP
+}
+// approxlogml
+double approxlogml(arma::umat G, u_int b, arma::mat V, u_int J);
+RcppExport SEXP _graphml_approxlogml(SEXP GSEXP, SEXP bSEXP, SEXP VSEXP, SEXP JSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::umat >::type G(GSEXP);
+    Rcpp::traits::input_parameter< u_int >::type b(bSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type V(VSEXP);
+    Rcpp::traits::input_parameter< u_int >::type J(JSEXP);
+    rcpp_result_gen = Rcpp::wrap(approxlogml(G, b, V, J));
+    return rcpp_result_gen;
+END_RCPP
+}
+// approxlogml_slow
+double approxlogml_slow(arma::umat G, u_int b, arma::mat V, u_int J);
+RcppExport SEXP _graphml_approxlogml_slow(SEXP GSEXP, SEXP bSEXP, SEXP VSEXP, SEXP JSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::umat >::type G(GSEXP);
+    Rcpp::traits::input_parameter< u_int >::type b(bSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type V(VSEXP);
+    Rcpp::traits::input_parameter< u_int >::type J(JSEXP);
+    rcpp_result_gen = Rcpp::wrap(approxlogml_slow(G, b, V, J));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -84,10 +84,10 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_graphml_testParallel", (DL_FUNC) &_graphml_testParallel, 4},
-    {"_graphml_testmap", (DL_FUNC) &_graphml_testmap, 4},
-    {"_graphml_approxfaster", (DL_FUNC) &_graphml_approxfaster, 4},
+    {"_graphml_approxlogml_fast", (DL_FUNC) &_graphml_approxlogml_fast, 4},
     {"_graphml_ep_logz", (DL_FUNC) &_graphml_ep_logz, 4},
+    {"_graphml_approxlogml", (DL_FUNC) &_graphml_approxlogml, 4},
+    {"_graphml_approxlogml_slow", (DL_FUNC) &_graphml_approxlogml_slow, 4},
     {"_graphml_generalApprox", (DL_FUNC) &_graphml_generalApprox, 4},
     {NULL, NULL, 0}
 };

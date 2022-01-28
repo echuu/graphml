@@ -4,6 +4,7 @@
 #include "graphml_types.h"
 #include "Graph.h"
 #include <RcppArmadillo.h>
+#include "gwish.h" // temporarily include for evalPsiParallel, move it out later
 // [[Rcpp::depends(RcppArmadillo)]]
 
 /*  this file includes the implementations for the density, gradient, hessian 
@@ -16,7 +17,10 @@
 
 
 /* parallel */
-double approxlogmlFast(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph);
+// TODO: move parallel functions into its own file, leave this file to contain
+// only functions that are common to both sequential and parallel implementations
+
+double approxlogml_fast(arma::umat G, u_int b, arma::mat V, u_int J);
 double integratePartitionFast(Graph* graph, 
 	std::unordered_map<u_int, arma::vec> candidates, 
 	std::unordered_map<u_int, arma::vec> bounds, 

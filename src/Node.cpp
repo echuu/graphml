@@ -35,6 +35,17 @@ Node::Node(arma::mat data, arma::uvec leafRows) {
 } 
 
 
+Node::Node(double threshold, unsigned int column) { 
+    this->threshold = threshold;
+    this->column = column;
+}
+
+
+Node::Node(arma::uvec leafRows) {
+    this->leafRows = leafRows;
+    this->isLeaf = true;
+}
+
 double Node::calculateLeafValue(arma::mat data) {
     arma::vec y = data.col(0);
     return arma::mean(y);

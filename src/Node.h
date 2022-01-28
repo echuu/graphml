@@ -29,6 +29,12 @@ class Node {
         Node(double threshold, unsigned int column, arma::mat data, 
             arma::uvec leftRows, arma::uvec rightRows, double nodeSSE);
         Node(arma::mat data, arma::uvec leafRows);
+
+        // new constructor for updated implementation
+        // need the rows of the original data in order to find representative
+        // point in the hybrid algorithm 
+        Node(double threshold, unsigned int column);
+        Node(arma::uvec leafRows);
         
         double calculateLeafValue(arma::mat data);
         void printNode();
@@ -40,5 +46,6 @@ class Node {
         arma::mat getData();
         double getLeafVal();
 }; // end Node class
+
 
 #endif
