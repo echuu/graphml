@@ -1,6 +1,5 @@
 
 #include "ogApprox.h"
-#include "gwish.h"
 #include "rgwishart.h"    // sampling from gw distribution
 
 #include "partition.h"    // for support(), candidate point function

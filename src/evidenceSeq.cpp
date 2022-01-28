@@ -5,15 +5,14 @@
 #include "epmgp.h"        // for ep()
 
 
-
 // [[Rcpp::export]]
 double approxlogml(arma::umat G, u_int b, arma::mat V, u_int J) {
 
     Graph* graph = new Graph(G, b, V); // instantiate Graph object
     // Rcpp::Rcout << "graph initialized" << std::endl;
 
-    arma::mat samps = graph->sampleGW(J); // obtain sames from gw distribution
-    // Rcpp::Rcout << "obtained g-wishart samples" << std::endl;
+    // arma::mat samps = graph->sampleGW(J); // obtain samps from gw distr
+	arma::mat samps = samplegw(J, graph); // obtain samps from gw distr
 
     // TODO: fix evalPsi so that we can use the z = [y | X] instead of [X | y]
     arma::mat samps_psi = evalPsi(samps, graph); // evaluate samples w/ psi()
@@ -33,7 +32,7 @@ double approxlogml(arma::umat G, u_int b, arma::mat V, u_int J) {
     // Rcpp::Rcout << "computed hybrid-ep calculation" << std::endl;
 
     return res;
-}
+} // end approxlogml() function
 
 
 double approxHelpSeq(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph) {
@@ -52,7 +51,7 @@ double approxHelpSeq(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph) {
 	);
 
     return integratePartition(graph, candidates, *pmap, nLeaves);
-} // end approxlogml() function
+} // end approxHelpSeq() function
 
 
 arma::mat evalPsi(arma::mat samps, Graph* graph) {
@@ -123,18 +122,15 @@ double integratePartition(Graph* graph,
 } // end integratePartition() function
 
 
-
-
 /* ----------------- older stuff -- old tree implementation ----------------- */
 
 // [[Rcpp::export]]
 double approxlogml_slow(arma::umat G, u_int b, arma::mat V, u_int J) {
 
     Graph* graph = new Graph(G, b, V); // instantiate Graph object
-    // Rcpp::Rcout << "graph initialized" << std::endl;
 
-    arma::mat samps = graph->sampleGW(J); // obtain sames from gw distribution
-    // Rcpp::Rcout << "obtained g-wishart samples" << std::endl;
+    // arma::mat samps = graph->sampleGW(J); // obtain samps from gw distr
+	arma::mat samps = samplegw(J, graph);
 
     // TODO: fix evalPsi so that we can use the z = [y | X] instead of [X | y]
     arma::mat samps_psi = evalPsi(samps, graph); // evaluate samples w/ psi()
@@ -154,7 +150,7 @@ double approxlogml_slow(arma::umat G, u_int b, arma::mat V, u_int J) {
     // Rcpp::Rcout << "computed hybrid-ep calculation" << std::endl;
 
     return res;
-}
+} // approxlogml_slow() function
 
 double old_helper(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph) {
 
@@ -174,11 +170,26 @@ double old_helper(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph) {
 
     return integratePartition(graph, candidates, *pmap, nLeaves);
 
-} // end approxlogml() function
+} // end old_helper() function
 
 
+arma::mat samplegw(u_int J, Graph* graph) {
+	// have to convert otherwise compiler complains about unsigned int mat
+    arma::mat G = arma::conv_to<arma::mat>::from(graph->G);
+    arma::mat samps(graph->D, J, arma::fill::zeros);
+    arma::mat omega, phi, zeta;
+    arma::vec u0, u;
+	arma::uvec ids  = graph->free_index;
+    for (unsigned int j = 0; j < J; j++) {
+        omega = rgwish_c(G, graph->P, graph->b, graph->p, 1e-8);
+        phi   = arma::chol(omega);             // upper choleksy
+        zeta  = phi * graph->P_inv;             // compute transformation
+        u0    = arma::vectorise(zeta);
+        u     = u0(ids);                       // extract free elements
+        samps.col(j) = u;
+    } // end sampling loop
+     return samps.t(); // return as a (J x D) matrix
+} // end samplegw() function
 
 
-
-
-
+// end evidenceSeq.cpp file

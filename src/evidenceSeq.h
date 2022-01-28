@@ -19,7 +19,7 @@ double integratePartition(Graph* graph,
 double approxlogml_slow(arma::umat G, u_int b, arma::mat V, u_int J);
 double old_helper(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph);
 
-
+arma::mat samplegw(u_int J, Graph* graph);
 
 
 #endif

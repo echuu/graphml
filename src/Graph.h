@@ -36,8 +36,8 @@ class Graph {
         Graph(arma::umat G, u_int b, arma::mat V);
         arma::mat getFreeElem();
         arma::mat getNonFreeElem();
-        arma::mat sampleGW(u_int m);
-        arma::mat sampleGWParallel(u_int J);
+        // arma::mat sampleGW(u_int m);
+        // arma::mat sampleGWParallel(u_int J);
         
 
 }; // end Graph class
