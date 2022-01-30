@@ -34,6 +34,25 @@ set.seed(1)
 graphml::approxlogml_fast(G, b, V, J)   # new cpp, with parallel
 
 
+set.seed(1234)
+p = 60
+Adj = matrix(rbinom(p^2,1,0.15), p, p)
+Adj = Adj + t(Adj)
+diag(Adj) = 0
+Adj[Adj==1]=0
+Adj[Adj==2]=1
+diag(Adj) = 1
+EdgeMat = getEdgeMat(Adj)
+# JT = getJT(EdgeMat)
+b = 500
+Y = matrix(rnorm(p*500), nrow = 500, ncol = p)
+D = t(Y)%*%Y
+
+gnorm_c(G, b, V, J) # stable, but technically incorrect value
+graphml::gnormJT(G, getEdgeMat(G), b, V, 1000)
+
+
+
 microbenchmark::microbenchmark(
   rpart    = graphml::generalApprox(G, b, V, J),      # uses rpart()
   # slow_cpp = graphml::testParallel(G, b, V, J),     # old cpp (slowest)

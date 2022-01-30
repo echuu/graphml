@@ -1,11 +1,7 @@
 
 #include "evidencePll.h"   // this file includes density.h : psi_cpp, grad, hess
-#include "Graph.h"         // includes rgwishart.h <- rgwish_c()
+#include "Gwish.h"         // includes rgwishart.h <- rgwish_c()
 #include "Tree.h"          // includes Node.h, partition.h, Interval.h, <cmath>
-// #include "rgwishart.h"  // rgwish_c()
-// #include "partition.h"
-// #include "Node.h"
-// #include "Interval.h"
 #include "tools.h"         // lse()
 #include "epmgp.h"         // ep()
 
@@ -27,11 +23,10 @@
 // integratePartition()
 
 
-
 // [[Rcpp::export]]
 double approxlogml_fast(arma::umat G, u_int b, arma::mat V, u_int J) {
 
-    Graph* graph = new Graph(G, b, V); // instantiate Graph object
+    Gwish* graph = new Gwish(G, b, V); // instantiate Gwish object
 
 	arma::mat samps = samplegwPll(J, graph); // (J x D); samps filled row-wise
 	// arma::mat samps = graph->sampleGWParallel(J);
@@ -52,7 +47,7 @@ double approxlogml_fast(arma::umat G, u_int b, arma::mat V, u_int J) {
 } // end approxlogml_fast() function
 
 
-double approxHelpPll(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph) {
+double approxHelpPll(arma::mat z, arma::vec uStar, arma::mat xy, Gwish* graph) {
 
     // TODO: fix the input so that we don't have to pass two matrices that are
     // essentially the same thing
@@ -74,7 +69,7 @@ double approxHelpPll(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph) {
 } // end approxHelpPll() function
 
 
-std::vector<double> evalPsiPll(arma::mat samps, Graph* graph) {
+std::vector<double> evalPsiPll(arma::mat samps, Gwish* graph) {
 	u_int J = samps.n_rows;
 	std::vector<double> vec;
 	size_t *prefix;
@@ -108,7 +103,7 @@ std::vector<double> evalPsiPll(arma::mat samps, Graph* graph) {
 
 
 // parallel integration routine
-double integratePartitionPll(Graph* graph, 
+double integratePartitionPll(Gwish* graph, 
 	std::unordered_map<u_int, arma::vec> candidates, 
 	std::unordered_map<u_int, arma::vec> bounds, 
 	u_int nLeaves) {
@@ -179,7 +174,7 @@ double integratePartitionPll(Graph* graph,
 
 
 // samplegwPll(): generate J samples from gwish distribution in parallel
-arma::mat samplegwPll(u_int J, Graph* graph) {
+arma::mat samplegwPll(u_int J, Gwish* graph) {
 	// have to convert otherwise compiler complains about unsigned int mat
 	arma::mat G = arma::conv_to<arma::mat>::from(graph->G);
 	arma::mat samps(J, graph->D, arma::fill::zeros);

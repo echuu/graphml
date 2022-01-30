@@ -10,7 +10,7 @@
 /* gwish_R.cpp: 
  * This file contains the functions that take an R object as input and make
  * calls to external R functions (rpart) to obtain the cart model. This was
- * developed before I implemented the Graph and Tree classes to do these 
+ * developed before I implemented the Gwish and Tree classes to do these 
  * calculations completely within C++ to avoid making external function calls.
  */
 

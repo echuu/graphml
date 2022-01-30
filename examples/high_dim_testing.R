@@ -4,6 +4,8 @@
 ### gnormJT() makes call to the hybrid algorithm on the
 ### sub-graphs
 
+library(graphml)
+
 set.seed(1234)
 p = 60
 Adj = matrix(rbinom(p^2,1,0.15), p, p)
@@ -19,9 +21,16 @@ Y = matrix(rnorm(p*500), nrow = 500, ncol = p)
 D = t(Y)%*%Y
 
 # BDgraph::gnorm(Adj, b, D, 1000)
-gnorm_c(Adj, b, D, 1000)
-graphml::gnormJT(Adj, EdgeMat, b, D, 1000)
+# gnorm_c(Adj, b, D, 1000)
+graphml::hybridJT(Adj, EdgeMat, b, D, 1000)
 
+set.seed(1)
+microbenchmark::microbenchmark(
+  cpp_seq = graphml::hybridJT(Adj, EdgeMat, b, D, 1000),
+  cpp_pll = graphml::hybridJT_parallel(Adj, EdgeMat, b, D, 1000),
+  rcpp    = graphml::hybridJT_slow(Adj, EdgeMat, b, D, 1000),
+  times   = 20
+)
 
 
 

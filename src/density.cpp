@@ -1,7 +1,7 @@
 
 #include "Tree.h" 
 #include "density.h"
-#include "Graph.h"
+#include "Gwish.h"
 #include "tools.h"      // for lse()
 #include "epmgp.h"      // for ep_logz() function 
 #include "partition.h"  // for findOptPoints()
@@ -16,7 +16,7 @@
 /* --- functions that are common to the different approximation functions --- */
 
 
-arma::vec calcMode(arma::mat u_df, Graph* graph) {
+arma::vec calcMode(arma::mat u_df, Gwish* graph) {
 	double tol = 1e-8;
 	u_int maxSteps = 10;
 	bool VERBOSE = false;
@@ -70,7 +70,7 @@ double h(u_int i, u_int j, arma::mat& L) {
 } // end h() function (used to be called xi())
 
 
-arma::mat vec2mat(arma::vec u, Graph* graph) {
+arma::mat vec2mat(arma::vec u, Gwish* graph) {
 
 	u_int p        = graph->p;    // dimension of the graph G
 	u_int D        = graph->D;    // dimension of parameter space
@@ -132,7 +132,7 @@ arma::mat vec2mat(arma::vec u, Graph* graph) {
 
 /* ------------- start functions for: density, gradient, hessian ------------ */ 
 
-double psi_cpp(arma::vec& u, Graph* graph) {
+double psi_cpp(arma::vec& u, Gwish* graph) {
 
 	u_int p           = graph->p;    // dimension of the graph G
 	u_int b           = graph->b;    // degrees of freedom
@@ -156,7 +156,7 @@ double psi_cpp(arma::vec& u, Graph* graph) {
 } // end of psi_cpp() function
 
 
-double psi_cpp_mat(arma::mat& psi_mat, Graph* graph) {
+double psi_cpp_mat(arma::mat& psi_mat, Gwish* graph) {
 
 	u_int p           = graph->p;    // dimension of the graph G
 	u_int b           = graph->b;    // degrees of freedom
@@ -178,7 +178,7 @@ double psi_cpp_mat(arma::mat& psi_mat, Graph* graph) {
 
 /** ------------------- start gradient functions --------------------------- **/
 
-arma::vec grad_gwish(arma::mat& psi_mat, Graph* graph) {
+arma::vec grad_gwish(arma::mat& psi_mat, Gwish* graph) {
 	arma::mat G = arma::conv_to<arma::mat>::from(graph->G);
 	u_int p = graph->p; // dimension of the graph G
 	arma::uvec free = graph->free_index;
@@ -196,7 +196,7 @@ arma::vec grad_gwish(arma::mat& psi_mat, Graph* graph) {
 } // end grad_gwish() function
 
 
-double dpsi_ij(u_int i, u_int j, arma::mat& psi_mat, Graph* graph) {
+double dpsi_ij(u_int i, u_int j, arma::mat& psi_mat, Gwish* graph) {
 
 	arma::mat G = arma::conv_to<arma::mat>::from(graph->G);
 	u_int p = graph->p;  // dimension of the graph G
@@ -243,7 +243,7 @@ double dpsi_ij(u_int i, u_int j, arma::mat& psi_mat, Graph* graph) {
 } // end dpsi_ij() function
 
 
-double dpsi(u_int r, u_int s, u_int i, u_int j, arma::mat& psi, Graph* graph) {
+double dpsi(u_int r, u_int s, u_int i, u_int j, arma::mat& psi, Gwish* graph) {
 
 	arma::mat G = arma::conv_to<arma::mat>::from(graph->G);
 	arma::mat L = graph->P;
@@ -349,7 +349,7 @@ double dpsi(u_int r, u_int s, u_int i, u_int j, arma::mat& psi, Graph* graph) {
 
 /** -------------------- start hessian functions --------------------------- **/
 
-arma::mat hess_gwish(arma::mat& psi_mat, Graph* graph) {
+arma::mat hess_gwish(arma::mat& psi_mat, Gwish* graph) {
 
 	u_int D           = graph->D;          // dimension of parameter space
 	arma::mat G       = arma::conv_to<arma::mat>::from(graph->G);
@@ -451,7 +451,7 @@ arma::mat hess_gwish(arma::mat& psi_mat, Graph* graph) {
 	psi(r,s) wrt psi(ij) and psi(kl)
 */
 double d2psi_ijkl(u_int i, u_int j, u_int k, u_int l, arma::mat& psi, 
-    Graph* graph) {
+    Gwish* graph) {
 
 	u_int n_nonfree   = graph->n_nonfree;  // # nonfree elements
 	arma::mat vbar    = graph->vbar;       // index of nonfree elements
@@ -470,7 +470,7 @@ double d2psi_ijkl(u_int i, u_int j, u_int k, u_int l, arma::mat& psi,
 
 
 double d2psi(u_int r, u_int s, u_int i, u_int j, u_int k, u_int l,
-	arma::mat& psi, Graph* graph) {
+	arma::mat& psi, Gwish* graph) {
 
 	arma::mat G       = arma::conv_to<arma::mat>::from(graph->G);
 	arma::mat L       = graph->P;       // UPPER cholesky factor

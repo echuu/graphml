@@ -1,8 +1,8 @@
 
-#include "Graph.h"
+#include "Gwish.h"
 
 
-Graph::Graph(arma::umat G, u_int b, arma::mat V) {
+Gwish::Gwish(arma::umat G, u_int b, arma::mat V) {
     this->G = G;
     this->b = b;
     this->V = V;
@@ -34,10 +34,10 @@ Graph::Graph(arma::umat G, u_int b, arma::mat V) {
     this->t_ind = indexMatrix;
     this->n_nonfree = p * (p + 1) / 2 - D;
     this->vbar = getNonFreeElem();
-} // end of Graph constructor
+} // end of Gwish constructor
 
 
-arma::mat Graph::getFreeElem() {
+arma::mat Gwish::getFreeElem() {
     /*  set lower diag elmt of G to 0 so that we have the free elements
         on the diag + upper diag remaining; these are used to compute
         intermediate quantities such as k_i, nu_i, b_i; 
@@ -52,7 +52,7 @@ arma::mat Graph::getFreeElem() {
 } // end getFreeElem() function
 
 
-arma::mat Graph::getNonFreeElem() {
+arma::mat Gwish::getNonFreeElem() {
     /*  get the 2-column matrix that has row, column index of each of 
         the nonfree elements */
     arma::mat F = arma::conv_to<arma::mat>::from(this->G);
@@ -79,7 +79,7 @@ arma::mat Graph::getNonFreeElem() {
 
 
 // separate parallel / sequential functions -> put this into seq. file
-// arma::mat Graph::sampleGW(u_int m) {
+// arma::mat Gwish::sampleGW(u_int m) {
 //     arma::mat G = arma::conv_to<arma::mat>::from(this->G);
 //     arma::mat samps(this->D, m, arma::fill::zeros);
 //     arma::mat omega, phi, zeta;
@@ -98,10 +98,10 @@ arma::mat Graph::getNonFreeElem() {
 
 
 // separate parallel / sequential functions -> put this into parallel file
-// arma::mat Graph::sampleGWParallel(u_int J) {
+// arma::mat Gwish::sampleGWParallel(u_int J) {
 
 // 	arma::mat G = arma::conv_to<arma::mat>::from(this->G);
-//     // arma::mat samps(graph->D, m, arma::fill::zeros);
+//     // arma::mat samps(Gwish->D, m, arma::fill::zeros);
 // 	arma::mat samps(J, this->D, arma::fill::zeros);
 // 	arma::mat P_inv = this->P_inv;
 

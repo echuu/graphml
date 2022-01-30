@@ -8,7 +8,7 @@
 // [[Rcpp::export]]
 double approxlogml(arma::umat G, u_int b, arma::mat V, u_int J) {
 
-    Graph* graph = new Graph(G, b, V); // instantiate Graph object
+    Gwish* graph = new Gwish(G, b, V); // instantiate Gwish object
     // Rcpp::Rcout << "graph initialized" << std::endl;
 
     // arma::mat samps = graph->sampleGW(J); // obtain samps from gw distr
@@ -35,7 +35,7 @@ double approxlogml(arma::umat G, u_int b, arma::mat V, u_int J) {
 } // end approxlogml() function
 
 
-double approxHelpSeq(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph) {
+double approxHelpSeq(arma::mat z, arma::vec uStar, arma::mat xy, Gwish* graph) {
 
     // TODO: fix the input so that we don't have to pass two matrices that are
     // essentially the same thing
@@ -54,7 +54,7 @@ double approxHelpSeq(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph) {
 } // end approxHelpSeq() function
 
 
-arma::mat evalPsi(arma::mat samps, Graph* graph) {
+arma::mat evalPsi(arma::mat samps, Gwish* graph) {
 	u_int J = samps.n_rows;
 	arma::mat psi_mat(J, 1, arma::fill::zeros);
 	for (u_int j = 0; j < J; j++) {
@@ -67,7 +67,7 @@ arma::mat evalPsi(arma::mat samps, Graph* graph) {
 } // end evalPsi() function
 
 
-double integratePartition(Graph* graph,
+double integratePartition(Gwish* graph,
 	std::unordered_map<u_int, arma::vec> candidates,
 	std::unordered_map<u_int, arma::vec> bounds,
 	u_int K) {
@@ -127,7 +127,7 @@ double integratePartition(Graph* graph,
 // [[Rcpp::export]]
 double approxlogml_slow(arma::umat G, u_int b, arma::mat V, u_int J) {
 
-    Graph* graph = new Graph(G, b, V); // instantiate Graph object
+    Gwish* graph = new Gwish(G, b, V); // instantiate Gwish object
 
     // arma::mat samps = graph->sampleGW(J); // obtain samps from gw distr
 	arma::mat samps = samplegw(J, graph);
@@ -152,7 +152,7 @@ double approxlogml_slow(arma::umat G, u_int b, arma::mat V, u_int J) {
     return res;
 } // approxlogml_slow() function
 
-double old_helper(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph) {
+double old_helper(arma::mat z, arma::vec uStar, arma::mat xy, Gwish* graph) {
 
     // TODO: fix the input so that we don't have to pass two matrices that are
     // essentially the same thing
@@ -173,7 +173,7 @@ double old_helper(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph) {
 } // end old_helper() function
 
 
-arma::mat samplegw(u_int J, Graph* graph) {
+arma::mat samplegw(u_int J, Gwish* graph) {
 	// have to convert otherwise compiler complains about unsigned int mat
     arma::mat G = arma::conv_to<arma::mat>::from(graph->G);
     arma::mat samps(graph->D, J, arma::fill::zeros);

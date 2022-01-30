@@ -68,6 +68,118 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// getJT
+Rcpp::List getJT(arma::umat EdgeMat);
+RcppExport SEXP _graphml_getJT(SEXP EdgeMatSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::umat >::type EdgeMat(EdgeMatSEXP);
+    rcpp_result_gen = Rcpp::wrap(getJT(EdgeMat));
+    return rcpp_result_gen;
+END_RCPP
+}
+// log_exp_mc
+arma::vec log_exp_mc(arma::umat G, arma::uvec nu, unsigned int b, arma::mat H, unsigned int check_H, unsigned int mc, unsigned int p);
+RcppExport SEXP _graphml_log_exp_mc(SEXP GSEXP, SEXP nuSEXP, SEXP bSEXP, SEXP HSEXP, SEXP check_HSEXP, SEXP mcSEXP, SEXP pSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::umat >::type G(GSEXP);
+    Rcpp::traits::input_parameter< arma::uvec >::type nu(nuSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type b(bSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type H(HSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type check_H(check_HSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type mc(mcSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type p(pSEXP);
+    rcpp_result_gen = Rcpp::wrap(log_exp_mc(G, nu, b, H, check_H, mc, p));
+    return rcpp_result_gen;
+END_RCPP
+}
+// gnorm_c
+double gnorm_c(arma::umat Adj, double b, arma::mat D, unsigned int iter);
+RcppExport SEXP _graphml_gnorm_c(SEXP AdjSEXP, SEXP bSEXP, SEXP DSEXP, SEXP iterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::umat >::type Adj(AdjSEXP);
+    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type D(DSEXP);
+    Rcpp::traits::input_parameter< unsigned int >::type iter(iterSEXP);
+    rcpp_result_gen = Rcpp::wrap(gnorm_c(Adj, b, D, iter));
+    return rcpp_result_gen;
+END_RCPP
+}
+// log_multi_gamma
+double log_multi_gamma(int p, double n);
+RcppExport SEXP _graphml_log_multi_gamma(SEXP pSEXP, SEXP nSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type p(pSEXP);
+    Rcpp::traits::input_parameter< double >::type n(nSEXP);
+    rcpp_result_gen = Rcpp::wrap(log_multi_gamma(p, n));
+    return rcpp_result_gen;
+END_RCPP
+}
+// log_wishart_norm
+double log_wishart_norm(int p, double b, arma::mat D);
+RcppExport SEXP _graphml_log_wishart_norm(SEXP pSEXP, SEXP bSEXP, SEXP DSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< int >::type p(pSEXP);
+    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type D(DSEXP);
+    rcpp_result_gen = Rcpp::wrap(log_wishart_norm(p, b, D));
+    return rcpp_result_gen;
+END_RCPP
+}
+// hybridJT
+double hybridJT(arma::umat Adj, arma::umat EdgeMat, double b, arma::mat D, int iter);
+RcppExport SEXP _graphml_hybridJT(SEXP AdjSEXP, SEXP EdgeMatSEXP, SEXP bSEXP, SEXP DSEXP, SEXP iterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::umat >::type Adj(AdjSEXP);
+    Rcpp::traits::input_parameter< arma::umat >::type EdgeMat(EdgeMatSEXP);
+    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type D(DSEXP);
+    Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
+    rcpp_result_gen = Rcpp::wrap(hybridJT(Adj, EdgeMat, b, D, iter));
+    return rcpp_result_gen;
+END_RCPP
+}
+// hybridJT_parallel
+double hybridJT_parallel(arma::umat Adj, arma::umat EdgeMat, double b, arma::mat D, int iter);
+RcppExport SEXP _graphml_hybridJT_parallel(SEXP AdjSEXP, SEXP EdgeMatSEXP, SEXP bSEXP, SEXP DSEXP, SEXP iterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::umat >::type Adj(AdjSEXP);
+    Rcpp::traits::input_parameter< arma::umat >::type EdgeMat(EdgeMatSEXP);
+    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type D(DSEXP);
+    Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
+    rcpp_result_gen = Rcpp::wrap(hybridJT_parallel(Adj, EdgeMat, b, D, iter));
+    return rcpp_result_gen;
+END_RCPP
+}
+// hybridJT_slow
+double hybridJT_slow(arma::umat Adj, arma::umat EdgeMat, double b, arma::mat D, int iter);
+RcppExport SEXP _graphml_hybridJT_slow(SEXP AdjSEXP, SEXP EdgeMatSEXP, SEXP bSEXP, SEXP DSEXP, SEXP iterSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::umat >::type Adj(AdjSEXP);
+    Rcpp::traits::input_parameter< arma::umat >::type EdgeMat(EdgeMatSEXP);
+    Rcpp::traits::input_parameter< double >::type b(bSEXP);
+    Rcpp::traits::input_parameter< arma::mat >::type D(DSEXP);
+    Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
+    rcpp_result_gen = Rcpp::wrap(hybridJT_slow(Adj, EdgeMat, b, D, iter));
+    return rcpp_result_gen;
+END_RCPP
+}
 // generalApprox
 double generalApprox(arma::umat G, u_int b, arma::mat V, u_int J);
 RcppExport SEXP _graphml_generalApprox(SEXP GSEXP, SEXP bSEXP, SEXP VSEXP, SEXP JSEXP) {
@@ -88,6 +200,14 @@ static const R_CallMethodDef CallEntries[] = {
     {"_graphml_approxlogml_fast", (DL_FUNC) &_graphml_approxlogml_fast, 4},
     {"_graphml_approxlogml", (DL_FUNC) &_graphml_approxlogml, 4},
     {"_graphml_approxlogml_slow", (DL_FUNC) &_graphml_approxlogml_slow, 4},
+    {"_graphml_getJT", (DL_FUNC) &_graphml_getJT, 1},
+    {"_graphml_log_exp_mc", (DL_FUNC) &_graphml_log_exp_mc, 7},
+    {"_graphml_gnorm_c", (DL_FUNC) &_graphml_gnorm_c, 4},
+    {"_graphml_log_multi_gamma", (DL_FUNC) &_graphml_log_multi_gamma, 2},
+    {"_graphml_log_wishart_norm", (DL_FUNC) &_graphml_log_wishart_norm, 3},
+    {"_graphml_hybridJT", (DL_FUNC) &_graphml_hybridJT, 5},
+    {"_graphml_hybridJT_parallel", (DL_FUNC) &_graphml_hybridJT_parallel, 5},
+    {"_graphml_hybridJT_slow", (DL_FUNC) &_graphml_hybridJT_slow, 5},
     {"_graphml_generalApprox", (DL_FUNC) &_graphml_generalApprox, 4},
     {NULL, NULL, 0}
 };

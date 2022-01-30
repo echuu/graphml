@@ -8,15 +8,15 @@
 
 double approxlogml_fast(arma::umat G, u_int b, arma::mat V, u_int J);
 
-double approxHelpPll(arma::mat z, arma::vec uStar, arma::mat xy, Graph* graph);
+double approxHelpPll(arma::mat z, arma::vec uStar, arma::mat xy, Gwish* graph);
 
-std::vector<double> evalPsiPll(arma::mat samps, Graph* graph);
+std::vector<double> evalPsiPll(arma::mat samps, Gwish* graph);
 
-double integratePartitionPll(Graph* graph, 
+double integratePartitionPll(Gwish* graph, 
 	std::unordered_map<u_int, arma::vec> candidates, 
 	std::unordered_map<u_int, arma::vec> bounds, 
 	u_int nLeaves);
 
-arma::mat samplegwPll(u_int J, Graph* graph);
+arma::mat samplegwPll(u_int J, Gwish* graph);
 
 #endif

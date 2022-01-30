@@ -1,6 +1,6 @@
 
 
-#include "Graph.h"
+#include "Gwish.h"
 // #include "evidencePll.h"
 #include "tools.h"
 #include "evidenceSeq.h"

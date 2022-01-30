@@ -17,6 +17,38 @@ approxlogml_slow <- function(G, b, V, J) {
     .Call(`_graphml_approxlogml_slow`, G, b, V, J)
 }
 
+getJT <- function(EdgeMat) {
+    .Call(`_graphml_getJT`, EdgeMat)
+}
+
+log_exp_mc <- function(G, nu, b, H, check_H, mc, p) {
+    .Call(`_graphml_log_exp_mc`, G, nu, b, H, check_H, mc, p)
+}
+
+gnorm_c <- function(Adj, b, D, iter) {
+    .Call(`_graphml_gnorm_c`, Adj, b, D, iter)
+}
+
+log_multi_gamma <- function(p, n) {
+    .Call(`_graphml_log_multi_gamma`, p, n)
+}
+
+log_wishart_norm <- function(p, b, D) {
+    .Call(`_graphml_log_wishart_norm`, p, b, D)
+}
+
+hybridJT <- function(Adj, EdgeMat, b, D, iter = 500L) {
+    .Call(`_graphml_hybridJT`, Adj, EdgeMat, b, D, iter)
+}
+
+hybridJT_parallel <- function(Adj, EdgeMat, b, D, iter = 500L) {
+    .Call(`_graphml_hybridJT_parallel`, Adj, EdgeMat, b, D, iter)
+}
+
+hybridJT_slow <- function(Adj, EdgeMat, b, D, iter = 500L) {
+    .Call(`_graphml_hybridJT_slow`, Adj, EdgeMat, b, D, iter)
+}
+
 generalApprox <- function(G, b, V, J) {
     .Call(`_graphml_generalApprox`, G, b, V, J)
 }

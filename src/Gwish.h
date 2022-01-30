@@ -1,5 +1,5 @@
-#ifndef GRAPH_H
-#define GRAPH_H   
+#ifndef GWISH_H
+#define GWISH_H   
 
 
 #include "graphml_types.h"
@@ -12,7 +12,7 @@
 #define EIGEN_PERMANENTLY_DISABLE_STUPID_WARNINGS
 
 
-class Graph {
+class Gwish {
 
     public: 
         u_int p;               // # of vertices
@@ -33,14 +33,14 @@ class Graph {
         arma::mat t_ind;       // index matrix for free paramters
         arma::mat vbar;        // indices of nonfree elements
 
-        Graph(arma::umat G, u_int b, arma::mat V);
+        Gwish(arma::umat G, u_int b, arma::mat V);
         arma::mat getFreeElem();
         arma::mat getNonFreeElem();
         // arma::mat sampleGW(u_int m);
         // arma::mat sampleGWParallel(u_int J);
         
 
-}; // end Graph class
+}; // end Gwish class
 
 #endif
 
