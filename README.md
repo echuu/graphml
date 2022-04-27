@@ -14,5 +14,5 @@ Currently, this package is available to be built locally in R.
 
 ## Using the package in practice
 
-See [this demo](https://github.com/echuu/hybrid/blob/main/examples/demo/demo.pdf) for an illustration of how to use this package in practice. The source code for this example can be found [here](https://github.com/echuu/hybrid/blob/main/examples/demo/demo.Rmd).
+See [this demo](https://github.com/echuu/graphml/blob/master/examples/graphml_demo.pdf) for an illustration of how to use this package in practice. The source code for this example can be found [here](https://github.com/echuu/graphml/blob/master/examples/graphml_demo.Rmd).
 
