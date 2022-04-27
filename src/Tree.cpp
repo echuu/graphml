@@ -87,7 +87,7 @@ Node* Tree::buildTreeSort(arma::uvec rowIds, double currSSE, u_int nodesize) {
     arma::uvec left, right;
     arma::uvec optLeft, optRight;
     u_int numFeats = this->numFeats;
-    u_int numRows  = this->numRows;
+    // u_int numRows  = this->numRows;
     double leftSSE, rightSSE, propSSE; // store the SSE values
     u_int leftsize, rightsize;
 
@@ -184,7 +184,7 @@ Node* Tree::buildTreeSort(arma::uvec rowIds, double currSSE, u_int nodesize) {
 
     // obtain feature (this is just the column number)
     u_int feature = optFeature - 1; 
-    double lb, ub, threshVal; 
+    double lb, ub; 
     lb = this->supp(feature, 0);
     ub = this->supp(feature, 1);
     Interval* leftInterval = new Interval(lb, optThreshold, feature);

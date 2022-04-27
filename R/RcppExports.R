@@ -5,10 +5,6 @@ ep_logz <- function(m, K, lb, ub) {
     .Call(`_graphml_ep_logz`, m, K, lb, ub)
 }
 
-approxlogml_fast <- function(G, b, V, J) {
-    .Call(`_graphml_approxlogml_fast`, G, b, V, J)
-}
-
 approxlogml <- function(G, b, V, J) {
     .Call(`_graphml_approxlogml`, G, b, V, J)
 }
@@ -41,15 +37,15 @@ hybridJT <- function(Adj, EdgeMat, b, D, iter = 500L) {
     .Call(`_graphml_hybridJT`, Adj, EdgeMat, b, D, iter)
 }
 
-hybridJT_parallel <- function(Adj, EdgeMat, b, D, iter = 500L) {
-    .Call(`_graphml_hybridJT_parallel`, Adj, EdgeMat, b, D, iter)
-}
-
 hybridJT_slow <- function(Adj, EdgeMat, b, D, iter = 500L) {
     .Call(`_graphml_hybridJT_slow`, Adj, EdgeMat, b, D, iter)
 }
 
 generalApprox <- function(G, b, V, J) {
     .Call(`_graphml_generalApprox`, G, b, V, J)
+}
+
+hyb <- function(z) {
+    .Call(`_graphml_hyb`, z)
 }
 

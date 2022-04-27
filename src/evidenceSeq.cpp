@@ -4,7 +4,8 @@
 #include "tools.h"        // for lse(), vec2mat()
 #include "epmgp.h"        // for ep()
 
-
+/* main function that is called to compute the log marginal likelihood 
+ * for G-Wishart example */
 // [[Rcpp::export]]
 double approxlogml(arma::umat G, u_int b, arma::mat V, u_int J) {
 
@@ -28,6 +29,7 @@ double approxlogml(arma::umat G, u_int b, arma::mat V, u_int J) {
 	arma::mat z = arma::join_rows( samps_psi.col(samps_psi.n_cols - 1), samps );
 
     // compute the final approximation
+	// approxHelpSeq() makes the tree-building function call
     double res = approxHelpSeq(z, u_star, samps_psi, graph);
     // Rcpp::Rcout << "computed hybrid-ep calculation" << std::endl;
 
@@ -44,7 +46,7 @@ double approxHelpSeq(arma::mat z, arma::vec uStar, arma::mat xy, Gwish* graph) {
     std::unordered_map<u_int, arma::vec>* pmap = tree->getPartition();
 	std::unordered_map<u_int, arma::uvec>* leafRowMap = tree->getLeafRowMap();
 	unsigned int nLeaves = tree->getLeaves();
-    unsigned int d = tree->getNumFeats();
+    // unsigned int d = tree->getNumFeats();
 
     std::unordered_map<u_int, arma::vec> candidates = findOptPoints(
 		xy, *leafRowMap, nLeaves, uStar, D
@@ -162,7 +164,7 @@ double old_helper(arma::mat z, arma::vec uStar, arma::mat xy, Gwish* graph) {
     std::unordered_map<u_int, arma::vec>* pmap = tree->getPartition();
 	std::unordered_map<u_int, arma::uvec>* leafRowMap = tree->getLeafRowMap();
 	unsigned int nLeaves = tree->getLeaves();
-    unsigned int d = tree->getNumFeats();
+    // unsigned int d = tree->getNumFeats();
 
     std::unordered_map<u_int, arma::vec> candidates = findOptPoints(
 		xy, *leafRowMap, nLeaves, uStar, D

@@ -11,7 +11,7 @@
 
 // include file that has marginal likelihood approx function
 #include "evidenceSeq.h" // sequential C++ log ML approx: approxlogml()
-#include "evidencePll.h" // parallel C++ log ML approx: approxlogml_fast()
+// #include "evidencePll.h" // parallel C++ log ML approx: approxlogml_fast()
 #include "ogApprox.h"    // generalApprox()
 
 
@@ -1654,7 +1654,7 @@ double hybridJT(arma::umat Adj, arma::umat EdgeMat, double b, arma::mat D,
 } // end hybridJT() function
 
 
-// [[Rcpp::export]]
+/*
 double hybridJT_parallel(arma::umat Adj, arma::umat EdgeMat, double b, arma::mat D, 
     int iter = 500){
 
@@ -1701,6 +1701,7 @@ double hybridJT_parallel(arma::umat Adj, arma::umat EdgeMat, double b, arma::mat
   // cout<<lC<<endl<<lS<<endl;
   return lC - lS;
 } // end hybridJT_parallel() function
+*/
 
 
 

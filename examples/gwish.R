@@ -18,11 +18,6 @@ b = 300
 V = BDgraph::rgwish(1, G, b, diag(p))
 J = 1000
 
-set.seed(1)
-graphml::generalApprox(G, b, V, J)
-BDgraph::gnorm(G, b, V, J)
-graphml::approxfaster(G, b, V, J)
-graphml::testmap(G, b, V, J)
 
 set.seed(1)
 graphml::generalApprox(G, b, V, J)      # rpart, no parallel
@@ -30,8 +25,8 @@ set.seed(1)
 graphml::approxlogml(G, b, V, J)        # new cpp, no parallel
 set.seed(1)
 graphml::approxlogml_slow(G, b, V, J)   # old cpp, no parallel
-set.seed(1)
-graphml::approxlogml_fast(G, b, V, J)   # new cpp, with parallel
+# set.seed(1)
+# graphml::approxlogml_fast(G, b, V, J)   # new cpp, with parallel
 
 
 set.seed(1234)
@@ -48,16 +43,14 @@ b = 500
 Y = matrix(rnorm(p*500), nrow = 500, ncol = p)
 D = t(Y)%*%Y
 
-gnorm_c(G, b, V, J) # stable, but technically incorrect value
+# gnorm_c(G, b, V, J) # stable, but technically incorrect value
 graphml::gnormJT(G, getEdgeMat(G), b, V, 1000)
 
 
 
 microbenchmark::microbenchmark(
   rpart    = graphml::generalApprox(G, b, V, J),      # uses rpart()
-  # slow_cpp = graphml::testParallel(G, b, V, J),     # old cpp (slowest)
-  fast_cpp = graphml::testmap(G, b, V, J),            # new cpp (ooptimized)
-  cpp_pll  = graphml::approxfaster(G, b, V, J),       # new cpp with parallel
+  fast_cpp = graphml::approxlogml(G, b, V, J),        # new cpp (ooptimized)
   sota     = BDgraph::gnorm(G, b, V, J),
   times = 50
 )

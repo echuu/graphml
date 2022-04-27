@@ -26,20 +26,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// approxlogml_fast
-double approxlogml_fast(arma::umat G, u_int b, arma::mat V, u_int J);
-RcppExport SEXP _graphml_approxlogml_fast(SEXP GSEXP, SEXP bSEXP, SEXP VSEXP, SEXP JSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::umat >::type G(GSEXP);
-    Rcpp::traits::input_parameter< u_int >::type b(bSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type V(VSEXP);
-    Rcpp::traits::input_parameter< u_int >::type J(JSEXP);
-    rcpp_result_gen = Rcpp::wrap(approxlogml_fast(G, b, V, J));
-    return rcpp_result_gen;
-END_RCPP
-}
 // approxlogml
 double approxlogml(arma::umat G, u_int b, arma::mat V, u_int J);
 RcppExport SEXP _graphml_approxlogml(SEXP GSEXP, SEXP bSEXP, SEXP VSEXP, SEXP JSEXP) {
@@ -150,21 +136,6 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// hybridJT_parallel
-double hybridJT_parallel(arma::umat Adj, arma::umat EdgeMat, double b, arma::mat D, int iter);
-RcppExport SEXP _graphml_hybridJT_parallel(SEXP AdjSEXP, SEXP EdgeMatSEXP, SEXP bSEXP, SEXP DSEXP, SEXP iterSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< arma::umat >::type Adj(AdjSEXP);
-    Rcpp::traits::input_parameter< arma::umat >::type EdgeMat(EdgeMatSEXP);
-    Rcpp::traits::input_parameter< double >::type b(bSEXP);
-    Rcpp::traits::input_parameter< arma::mat >::type D(DSEXP);
-    Rcpp::traits::input_parameter< int >::type iter(iterSEXP);
-    rcpp_result_gen = Rcpp::wrap(hybridJT_parallel(Adj, EdgeMat, b, D, iter));
-    return rcpp_result_gen;
-END_RCPP
-}
 // hybridJT_slow
 double hybridJT_slow(arma::umat Adj, arma::umat EdgeMat, double b, arma::mat D, int iter);
 RcppExport SEXP _graphml_hybridJT_slow(SEXP AdjSEXP, SEXP EdgeMatSEXP, SEXP bSEXP, SEXP DSEXP, SEXP iterSEXP) {
@@ -194,10 +165,20 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// hyb
+double hyb(arma::mat z);
+RcppExport SEXP _graphml_hyb(SEXP zSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat >::type z(zSEXP);
+    rcpp_result_gen = Rcpp::wrap(hyb(z));
+    return rcpp_result_gen;
+END_RCPP
+}
 
 static const R_CallMethodDef CallEntries[] = {
     {"_graphml_ep_logz", (DL_FUNC) &_graphml_ep_logz, 4},
-    {"_graphml_approxlogml_fast", (DL_FUNC) &_graphml_approxlogml_fast, 4},
     {"_graphml_approxlogml", (DL_FUNC) &_graphml_approxlogml, 4},
     {"_graphml_approxlogml_slow", (DL_FUNC) &_graphml_approxlogml_slow, 4},
     {"_graphml_getJT", (DL_FUNC) &_graphml_getJT, 1},
@@ -206,9 +187,9 @@ static const R_CallMethodDef CallEntries[] = {
     {"_graphml_log_multi_gamma", (DL_FUNC) &_graphml_log_multi_gamma, 2},
     {"_graphml_log_wishart_norm", (DL_FUNC) &_graphml_log_wishart_norm, 3},
     {"_graphml_hybridJT", (DL_FUNC) &_graphml_hybridJT, 5},
-    {"_graphml_hybridJT_parallel", (DL_FUNC) &_graphml_hybridJT_parallel, 5},
     {"_graphml_hybridJT_slow", (DL_FUNC) &_graphml_hybridJT_slow, 5},
     {"_graphml_generalApprox", (DL_FUNC) &_graphml_generalApprox, 4},
+    {"_graphml_hyb", (DL_FUNC) &_graphml_hyb, 1},
     {NULL, NULL, 0}
 };
 
