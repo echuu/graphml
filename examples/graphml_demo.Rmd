@@ -76,7 +76,7 @@ We observe that the two estimates are quite close to each other, and that the Hy
 ```{r, message = FALSE, warning = FALSE}
 library(graphml)
 set.seed(1234)
-p = 30
+p = 60
 Adj = matrix(rbinom(p^2,1,0.15), p, p)
 Adj = Adj + t(Adj)
 diag(Adj) = 0
