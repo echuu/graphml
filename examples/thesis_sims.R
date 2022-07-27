@@ -1,8 +1,8 @@
 
 
 set.seed(12345) # seed for p = 50
-set.seed(12345)
-p = 60
+set.seed(1234)  # seed for p = 10, 30, 40, 60
+p = 50
 Adj = matrix(rbinom(p^2,1,0.15), p, p)
 Adj = Adj + t(Adj)
 diag(Adj) = 0

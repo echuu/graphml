@@ -1,11 +1,11 @@
 Package: graphml
 Type: Package
-Title: What the package does (short line)
+Title: Hybrid approximation for computing normalizing constants of G-Wishart densities
 Version: 1.0
-Date: 2021-09-10
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
-Description: More about what it does (maybe more than one line)
+Date: 2022-04-10
+Author: Eric Chuu
+Maintainer: Eric Chuu <ericchuu@tamu.edu>
+Description: Hybrid-EP + JT algorithm for computing the log normalizing constants of G-Wishart densities
 License: What license is it under?
 Imports: Rcpp (>= 1.0.7)
 LinkingTo: Rcpp, RcppArmadillo

@@ -7,7 +7,8 @@
 library(graphml)
 
 set.seed(1234)
-p = 60
+# p = 60
+p = 30
 Adj = matrix(rbinom(p^2,1,0.15), p, p)
 Adj = Adj + t(Adj)
 diag(Adj) = 0
