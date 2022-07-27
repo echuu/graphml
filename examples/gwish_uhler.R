@@ -1,4 +1,15 @@
 
+## gwish_uhler.R
+## author: Eric Chuu
+
+## This file compares the performance of the GNORM, EPSOM-HybJT estimators
+## for high-dimensional graphs that are constructed using G_5, as described
+## in Section 4.3.1 of the paper. We evaluate these estimates using the
+## the exact normalizing constant which can calculated with the formula
+## from Uhler et al. (2016).
+
+
+
 library(graphml) # load package for EPSOM-HybJT estimator
 library(BDgraph) # load package for GNORM estimator
 library(dplyr)   # load package for data manipulation
